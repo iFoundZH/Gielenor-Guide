@@ -145,8 +145,6 @@ function calculateBuildSynergy(relics: Relic[], pacts: Pact[]): number {
   if (relicIds.has("re-t6-1") && pacts.some((p) => p.category === "combat")) score += 60;
   // Trickster + Dodgy Dealings: thieving synergy
   if (relicIds.has("re-t1-1") && relicIds.has("re-t8-3")) score += 70;
-  // Echo Augmentation + Treasure Seeker: boss loot synergy
-  if (relicIds.has("re-t7-1") && relicIds.has("re-t7-2")) score += 0; // same tier, can't pick both
   // Last Recall + Soul Stealer: teleport-kill-return cycle
   if (relicIds.has("re-t5-2") && relicIds.has("re-t4-2")) score += 60;
   // Production Prodigy + Pocket Crafter: production everywhere

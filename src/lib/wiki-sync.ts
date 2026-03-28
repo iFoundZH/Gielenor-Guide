@@ -192,9 +192,13 @@ async function main() {
   console.log("=== Gielinor Guide Wiki Sync ===\n");
   console.log("Checking for updates to Demonic Pacts League...\n");
 
+  // Use the league's lastSynced date dynamically
+  const { demonicPactsLeague } = await import("@/data/demonic-pacts");
+  const lastSynced = `${demonicPactsLeague.lastSynced}T00:00:00Z`;
+
   const hasUpdates = await checkForUpdates(
     "Demonic_Pacts_League",
-    "2026-03-28T00:00:00Z"
+    lastSynced
   );
 
   if (hasUpdates) {

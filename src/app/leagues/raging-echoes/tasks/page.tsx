@@ -16,6 +16,8 @@ const difficultyOrder: Record<TaskDifficulty, number> = {
   easy: 1, medium: 2, hard: 3, elite: 4, master: 5,
 };
 
+const STORAGE_KEY = "gielinor-re-tasks";
+
 type SortMode = "default" | "points-desc" | "points-asc" | "difficulty";
 
 export default function RagingEchoesTaskTracker() {
@@ -28,12 +30,12 @@ export default function RagingEchoesTaskTracker() {
   const [sortMode, setSortMode] = useState<SortMode>("default");
 
   useEffect(() => {
-    const saved = localStorage.getItem("gielinor-re-tasks");
+    const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) try { setCompleted(new Set(JSON.parse(saved))); } catch { /* ignore */ }
   }, []);
 
   useEffect(() => {
-    localStorage.setItem("gielinor-re-tasks", JSON.stringify([...completed]));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify([...completed]));
   }, [completed]);
 
   const toggleTask = (taskId: string) => {

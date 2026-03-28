@@ -156,8 +156,20 @@ export default function DemonicPactsOverview() {
                           <td className="text-right py-2">8x</td>
                         </tr>
                         <tr className="border-b border-osrs-border/50">
+                          <td className="py-2">Tier 6</td>
+                          <td className="text-right py-2">12x</td>
+                          <td className="text-right py-2">5x</td>
+                          <td className="text-right py-2">8x</td>
+                        </tr>
+                        <tr className="border-b border-osrs-border/50">
                           <td className="py-2">Tier 7</td>
                           <td className="text-right py-2 text-osrs-gold font-bold">16x</td>
+                          <td className="text-right py-2">5x</td>
+                          <td className="text-right py-2">8x</td>
+                        </tr>
+                        <tr className="border-b border-osrs-border/50">
+                          <td className="py-2">Tier 8</td>
+                          <td className="text-right py-2">16x</td>
                           <td className="text-right py-2">5x</td>
                           <td className="text-right py-2">8x</td>
                         </tr>

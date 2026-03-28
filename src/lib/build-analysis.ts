@@ -369,9 +369,6 @@ function findActiveSynergies(relics: Relic[], pacts: Pact[]): Synergy[] {
       components: ["Glass Cannon", "Vampiric Touch"],
     });
   }
-  if (relicIds.has("relic-t1-1") && relicIds.has("relic-t1-3")) {
-    // Can't actually have both, but this would only fire if data had them in different tiers
-  }
   if (relicIds.has("relic-t6-1") && relicIds.has("relic-t8-1")) {
     synergies.push({
       name: "Slayer Companion",
