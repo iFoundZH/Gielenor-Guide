@@ -15,36 +15,34 @@ const strategies = [
     description: "Maximize points per hour. Rush task completion with optimal routing.",
     accountType: "Any",
     difficulty: "Advanced",
-    relics: ["Trickster", "Infernal Gathering", "Eternal Jewel", "Last Recall", "Globetrotter"],
-    pacts: ["Speed Demon", "XP Demon"],
+    relic: "Barbarian Gathering",
+    regions: ["Kebos & Kourend", "Morytania", "Kandarin"],
+    pacts: ["Melee Might", "Glass Cannon"],
     priorities: [
       "Rush easy and medium tasks first for fast renown",
+      "Barbarian Gathering's knapsack lets you stay out longer",
       "Prioritize quests that unlock multiple task categories",
-      "Use Trickster for instant agility shortcuts and thieving tasks",
-      "Infernal Gathering + resource tasks = 2-for-1 skill XP",
-      "Last Recall for zero-downtime bossing",
-      "Speed Demon eliminates travel time entirely",
+      "Evil Eye (T3) teleports directly to every boss lair",
+      "Glass Cannon + Melee Might for fast kills through Slayer",
+      "Culling Spree (T6) optimizes Slayer tasks with configurable kills",
     ],
     earlyGame: [
-      "Complete tutorial and grab starting relic (Trickster)",
-      "Pickpocket men/women for starting cash",
-      "Complete Waterfall Quest for combat levels",
-      "Rush easy quests: Cook's Assistant, Sheep Shearer, etc.",
-      "Hit 500 renown ASAP for Infernal Gathering",
+      "Grab Barbarian Gathering (T1) for knapsack + bare-hand gathering",
+      "Woodsman (T2) auto-unlocks: instant Fletching + double Hunter loot",
+      "Complete easy tasks across all categories",
+      "Start quests for QP — Dragon Slayer I is auto-completed",
     ],
     midGame: [
-      "Focus on medium task categories you haven't touched",
-      "Start Slayer for combat task overlap",
-      "Complete Dragon Slayer, Monkey Madness, etc.",
-      "Grab Eternal Jewel at 2000 renown for unlimited teleports",
-      "Begin clue scroll hunting",
+      "Evil Eye (T3) unlocks boss teleports — start Barrows, GWD",
+      "Activate Glass Cannon for massive damage boost",
+      "Start Slayer grind — 5x points, free Bigger & Badder",
+      "Kebos: Chambers of Xeric + Hydra for elite tasks",
     ],
     lateGame: [
-      "Boss rushing with Last Recall",
-      "Elite and Master clue completions",
-      "GWD, Zulrah, Vorkath for combat tasks",
-      "Push for 99s in efficient skills",
-      "Target remaining hard/elite tasks",
+      "Culling Spree (T6): choose Slayer tasks, superiors drop elite clues",
+      "Minion (T8): combat companion auto-loots while you kill",
+      "Target remaining hard/elite/master tasks",
+      "Push all boss tasks with Evil Eye teleports + Minion",
     ],
   },
   {
@@ -53,32 +51,34 @@ const strategies = [
     description: "Maximize combat power. Dominate every boss in the game.",
     accountType: "Any",
     difficulty: "Intermediate",
-    relics: ["Production Master", "Knife's Edge", "Bottomless Quiver", "Soul Stealer", "Weapon Specialist"],
-    pacts: ["Glass Cannon", "Ranged Fury", "Risk & Reward"],
+    relic: "Endless Harvest",
+    regions: ["Asgarnia", "Morytania", "Kebos & Kourend"],
+    pacts: ["Melee Might", "Glass Cannon", "Berserker's Oath"],
     priorities: [
       "Build toward end-game PvM as fast as possible",
-      "Knife's Edge + Glass Cannon = insane damage output",
-      "Bottomless Quiver for infinite ammo on ranged builds",
-      "Weapon Specialist makes every weapon attack at dart speed",
-      "Soul Stealer for prayer sustain during bossing",
+      "Glass Cannon + Berserker's Oath = insane damage but no protection prayers",
+      "Endless Harvest auto-banks resources for supply generation",
+      "Evil Eye boss teleports minimize travel time",
+      "Minion companion adds extra DPS and auto-loots",
+      "Asgarnia = GWD, Morytania = ToB, Kebos = CoX",
     ],
     earlyGame: [
-      "Get Production Master for fast gear crafting",
+      "Endless Harvest (T1): resources auto-bank, nodes never deplete",
+      "Woodsman (T2): Hunter loot doubled, instant Fletching for gear",
       "Train combat through Slayer for task overlap",
-      "Rush Barrows for early gear upgrades",
-      "Complete combat-related quests",
+      "Build supplies passively via Endless Harvest",
     ],
     midGame: [
-      "Grab Knife's Edge at tier 2 — embrace the 10 HP life",
-      "Start GWD bosses with 3x damage",
-      "Bottomless Quiver at tier 3 for ranged dominance",
-      "Activate Glass Cannon for +50% damage",
+      "Evil Eye (T3): teleport to any boss — start GWD farming",
+      "Activate Melee Might + Glass Cannon for massive DPS",
+      "Start Barrows (Morytania) and God Wars bosses (Asgarnia)",
+      "Vampiric Touch optional for lifesteal sustain",
     ],
     lateGame: [
-      "Weapon Specialist: every weapon attacks at 2-tick speed",
-      "Solo Corp, ToB, CoX with ridiculous DPS",
-      "Risk & Reward for 2x drops (deaths are costly though)",
-      "Push for Inferno cape with overpowered damage",
+      "Culling Spree (T6): optimized Slayer with chain superiors",
+      "Minion (T8): companion fights + auto-loots + AoE in multi",
+      "Berserker's Oath for max damage (no protection prayers!)",
+      "Solo ToB, CoX, and push for Infernal Cape",
     ],
   },
   {
@@ -87,33 +87,34 @@ const strategies = [
     description: "Complete every task. Reach Dragon tier rewards.",
     accountType: "Main",
     difficulty: "Expert",
-    relics: ["Endless Harvest", "Equilibrium", "Clue Compass", "Demonic Resilience", "Treasure Seeker"],
-    pacts: ["Gathering Fury", "Artisan's Deal", "XP Demon", "Speed Demon"],
+    relic: "Abundance",
+    regions: ["Kebos & Kourend", "Desert", "Morytania"],
+    pacts: ["Melee Might", "Ranged Fury", "Magic Surge", "Vampiric Touch"],
     priorities: [
       "Balance across all task categories — don't neglect any",
-      "Demonic Resilience halves all pact penalties",
-      "Stack 4+ pacts with reduced penalties",
-      "Clue Compass for 10x clue drop rate",
-      "Treasure Seeker for guaranteed boss uniques",
+      "Abundance gives +10 to all non-combat skills + coin generation",
+      "All three combat pacts cover every style for task versatility",
+      "Vampiric Touch for sustain — reduced prayer but heals on hit",
+      "Kebos (CoX, Hydra, Wintertodt), Desert (ToA), Morytania (ToB, Barrows)",
+      "Target 56,000+ points for Dragon tier",
     ],
     earlyGame: [
-      "Endless Harvest for gathering tasks",
-      "Complete ALL easy tasks before moving on",
-      "Quest broadly to unlock regions and skills",
-      "Build a solid base in every skill",
+      "Abundance (T1): +10 skill boost unlocks high-level content early",
+      "Woodsman (T2): auto-processes logs, doubles Hunter output",
+      "Complete ALL easy tasks before moving on to medium",
+      "Build a broad skill base — Abundance makes everything efficient",
     ],
     midGame: [
-      "Equilibrium to level all combat evenly",
-      "Activate Gathering Fury + Artisan's Deal for skill coverage",
-      "Clue Compass for mass clue completions",
-      "Push for Demonic Resilience at 5000 renown",
+      "Evil Eye (T3): boss teleports for combat task coverage",
+      "Activate multiple combat pacts for versatility across styles",
+      "Coins from Abundance's XP generation fund supplies",
+      "Push medium + hard tasks across every category",
     ],
     lateGame: [
-      "Stack all 4 pacts with Demonic Resilience",
-      "XP Demon + Speed Demon for maximum efficiency",
-      "Target remaining elite and master tasks",
-      "Treasure Seeker for boss collection log",
-      "Push past 56,000 points for Dragon tier",
+      "Culling Spree (T6): configurable Slayer for remaining combat tasks",
+      "Minion (T8): companion assists while you push final tasks",
+      "All three combat pacts let you switch styles for any task",
+      "Target remaining elite and master tasks past 56,000 pts",
     ],
   },
   {
@@ -122,32 +123,34 @@ const strategies = [
     description: "Self-sufficient strategies for ironman accounts.",
     accountType: "Ironman",
     difficulty: "Advanced",
-    relics: ["Endless Harvest", "Infernal Gathering", "Eternal Jewel", "Demonic Resilience", "Globetrotter"],
-    pacts: ["Gathering Fury", "Artisan's Deal"],
+    relic: "Endless Harvest",
+    regions: ["Kebos & Kourend", "Kandarin", "Fremennik Province"],
+    pacts: ["Melee Might", "Vampiric Touch"],
     priorities: [
-      "Self-sufficiency is key — Endless Harvest + Infernal Gathering",
-      "Resources auto-process: mine ore, get bars automatically",
-      "Gathering Fury for 3x gathering speed",
-      "Artisan's Deal for 2x production XP",
-      "Globetrotter eliminates travel issues",
+      "Self-sufficiency is key — Endless Harvest auto-banks everything",
+      "Woodsman doubles Hunter loot and auto-processes logs",
+      "Vampiric Touch provides lifesteal without needing food",
+      "Kebos (CoX, GOTR, Wintertodt) + Kandarin (Zulrah, fishing)",
+      "Fremennik (Vorkath, Nex, DKs) for endgame PvM",
+      "Evil Eye boss teleports save tons of travel time",
     ],
     earlyGame: [
-      "Endless Harvest immediately for double resources",
+      "Endless Harvest (T1): double resources auto-bank immediately",
+      "Woodsman (T2): Hunter traps drop herb/tree seeds for Farming",
       "Focus on gathering skills to build resource base",
-      "Complete quests for useful unlocks (Fairy Rings, etc.)",
-      "Start Farming runs early",
+      "Complete quests for useful unlocks",
     ],
     midGame: [
-      "Infernal Gathering: ores auto-smelt, logs auto-burn",
-      "This combo essentially gives you 4 skills at once",
-      "Eternal Jewel for infinite teleport charges",
-      "Begin Slayer for alchables and combat training",
+      "Evil Eye (T3): boss teleports for efficient bossing",
+      "Melee Might for combat task efficiency",
+      "Vampiric Touch for lifesteal sustain without food",
+      "Start Slayer — 5x points + free Bigger & Badder",
     ],
     lateGame: [
-      "Demonic Resilience to stack more pacts safely",
-      "Globetrotter for instant access to everything",
+      "Culling Spree (T6): optimized Slayer + chain superiors",
+      "Minion (T8): companion fights and auto-loots kills",
       "Focus on tasks that align with your resource base",
-      "Target boss tasks with self-made supplies",
+      "Target boss tasks — Vorkath, Zulrah, CoX with full setup",
     ],
   },
 ];
@@ -156,7 +159,7 @@ function buildPlannerUrl(strategy: typeof strategies[number]): string {
   const league = demonicPactsLeague;
   const allRelics = league.relicTiers.flatMap((t) => t.relics);
 
-  const matchedRelicIds = strategy.relics
+  const matchedRelicIds = [strategy.relic]
     .map((name) => allRelics.find((r) => r.name.toLowerCase() === name.toLowerCase())?.id)
     .filter((id): id is string => !!id);
 
@@ -164,11 +167,15 @@ function buildPlannerUrl(strategy: typeof strategies[number]): string {
     .map((name) => league.pacts.find((p) => p.name.toLowerCase() === name.toLowerCase())?.id)
     .filter((id): id is string => !!id);
 
+  const matchedRegionIds = strategy.regions
+    .map((name) => league.regions.find((r) => r.name.toLowerCase() === name.toLowerCase())?.id)
+    .filter((id): id is string => !!id);
+
   const build: LeagueBuild = {
     id: "",
     name: `${strategy.name} Build`,
     accountType: strategy.accountType === "Ironman" ? "ironman" : "main",
-    regions: [],
+    regions: matchedRegionIds,
     relics: matchedRelicIds,
     pacts: matchedPactIds,
     completedTasks: [],
@@ -189,7 +196,6 @@ export default function StrategyGuide() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10">
-      {/* Breadcrumb */}
       <div className="flex items-center gap-2 mb-3 text-sm text-osrs-text-dim">
         <Link href="/" className="hover:text-osrs-gold">Home</Link>
         <span>/</span>
@@ -206,7 +212,7 @@ export default function StrategyGuide() {
       </h1>
       <p className="text-osrs-text-dim mb-8">
         Optimized strategies for different playstyles. Each guide includes recommended
-        relics, pacts, and a phased progression plan.
+        relics, pacts, regions, and a phased progression plan.
       </p>
 
       <Tabs tabs={tabs}>
@@ -216,7 +222,6 @@ export default function StrategyGuide() {
 
           return (
             <div className="space-y-6">
-              {/* Strategy Header */}
               <Card glow="gold">
                 <div className="flex flex-col sm:flex-row sm:items-center gap-4">
                   <div className="flex-1">
@@ -241,28 +246,44 @@ export default function StrategyGuide() {
                     href={buildPlannerUrl(strategy)}
                     className="px-4 py-2 bg-osrs-gold text-osrs-darker rounded-lg text-sm font-bold hover:bg-osrs-gold/90 transition-all whitespace-nowrap"
                   >
-                    Open in Planner →
+                    Open in Planner
                   </Link>
                 </div>
               </Card>
 
-              {/* Recommended Setup */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <Card>
                   <h3
                     className="font-bold text-osrs-gold mb-3"
                     style={{ fontFamily: "var(--font-runescape)" }}
                   >
-                    Recommended Relics
+                    T1 Relic Choice
+                  </h3>
+                  <div className="flex items-center gap-2 text-sm">
+                    <span className="text-osrs-gold text-xs font-bold">T1</span>
+                    <span className="text-osrs-text">{strategy.relic}</span>
+                  </div>
+                  <p className="text-xs text-osrs-text-dim mt-2">
+                    T2 Woodsman, T3 Evil Eye, T6 Culling Spree, T8 Minion are auto-selected (only one option per tier).
+                  </p>
+                </Card>
+
+                <Card>
+                  <h3
+                    className="font-bold text-osrs-blue mb-3"
+                    style={{ fontFamily: "var(--font-runescape)" }}
+                  >
+                    Regions (3 of 8)
                   </h3>
                   <div className="space-y-2">
-                    {strategy.relics.map((relic, i) => (
-                      <div key={relic} className="flex items-center gap-2 text-sm">
-                        <span className="text-osrs-gold text-xs font-bold">T{i + 1}</span>
-                        <span className="text-osrs-text">{relic}</span>
+                    {strategy.regions.map((region) => (
+                      <div key={region} className="flex items-center gap-2 text-sm">
+                        <span className="text-osrs-blue">&#x25C6;</span>
+                        <span className="text-osrs-text">{region}</span>
                       </div>
                     ))}
                   </div>
+                  <p className="text-xs text-osrs-text-dim mt-2">Varlamore (start) + Karamja (auto-unlock) always available.</p>
                 </Card>
 
                 <Card>
@@ -275,7 +296,7 @@ export default function StrategyGuide() {
                   <div className="space-y-2">
                     {strategy.pacts.map((pact) => (
                       <div key={pact} className="flex items-center gap-2 text-sm">
-                        <span className="text-demon-ember">🔥</span>
+                        <span className="text-demon-ember">&#x1F525;</span>
                         <span className="text-osrs-text">{pact}</span>
                       </div>
                     ))}
@@ -283,7 +304,6 @@ export default function StrategyGuide() {
                 </Card>
               </div>
 
-              {/* Priorities */}
               <Card>
                 <h3
                   className="font-bold text-osrs-gold mb-3"
@@ -294,14 +314,13 @@ export default function StrategyGuide() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                   {strategy.priorities.map((p, i) => (
                     <div key={i} className="flex items-start gap-2 text-sm">
-                      <span className="text-osrs-green mt-0.5">✦</span>
+                      <span className="text-osrs-green mt-0.5">&#x2726;</span>
                       <span className="text-osrs-text-dim">{p}</span>
                     </div>
                   ))}
                 </div>
               </Card>
 
-              {/* Phased Guide */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <PhaseCard
                   title="Early Game"

@@ -429,7 +429,7 @@ export const ragingEchoesLeague: LeagueData = {
       { id: "re-m-10", name: "Potion Brewer", description: "Brew 100 potions", category: "Herblore", skills: ["Herblore"] },
     ]),
     // Hard Tasks
-    ...generateTasks("hard", 80, [
+    ...generateTasks("hard", 50, [
       { id: "re-h-1", name: "Fire Cape", description: "Complete the TzHaar Fight Caves", category: "Combat" },
       { id: "re-h-2", name: "Zulrah Slayer", description: "Defeat Zulrah", category: "Combat" },
       { id: "re-h-3", name: "GWD Boss", description: "Defeat any God Wars Dungeon boss", category: "Combat" },
@@ -440,7 +440,7 @@ export const ragingEchoesLeague: LeagueData = {
       { id: "re-h-8", name: "Corrupted Gauntlet", description: "Complete the Corrupted Gauntlet", category: "Combat" },
     ]),
     // Elite Tasks
-    ...generateTasks("elite", 200, [
+    ...generateTasks("elite", 100, [
       { id: "re-el-1", name: "Theatre Complete", description: "Complete the Theatre of Blood", category: "Combat" },
       { id: "re-el-2", name: "CoX Clear", description: "Complete the Chambers of Xeric", category: "Combat" },
       { id: "re-el-3", name: "ToA Expert", description: "Complete Tombs of Amascut at 300+ invocation", category: "Combat" },
@@ -449,7 +449,7 @@ export const ragingEchoesLeague: LeagueData = {
       { id: "re-el-6", name: "Echo Collector", description: "Defeat 3 different Echo Bosses", category: "Echo" },
     ]),
     // Master Tasks
-    ...generateTasks("master", 500, [
+    ...generateTasks("master", 200, [
       { id: "re-ma-1", name: "Infernal Cape", description: "Complete the Inferno", category: "Combat" },
       { id: "re-ma-2", name: "Max Total", description: "Reach 2277 total level", category: "Skilling" },
       { id: "re-ma-3", name: "Echo Master", description: "Defeat all Echo Bosses at least once", category: "Echo" },
@@ -460,7 +460,7 @@ export const ragingEchoesLeague: LeagueData = {
   rewardTiers: [
     {
       name: "Bronze",
-      pointsRequired: 2500,
+      pointsRequired: 2000,
       color: "#cd7f32",
       rewards: [
         { id: "re-rew-1", name: "Raging Echoes Trophy (Bronze)", description: "A bronze trophy for your POH", type: "trophy" },
@@ -468,7 +468,7 @@ export const ragingEchoesLeague: LeagueData = {
     },
     {
       name: "Iron",
-      pointsRequired: 5000,
+      pointsRequired: 4000,
       color: "#a8a8a8",
       rewards: [
         { id: "re-rew-2", name: "Raging Echoes Trophy (Iron)", description: "An iron trophy for your POH", type: "trophy" },
@@ -486,7 +486,7 @@ export const ragingEchoesLeague: LeagueData = {
     },
     {
       name: "Mithril",
-      pointsRequired: 18000,
+      pointsRequired: 20000,
       color: "#4a5d8a",
       rewards: [
         { id: "re-rew-6", name: "Raging Echoes Trophy (Mithril)", description: "A mithril trophy for your POH", type: "trophy" },
@@ -495,7 +495,7 @@ export const ragingEchoesLeague: LeagueData = {
     },
     {
       name: "Adamant",
-      pointsRequired: 28000,
+      pointsRequired: 30000,
       color: "#2e8b57",
       rewards: [
         { id: "re-rew-8", name: "Raging Echoes Trophy (Adamant)", description: "An adamant trophy for your POH", type: "trophy" },
@@ -504,7 +504,7 @@ export const ragingEchoesLeague: LeagueData = {
     },
     {
       name: "Rune",
-      pointsRequired: 42000,
+      pointsRequired: 45000,
       color: "#00b4d8",
       rewards: [
         { id: "re-rew-10", name: "Raging Echoes Trophy (Rune)", description: "A rune trophy for your POH", type: "trophy" },
@@ -513,7 +513,7 @@ export const ragingEchoesLeague: LeagueData = {
     },
     {
       name: "Dragon",
-      pointsRequired: 56000,
+      pointsRequired: 60000,
       color: "#dc2626",
       rewards: [
         { id: "re-rew-12", name: "Raging Echoes Trophy (Dragon)", description: "A dragon trophy for your POH", type: "trophy" },

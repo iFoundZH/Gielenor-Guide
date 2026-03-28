@@ -9,11 +9,36 @@ interface GielinorScoreCardProps {
   playerName?: string;
 }
 
+const IMPROVEMENT_TIPS: Record<string, string> = {
+  tasks: "Complete more tasks — master and elite tasks give the biggest boost.",
+  completion: "Branch out — complete tasks in categories you haven't touched yet.",
+  build: "Pick synergistic relics and pacts that combo together.",
+  risk: "Activate more pacts — higher-tier pacts and dangerous combos score big.",
+};
+
+function getImprovementTip(breakdown: GielinorScore["breakdown"]): { axis: string; tip: string; headroom: number } | null {
+  const axes = [
+    { axis: "tasks", headroom: 1500 - breakdown.tasks, pct: breakdown.tasks / 1500 },
+    { axis: "completion", headroom: 500 - breakdown.completion, pct: breakdown.completion / 500 },
+    { axis: "build", headroom: 500 - breakdown.build, pct: breakdown.build / 500 },
+    { axis: "risk", headroom: 500 - breakdown.risk, pct: breakdown.risk / 500 },
+  ];
+
+  // Find the axis with the lowest fill percentage that still has meaningful headroom
+  const improvable = axes.filter((a) => a.headroom > 20).sort((a, b) => a.pct - b.pct);
+  if (improvable.length === 0) return null;
+
+  const best = improvable[0];
+  return { axis: best.axis, tip: IMPROVEMENT_TIPS[best.axis], headroom: best.headroom };
+}
+
 export function GielinorScoreCard({ score, playerName }: GielinorScoreCardProps) {
   const { color } = getRankInfo(score.total);
   const ranks = getAllRanks();
   const currentRankIdx = ranks.findIndex((r) => r.rank === score.rank);
   const nextRank = currentRankIdx > 0 ? ranks[currentRankIdx - 1] : null;
+  const currentRankMin = ranks[currentRankIdx]?.min ?? 0;
+  const improvement = score.total > 0 ? getImprovementTip(score.breakdown) : null;
 
   return (
     <Card glow="gold" className="relative overflow-hidden">
@@ -48,11 +73,22 @@ export function GielinorScoreCard({ score, playerName }: GielinorScoreCardProps)
 
         {/* Score Breakdown */}
         <div className="space-y-2 mb-4">
-          <ScoreRow label="Tasks" value={score.breakdown.tasks} max={1500} color="bg-osrs-gold" />
-          <ScoreRow label="Completion" value={score.breakdown.completion} max={500} color="bg-osrs-green" />
-          <ScoreRow label="Build" value={score.breakdown.build} max={500} color="bg-osrs-blue" />
-          <ScoreRow label="Risk" value={score.breakdown.risk} max={500} color="bg-demon-glow" />
+          <ScoreRow label="Tasks" value={score.breakdown.tasks} max={1500} color="bg-osrs-gold" highlight={improvement?.axis === "tasks"} />
+          <ScoreRow label="Completion" value={score.breakdown.completion} max={500} color="bg-osrs-green" highlight={improvement?.axis === "completion"} />
+          <ScoreRow label="Build" value={score.breakdown.build} max={500} color="bg-osrs-blue" highlight={improvement?.axis === "build"} />
+          <ScoreRow label="Risk" value={score.breakdown.risk} max={500} color="bg-demon-glow" highlight={improvement?.axis === "risk"} />
         </div>
+
+        {/* Improvement Tip */}
+        {improvement && (
+          <div className="mb-4 px-3 py-2 rounded-lg bg-osrs-darker/60 border border-osrs-border/50">
+            <p className="text-xs text-osrs-text-dim">
+              <span className="text-osrs-gold font-medium">Biggest gain:</span>{" "}
+              {improvement.tip}
+              <span className="text-osrs-text-dim/60"> (+{improvement.headroom} possible)</span>
+            </p>
+          </div>
+        )}
 
         {/* Next Rank Progress */}
         {nextRank && (
@@ -62,8 +98,8 @@ export function GielinorScoreCard({ score, playerName }: GielinorScoreCardProps)
               <span>{(nextRank.min - score.total).toLocaleString()} pts to go</span>
             </div>
             <ProgressBar
-              value={score.total}
-              max={nextRank.min}
+              value={score.total - currentRankMin}
+              max={nextRank.min - currentRankMin}
               showText={false}
               size="sm"
               color="bg-osrs-gold"
@@ -87,15 +123,17 @@ function ScoreRow({
   value,
   max,
   color,
+  highlight,
 }: {
   label: string;
   value: number;
   max: number;
   color: string;
+  highlight?: boolean;
 }) {
   return (
-    <div className="flex items-center gap-3">
-      <span className="text-xs text-osrs-text-dim w-20">{label}</span>
+    <div className={`flex items-center gap-3 ${highlight ? "rounded px-1 -mx-1 bg-osrs-gold/5" : ""}`}>
+      <span className={`text-xs w-20 ${highlight ? "text-osrs-gold font-medium" : "text-osrs-text-dim"}`}>{label}</span>
       <div className="flex-1">
         <ProgressBar value={value} max={max} showText={false} size="sm" color={color} />
       </div>

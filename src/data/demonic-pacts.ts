@@ -423,7 +423,7 @@ export const demonicPactsLeague: LeagueData = {
       { id: "task-m-10", name: "Mastering Mixology", description: "Complete 10 rounds of Mastering Mixology", category: "Herblore", skills: ["Herblore"], region: "varlamore" },
     ]),
     // Hard Tasks
-    ...generateTasks("hard", 80, [
+    ...generateTasks("hard", 50, [
       { id: "task-h-1", name: "Vardorvis Down", description: "Defeat Vardorvis", category: "Combat", region: "varlamore" },
       { id: "task-h-2", name: "100 Quest Points", description: "Earn 100 quest points", category: "Quests" },
       { id: "task-h-3", name: "Fight Caves Victor", description: "Complete the TzHaar Fight Caves", category: "Combat", region: "karamja" },
@@ -434,7 +434,7 @@ export const demonicPactsLeague: LeagueData = {
       { id: "task-h-8", name: "Hydra Slayer", description: "Defeat the Alchemical Hydra", category: "Combat", skills: ["Slayer"], region: "kebos" },
     ]),
     // Elite Tasks
-    ...generateTasks("elite", 200, [
+    ...generateTasks("elite", 100, [
       { id: "task-el-1", name: "Theatre Cleared", description: "Complete the Theatre of Blood", category: "Combat", region: "morytania" },
       { id: "task-el-2", name: "Chambers Raider", description: "Complete the Chambers of Xeric", category: "Combat", region: "kebos" },
       { id: "task-el-3", name: "Colosseum Champion", description: "Complete the Fortis Colosseum", category: "Combat", region: "varlamore" },
@@ -443,7 +443,7 @@ export const demonicPactsLeague: LeagueData = {
       { id: "task-el-6", name: "Corrupted Clear", description: "Complete the Corrupted Gauntlet", category: "Combat", region: "tirannwn" },
     ]),
     // Master Tasks
-    ...generateTasks("master", 500, [
+    ...generateTasks("master", 200, [
       { id: "task-ma-1", name: "Infernal Cape", description: "Complete the Inferno", category: "Combat", region: "karamja" },
       { id: "task-ma-2", name: "ToA Expert", description: "Complete Tombs of Amascut at 500+ invocation", category: "Combat", region: "desert" },
       { id: "task-ma-3", name: "Echo Slayer", description: "Defeat an Echo boss", category: "Combat" },

@@ -2,15 +2,15 @@
  * Player Scoring System — "Gielinor Score" (GS)
  *
  * Inspired by Raider.io for WoW, this calculates a composite score
- * for a player's league performance based on multiple dimensions:
+ * for a player's league build quality across multiple dimensions:
  *
- * - Task Score: weighted by difficulty (master tasks worth more)
- * - Speed Score: how quickly tasks were completed (time-weighted)
- * - Build Score: synergy quality of chosen relics + pacts
- * - Completion Score: breadth across categories
- * - Risk Score: bonus for running high-penalty pact combinations
+ * - Task Score (0-1500): weighted by difficulty using OSRS point ratios
+ * - Completion Score (0-500): breadth across task categories
+ * - Build Score (0-500): synergy quality of chosen relics + pacts
+ * - Risk Score (0-500): bonus for running high-penalty pact combinations
  *
  * Scores are normalized to a 0-3000 scale, similar to M+ scores.
+ * Key design principle from Raider.io: score never decreases.
  */
 
 import { LeagueBuild, LeagueData, Pact, Relic } from "@/types/league";
@@ -24,7 +24,6 @@ export interface GielinorScore {
     risk: number;
   };
   rank: ScoreRank;
-  percentile: number;
 }
 
 export type ScoreRank =
@@ -63,8 +62,8 @@ export function calculateGielinorScore(
   build: LeagueBuild,
   league: LeagueData
 ): GielinorScore {
-  // Task Score (0-1500): weighted by difficulty
-  const difficultyWeights = { easy: 1, medium: 3, hard: 8, elite: 20, master: 50 };
+  // Task Score (0-1500): weighted by difficulty (aligned to OSRS point ratios)
+  const difficultyWeights = { easy: 1, medium: 3, hard: 5, elite: 10, master: 20 };
   const maxTaskScore = league.tasks.reduce(
     (sum, t) => sum + (difficultyWeights[t.difficulty] || 1),
     0
@@ -97,9 +96,6 @@ export function calculateGielinorScore(
   const total = taskScore + completionScore + buildScore + riskScore;
   const { rank } = getRankInfo(total);
 
-  // Simulate percentile (in production this would come from a real leaderboard)
-  const percentile = Math.min(99.9, Math.max(0.1, (total / 3000) * 100));
-
   return {
     total,
     breakdown: {
@@ -109,7 +105,6 @@ export function calculateGielinorScore(
       risk: riskScore,
     },
     rank,
-    percentile,
   };
 }
 
