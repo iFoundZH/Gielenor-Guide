@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "sync-wiki": "npx tsx src/lib/wiki-sync.ts"
+    "sync-wiki": "npx tsx src/lib/wiki-sync.ts",
+    "test": "npx playwright test",
+    "test:ui": "npx playwright test --ui"
   },
   "dependencies": {
     "@tailwindcss/postcss": "^4.2.2",
@@ -19,5 +21,8 @@
     "react-dom": "^19.2.4",
     "tailwindcss": "^4.2.2",
     "typescript": "^6.0.2"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.58.2"
   }
 }

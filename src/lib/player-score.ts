@@ -119,18 +119,38 @@ function calculateBuildSynergy(relics: Relic[], pacts: Pact[]): number {
   // Base score for having relics selected
   score += relics.length * 40;
 
-  // Synergy bonuses
   const relicIds = new Set(relics.map((r) => r.id));
   const pactIds = new Set(pacts.map((p) => p.id));
 
-  // Known strong combos
-  if (relicIds.has("relic-t1-1") && pactIds.has("pact-gathering-fury")) score += 60;
-  if (relicIds.has("relic-t2-3") && pactIds.has("pact-iron-will")) score += 80;
-  if (relicIds.has("relic-t3-2") && pactIds.has("pact-ranged-fury")) score += 70;
-  if (relicIds.has("relic-t3-2") && pactIds.has("pact-magic-surge")) score += 70;
-  if (relicIds.has("relic-t4-1") && pacts.length >= 3) score += 50;
-  if (relicIds.has("relic-t5-1") && pactIds.has("pact-glass-cannon")) score += 60;
-  if (relicIds.has("relic-t2-1") && relicIds.has("relic-t1-1")) score += 40;
+  // Demonic Pacts synergies
+  // Endless Harvest + Woodsman: gathering auto-banks + instant fletching/doubled hunter
+  if (relicIds.has("relic-t1-1") && relicIds.has("relic-t2-1")) score += 60;
+  // Evil Eye (boss teleports) + any combat pact
+  if (relicIds.has("relic-t3-1") && pacts.some((p) => p.category === "combat")) score += 50;
+  // Culling Spree (slayer relic) + Melee Might or Ranged Fury or Magic Surge
+  if (relicIds.has("relic-t6-1") && (pactIds.has("pact-melee-might") || pactIds.has("pact-ranged-fury") || pactIds.has("pact-magic-surge"))) score += 70;
+  // Minion + Glass Cannon: companion deals damage while you're fragile
+  if (relicIds.has("relic-t8-1") && pactIds.has("pact-glass-cannon")) score += 80;
+  // Minion + Vampiric Touch: companion attacks while you lifesteal
+  if (relicIds.has("relic-t8-1") && pactIds.has("pact-vampiric-touch")) score += 60;
+  // Abundance (+10 skill boost) + any T2+ pact: strong early-game synergy
+  if (relicIds.has("relic-t1-3") && pacts.length >= 2) score += 50;
+
+  // Raging Echoes synergies
+  // Endless Harvest + Infernal Gathering: auto-bank + auto-process
+  if (relicIds.has("re-t1-2") && relicIds.has("re-t3-2")) score += 70;
+  // Knife's Edge (3x dmg at 10hp) + Berserker (dmg scales with missing hp)
+  if (relicIds.has("re-t3-3") && relicIds.has("re-t6-2")) score += 80;
+  // Weapon Specialist (fast attacks) + any combat mastery
+  if (relicIds.has("re-t6-1") && pacts.some((p) => p.category === "combat")) score += 60;
+  // Trickster + Dodgy Dealings: thieving synergy
+  if (relicIds.has("re-t1-1") && relicIds.has("re-t8-3")) score += 70;
+  // Echo Augmentation + Treasure Seeker: boss loot synergy
+  if (relicIds.has("re-t7-1") && relicIds.has("re-t7-2")) score += 0; // same tier, can't pick both
+  // Last Recall + Soul Stealer: teleport-kill-return cycle
+  if (relicIds.has("re-t5-2") && relicIds.has("re-t4-2")) score += 60;
+  // Production Prodigy + Pocket Crafter: production everywhere
+  if (relicIds.has("re-t1-3") && relicIds.has("re-t7-3")) score += 50;
 
   return Math.min(500, score);
 }
@@ -145,10 +165,14 @@ function calculateRiskScore(pacts: Pact[]): number {
   score += pacts.filter((p) => p.tier >= 3).length * 80;
   score += pacts.filter((p) => p.tier >= 2).length * 40;
 
-  // Specific dangerous combos
+  // Demonic Pacts dangerous combos
   const pactIds = new Set(pacts.map((p) => p.id));
-  if (pactIds.has("pact-glass-cannon") && pactIds.has("pact-risk-reward")) score += 100;
-  if (pactIds.has("pact-chaos-loot")) score += 60;
+  // Glass Cannon (increased damage taken) + Berserker's Oath (no protection prayers) = extreme risk
+  if (pactIds.has("pact-glass-cannon") && pactIds.has("pact-berserker")) score += 100;
+  // Glass Cannon + any combat style pact = high risk, high reward
+  if (pactIds.has("pact-glass-cannon") && (pactIds.has("pact-melee-might") || pactIds.has("pact-ranged-fury") || pactIds.has("pact-magic-surge"))) score += 60;
+  // Vampiric Touch + Berserker's Oath = lifesteal without prayers
+  if (pactIds.has("pact-vampiric-touch") && pactIds.has("pact-berserker")) score += 70;
 
   return Math.min(500, score);
 }

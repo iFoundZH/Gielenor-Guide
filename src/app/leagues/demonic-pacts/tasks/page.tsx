@@ -16,7 +16,7 @@ const difficultyColors: Record<TaskDifficulty, "green" | "blue" | "gold" | "purp
   master: "red",
 };
 
-const STORAGE_KEY = "gielinor-completed-tasks";
+const STORAGE_KEY = "gielinor-dp-tasks";
 
 export default function TaskTracker() {
   const league = demonicPactsLeague;

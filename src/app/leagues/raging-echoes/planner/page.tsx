@@ -10,8 +10,18 @@ import { ProgressBar } from "@/components/ui/ProgressBar";
 import { encodeBuild, decodeBuild } from "@/lib/build-storage";
 import { calculateGielinorScore } from "@/lib/player-score";
 import { GielinorScoreCard } from "@/components/league/GielinorScoreCard";
+import { BuildAnalysisPanel } from "@/components/league/BuildAnalysisPanel";
+import { analyzeBuild } from "@/lib/build-analysis";
 import type { LeagueBuild, AccountType } from "@/types/league";
 import Link from "next/link";
+
+const accountTypes: { value: AccountType; label: string }[] = [
+  { value: "ironman", label: "Ironman (Default)" },
+  { value: "main", label: "Main" },
+  { value: "hardcore", label: "Hardcore" },
+  { value: "ultimate", label: "Ultimate" },
+  { value: "group", label: "Group" },
+];
 
 export default function RagingEchoesPlanner() {
   const league = ragingEchoesLeague;
@@ -74,13 +84,18 @@ export default function RagingEchoesPlanner() {
   const allRelics = useMemo(() => league.relicTiers.flatMap((t) => t.relics), [league.relicTiers]);
   const selectedRelics = useMemo(() => allRelics.filter((r) => build.relics.includes(r.id)), [build.relics, allRelics]);
   const gielinorScore = useMemo(() => calculateGielinorScore(build, league), [build, league]);
+  const buildAnalysis = useMemo(() => analyzeBuild(build, league), [build, league]);
 
-  const handleShare = () => {
+  const handleShare = async () => {
     const encoded = encodeBuild(build);
     const url = `${window.location.origin}${window.location.pathname}?build=${encoded}`;
     setShareUrl(url);
-    navigator.clipboard.writeText(url);
-    setCopied(true);
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+    } catch {
+      setCopied(false);
+    }
     setTimeout(() => setCopied(false), 2000);
   };
 
@@ -119,6 +134,15 @@ export default function RagingEchoesPlanner() {
                   onChange={(e) => setBuild((prev) => ({ ...prev, name: e.target.value }))}
                   className="w-full bg-osrs-darker border border-osrs-border rounded-lg px-3 py-2 text-sm text-osrs-text focus:border-osrs-gold focus:outline-none"
                 />
+              </div>
+              <div>
+                <label className="block text-xs text-osrs-text-dim mb-1">Account Type</label>
+                <select value={build.accountType}
+                  onChange={(e) => setBuild((prev) => ({ ...prev, accountType: e.target.value as AccountType }))}
+                  className="bg-osrs-darker border border-osrs-border rounded-lg px-3 py-2 text-sm text-osrs-text focus:border-osrs-gold focus:outline-none"
+                >
+                  {accountTypes.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
+                </select>
               </div>
               <div className="flex items-end gap-2">
                 <button onClick={handleShare} className="px-4 py-2 bg-osrs-gold text-osrs-darker rounded-lg text-sm font-bold hover:bg-osrs-gold/90 transition-all">
@@ -172,6 +196,9 @@ export default function RagingEchoesPlanner() {
               rows={4}
             />
           </Card>
+
+          {/* Build Analysis */}
+          <BuildAnalysisPanel analysis={buildAnalysis} />
         </div>
 
         {/* Sidebar */}

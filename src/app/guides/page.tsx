@@ -25,6 +25,22 @@ const guideCategories = [
         badgeVariant: "gold" as const,
         status: "live",
       },
+      {
+        title: "Raging Echoes League",
+        description: "Complete guide to the Raging Echoes League — echo bosses, 8 relic tiers, and combat masteries.",
+        href: "/leagues/raging-echoes",
+        badge: "Previous",
+        badgeVariant: "purple" as const,
+        status: "live",
+      },
+      {
+        title: "Raging Echoes Planner",
+        description: "Plan your relic choices across all 8 tiers for the Raging Echoes League.",
+        href: "/leagues/raging-echoes/planner",
+        badge: "Interactive",
+        badgeVariant: "gold" as const,
+        status: "live",
+      },
     ],
   },
   {
@@ -150,8 +166,8 @@ export default function GuidesPage() {
               {category.title}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {category.guides.map((guide) => (
-                <Link key={guide.title} href={guide.href}>
+              {category.guides.map((guide) => {
+                const content = (
                   <Card
                     hover={guide.status === "live"}
                     className={`h-full ${guide.status === "upcoming" ? "opacity-60" : ""}`}
@@ -162,8 +178,13 @@ export default function GuidesPage() {
                     </div>
                     <p className="text-sm text-osrs-text-dim">{guide.description}</p>
                   </Card>
-                </Link>
-              ))}
+                );
+                return guide.status === "live" ? (
+                  <Link key={guide.title} href={guide.href}>{content}</Link>
+                ) : (
+                  <div key={guide.title} className="cursor-not-allowed">{content}</div>
+                );
+              })}
             </div>
           </div>
         ))}

@@ -3,11 +3,21 @@ import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { demonicPactsLeague } from "@/data/demonic-pacts";
 
+function getLeagueStatus(startDate: string, endDate: string): { label: string; variant: "red" | "green" | "gold" } {
+  const now = new Date();
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  if (now < start) return { label: `${demonicPactsLeague.name} — Coming Soon`, variant: "red" };
+  if (now <= end) return { label: `${demonicPactsLeague.name} — Live Now`, variant: "green" };
+  return { label: `${demonicPactsLeague.name} — Ended`, variant: "gold" };
+}
+
 export default function HomePage() {
   const league = demonicPactsLeague;
   const totalTasks = league.tasks.length;
   const totalRelics = league.relicTiers.flatMap((t) => t.relics).length;
   const totalPacts = league.pacts.length;
+  const leagueStatus = getLeagueStatus(league.startDate, league.endDate);
 
   return (
     <div>
@@ -21,7 +31,7 @@ export default function HomePage() {
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-20 sm:py-32">
           <div className="text-center max-w-3xl mx-auto">
-            <Badge variant="red" size="md">Demonic Pacts League — Coming Soon</Badge>
+            <Badge variant={leagueStatus.variant} size="md">{leagueStatus.label}</Badge>
             <h1
               className="mt-6 text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight"
               style={{ fontFamily: "var(--font-runescape)" }}

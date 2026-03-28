@@ -11,6 +11,8 @@ import { ProgressBar } from "@/components/ui/ProgressBar";
 import { encodeBuild, decodeBuild } from "@/lib/build-storage";
 import { calculateGielinorScore } from "@/lib/player-score";
 import { GielinorScoreCard } from "@/components/league/GielinorScoreCard";
+import { BuildAnalysisPanel } from "@/components/league/BuildAnalysisPanel";
+import { analyzeBuild } from "@/lib/build-analysis";
 import type { LeagueBuild, AccountType } from "@/types/league";
 import Link from "next/link";
 
@@ -95,13 +97,18 @@ export default function BuildPlanner() {
   const selectedRelics = useMemo(() => allRelics.filter((r) => build.relics.includes(r.id)), [build.relics, allRelics]);
   const selectedPacts = useMemo(() => league.pacts.filter((p) => build.pacts.includes(p.id)), [build.pacts, league.pacts]);
   const gielinorScore = useMemo(() => calculateGielinorScore(build, league), [build, league]);
+  const buildAnalysis = useMemo(() => analyzeBuild(build, league), [build, league]);
 
-  const handleShare = () => {
+  const handleShare = async () => {
     const encoded = encodeBuild(build);
     const url = `${window.location.origin}${window.location.pathname}?build=${encoded}`;
     setShareUrl(url);
-    navigator.clipboard.writeText(url);
-    setCopied(true);
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+    } catch {
+      setCopied(false);
+    }
     setTimeout(() => setCopied(false), 2000);
   };
 
@@ -221,6 +228,9 @@ export default function BuildPlanner() {
               rows={4}
             />
           </Card>
+
+          {/* Build Analysis */}
+          <BuildAnalysisPanel analysis={buildAnalysis} />
         </div>
 
         {/* Sidebar */}
