@@ -1,0 +1,19 @@
+interface CardProps {
+  children: React.ReactNode;
+  className?: string;
+  glow?: "gold" | "red" | "none";
+  hover?: boolean;
+}
+
+export function Card({ children, className = "", glow = "none", hover = false }: CardProps) {
+  const glowClass = glow === "gold" ? "border-glow-gold" : glow === "red" ? "border-glow-red" : "";
+  const hoverClass = hover ? "card-hover cursor-pointer" : "";
+
+  return (
+    <div
+      className={`bg-osrs-panel border border-osrs-border rounded-xl p-5 ${glowClass} ${hoverClass} ${className}`}
+    >
+      {children}
+    </div>
+  );
+}
