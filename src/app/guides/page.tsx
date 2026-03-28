@@ -15,7 +15,6 @@ const guideCategories = [
         href: "/leagues/demonic-pacts",
         badge: "Current",
         badgeVariant: "red" as const,
-        status: "live",
       },
       {
         title: "Build Planner",
@@ -23,7 +22,20 @@ const guideCategories = [
         href: "/leagues/demonic-pacts/planner",
         badge: "Interactive",
         badgeVariant: "gold" as const,
-        status: "live",
+      },
+      {
+        title: "Strategy Guide",
+        description: "Optimized strategies for Speedrunner, PvM, Completionist, and Ironman playstyles.",
+        href: "/leagues/demonic-pacts/guide",
+        badge: "Strategies",
+        badgeVariant: "blue" as const,
+      },
+      {
+        title: "Task Tracker",
+        description: "Track your task completion, filter by difficulty and category, and monitor reward progress.",
+        href: "/leagues/demonic-pacts/tasks",
+        badge: "Track Progress",
+        badgeVariant: "green" as const,
       },
       {
         title: "Raging Echoes League",
@@ -31,7 +43,6 @@ const guideCategories = [
         href: "/leagues/raging-echoes",
         badge: "Previous",
         badgeVariant: "purple" as const,
-        status: "live",
       },
       {
         title: "Raging Echoes Planner",
@@ -39,97 +50,6 @@ const guideCategories = [
         href: "/leagues/raging-echoes/planner",
         badge: "Interactive",
         badgeVariant: "gold" as const,
-        status: "live",
-      },
-    ],
-  },
-  {
-    title: "Account Type Guides",
-    icon: "⚔️",
-    guides: [
-      {
-        title: "Main Account Progression",
-        description: "Optimal progression guide for main accounts. Efficient training methods, money making, and boss progression.",
-        href: "#",
-        badge: "Coming Soon",
-        badgeVariant: "blue" as const,
-        status: "upcoming",
-      },
-      {
-        title: "Ironman Guide",
-        description: "Self-sufficient ironman progression from Tutorial Island to end-game bossing.",
-        href: "#",
-        badge: "Coming Soon",
-        badgeVariant: "blue" as const,
-        status: "upcoming",
-      },
-      {
-        title: "Hardcore Ironman",
-        description: "Safe progression routes for HCIM. Know what's dangerous and what's safe at every stage.",
-        href: "#",
-        badge: "Coming Soon",
-        badgeVariant: "purple" as const,
-        status: "upcoming",
-      },
-      {
-        title: "Ultimate Ironman",
-        description: "Inventory management, storage solutions, and progression for the ultimate challenge.",
-        href: "#",
-        badge: "Coming Soon",
-        badgeVariant: "purple" as const,
-        status: "upcoming",
-      },
-      {
-        title: "Group Ironman",
-        description: "Team coordination strategies, task splitting, and shared progression guides.",
-        href: "#",
-        badge: "Coming Soon",
-        badgeVariant: "blue" as const,
-        status: "upcoming",
-      },
-    ],
-  },
-  {
-    title: "PvM Guides",
-    icon: "🗡️",
-    guides: [
-      {
-        title: "Boss Progression",
-        description: "Recommended boss order from early game to end-game. Gear requirements and strategy for each boss.",
-        href: "#",
-        badge: "Coming Soon",
-        badgeVariant: "red" as const,
-        status: "upcoming",
-      },
-      {
-        title: "Raids Guide",
-        description: "Chambers of Xeric, Theatre of Blood, and Tombs of Amascut guides with role breakdowns.",
-        href: "#",
-        badge: "Coming Soon",
-        badgeVariant: "red" as const,
-        status: "upcoming",
-      },
-    ],
-  },
-  {
-    title: "Skilling Guides",
-    icon: "📊",
-    guides: [
-      {
-        title: "Efficient Skilling",
-        description: "Fastest training methods for each skill with cost analysis and alternatives.",
-        href: "#",
-        badge: "Coming Soon",
-        badgeVariant: "green" as const,
-        status: "upcoming",
-      },
-      {
-        title: "Money Making",
-        description: "Best money making methods at every stage of the game, sorted by requirements and GP/hr.",
-        href: "#",
-        badge: "Coming Soon",
-        badgeVariant: "gold" as const,
-        status: "upcoming",
       },
     ],
   },
@@ -166,25 +86,17 @@ export default function GuidesPage() {
               {category.title}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {category.guides.map((guide) => {
-                const content = (
-                  <Card
-                    hover={guide.status === "live"}
-                    className={`h-full ${guide.status === "upcoming" ? "opacity-60" : ""}`}
-                  >
+              {category.guides.map((guide) => (
+                <Link key={guide.title} href={guide.href}>
+                  <Card hover className="h-full">
                     <div className="flex items-center gap-2 mb-2">
                       <h3 className="font-bold text-osrs-text">{guide.title}</h3>
                       <Badge variant={guide.badgeVariant}>{guide.badge}</Badge>
                     </div>
                     <p className="text-sm text-osrs-text-dim">{guide.description}</p>
                   </Card>
-                );
-                return guide.status === "live" ? (
-                  <Link key={guide.title} href={guide.href}>{content}</Link>
-                ) : (
-                  <div key={guide.title} className="cursor-not-allowed">{content}</div>
-                );
-              })}
+                </Link>
+              ))}
             </div>
           </div>
         ))}

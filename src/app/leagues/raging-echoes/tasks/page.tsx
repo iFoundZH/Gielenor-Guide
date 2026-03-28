@@ -12,6 +12,12 @@ const difficultyColors: Record<TaskDifficulty, "green" | "blue" | "gold" | "purp
   easy: "green", medium: "blue", hard: "gold", elite: "purple", master: "red",
 };
 
+const difficultyOrder: Record<TaskDifficulty, number> = {
+  easy: 1, medium: 2, hard: 3, elite: 4, master: 5,
+};
+
+type SortMode = "default" | "points-desc" | "points-asc" | "difficulty";
+
 export default function RagingEchoesTaskTracker() {
   const league = ragingEchoesLeague;
   const [completed, setCompleted] = useState<Set<string>>(new Set());
@@ -19,6 +25,7 @@ export default function RagingEchoesTaskTracker() {
   const [filterCategory, setFilterCategory] = useState<string>("all");
   const [search, setSearch] = useState("");
   const [showCompleted, setShowCompleted] = useState(true);
+  const [sortMode, setSortMode] = useState<SortMode>("default");
 
   useEffect(() => {
     const saved = localStorage.getItem("gielinor-re-tasks");
@@ -40,14 +47,20 @@ export default function RagingEchoesTaskTracker() {
   const categories = useMemo(() => Array.from(new Set(league.tasks.map((t) => t.category))).sort(), [league.tasks]);
 
   const filteredTasks = useMemo(() => {
-    return league.tasks.filter((task) => {
+    let tasks = league.tasks.filter((task) => {
       if (filterDifficulty !== "all" && task.difficulty !== filterDifficulty) return false;
       if (filterCategory !== "all" && task.category !== filterCategory) return false;
       if (!showCompleted && completed.has(task.id)) return false;
       if (search && !task.name.toLowerCase().includes(search.toLowerCase()) && !task.description.toLowerCase().includes(search.toLowerCase())) return false;
       return true;
     });
-  }, [league.tasks, filterDifficulty, filterCategory, showCompleted, search, completed]);
+
+    if (sortMode === "points-desc") tasks = [...tasks].sort((a, b) => b.points - a.points);
+    else if (sortMode === "points-asc") tasks = [...tasks].sort((a, b) => a.points - b.points);
+    else if (sortMode === "difficulty") tasks = [...tasks].sort((a, b) => difficultyOrder[a.difficulty] - difficultyOrder[b.difficulty]);
+
+    return tasks;
+  }, [league.tasks, filterDifficulty, filterCategory, showCompleted, search, completed, sortMode]);
 
   const totalPoints = league.tasks.reduce((sum, t) => sum + t.points, 0);
   const earnedPoints = league.tasks.filter((t) => completed.has(t.id)).reduce((sum, t) => sum + t.points, 0);
@@ -64,12 +77,17 @@ export default function RagingEchoesTaskTracker() {
         <span className="text-osrs-gold">Task Tracker</span>
       </div>
 
+      <div className="mb-4 flex items-center gap-2 px-4 py-3 rounded-lg bg-osrs-gold/10 border border-osrs-gold/30">
+        <span className="text-osrs-gold text-sm font-bold">League Ended</span>
+        <span className="text-osrs-text-dim text-sm">— This league ended on {league.endDate}. Content is preserved for reference.</span>
+      </div>
+
       <h1 className="text-3xl font-bold text-osrs-gold text-glow-gold mb-2" style={{ fontFamily: "var(--font-runescape)" }}>
         Raging Echoes Task Tracker
       </h1>
       <p className="text-osrs-text-dim mb-8">Track progress across {league.tasks.length} tasks. Click to mark complete.</p>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
         <Card glow="gold">
           <div className="flex items-center justify-between mb-3">
             <h3 className="font-bold text-osrs-text">Overall Progress</h3>
@@ -101,18 +119,55 @@ export default function RagingEchoesTaskTracker() {
         </Card>
       </div>
 
+      {/* Reward Track */}
       <Card className="mb-6">
-        <div className="flex flex-col sm:flex-row gap-3">
-          <div className="flex-1">
-            <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search tasks..." className="w-full bg-osrs-darker border border-osrs-border rounded-lg px-3 py-2 text-sm text-osrs-text focus:border-osrs-gold focus:outline-none" />
+        <h3 className="font-bold text-osrs-text mb-3 text-sm">Reward Progress</h3>
+        <div className="relative">
+          <div className="flex items-center gap-0">
+            {league.rewardTiers.map((tier, i) => {
+              const isUnlocked = earnedPoints >= tier.pointsRequired;
+              const prevPoints = i > 0 ? league.rewardTiers[i - 1].pointsRequired : 0;
+              const segmentProgress = Math.min(1, Math.max(0, (earnedPoints - prevPoints) / (tier.pointsRequired - prevPoints)));
+              return (
+                <div key={tier.name} className="flex-1 flex items-center">
+                  <div className="flex-1 h-1.5 rounded-full bg-osrs-darker relative overflow-hidden">
+                    <div className="absolute inset-y-0 left-0 rounded-full transition-all"
+                      style={{ width: `${(isUnlocked ? 100 : segmentProgress * 100)}%`, backgroundColor: tier.color }} />
+                  </div>
+                  <div className="flex flex-col items-center mx-1" title={`${tier.name}: ${tier.pointsRequired.toLocaleString()} pts`}>
+                    <div className={`w-3 h-3 rounded-full border-2 ${isUnlocked ? "border-transparent" : "border-osrs-border bg-osrs-darker"}`}
+                      style={isUnlocked ? { backgroundColor: tier.color, borderColor: tier.color } : {}} />
+                    <span className="text-[9px] text-osrs-text-dim mt-0.5 hidden sm:block">{tier.name}</span>
+                  </div>
+                </div>
+              );
+            })}
           </div>
-          <select value={filterDifficulty} onChange={(e) => setFilterDifficulty(e.target.value as TaskDifficulty | "all")} className="bg-osrs-darker border border-osrs-border rounded-lg px-3 py-2 text-sm text-osrs-text">
+        </div>
+      </Card>
+
+      <Card className="mb-6">
+        <div className="flex flex-col sm:flex-row gap-3 flex-wrap">
+          <div className="flex-1">
+            <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search tasks..."
+              className="w-full bg-osrs-darker border border-osrs-border rounded-lg px-3 py-2 text-sm text-osrs-text focus:border-osrs-gold focus:outline-none" />
+          </div>
+          <select value={filterDifficulty} onChange={(e) => setFilterDifficulty(e.target.value as TaskDifficulty | "all")}
+            className="bg-osrs-darker border border-osrs-border rounded-lg px-3 py-2 text-sm text-osrs-text">
             <option value="all">All Difficulties</option>
             <option value="easy">Easy</option><option value="medium">Medium</option><option value="hard">Hard</option><option value="elite">Elite</option><option value="master">Master</option>
           </select>
-          <select value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)} className="bg-osrs-darker border border-osrs-border rounded-lg px-3 py-2 text-sm text-osrs-text">
+          <select value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)}
+            className="bg-osrs-darker border border-osrs-border rounded-lg px-3 py-2 text-sm text-osrs-text">
             <option value="all">All Categories</option>
             {categories.map((cat) => <option key={cat} value={cat}>{cat}</option>)}
+          </select>
+          <select value={sortMode} onChange={(e) => setSortMode(e.target.value as SortMode)}
+            className="bg-osrs-darker border border-osrs-border rounded-lg px-3 py-2 text-sm text-osrs-text">
+            <option value="default">Sort: Default</option>
+            <option value="points-desc">Points: High to Low</option>
+            <option value="points-asc">Points: Low to High</option>
+            <option value="difficulty">Difficulty</option>
           </select>
           <label className="flex items-center gap-2 text-sm text-osrs-text-dim cursor-pointer whitespace-nowrap">
             <input type="checkbox" checked={showCompleted} onChange={(e) => setShowCompleted(e.target.checked)} className="rounded" />
@@ -130,7 +185,7 @@ export default function RagingEchoesTaskTracker() {
                 {isDone && <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
               </div>
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   <span className={`font-medium text-sm ${isDone ? "line-through text-osrs-text-dim" : "text-osrs-text"}`}>{task.name}</span>
                   <Badge variant={difficultyColors[task.difficulty]}>{task.difficulty}</Badge>
                   <Badge variant="default">{task.category}</Badge>

@@ -71,12 +71,10 @@ export function GielinorScoreCard({ score, playerName }: GielinorScoreCardProps)
           </div>
         )}
 
-        {/* Percentile */}
+        {/* Score context */}
         <div className="mt-3 text-center">
           <span className="text-xs text-osrs-text-dim">
-            Top <span className="text-osrs-gold font-bold">
-              {(100 - score.percentile).toFixed(1)}%
-            </span> of players
+            {score.total} / 3,000 possible points
           </span>
         </div>
       </div>

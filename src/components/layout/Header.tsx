@@ -8,6 +8,7 @@ const navItems = [
   {
     label: "Demonic Pacts",
     href: "/leagues/demonic-pacts",
+    status: "live" as const,
     children: [
       { label: "Overview", href: "/leagues/demonic-pacts" },
       { label: "Build Planner", href: "/leagues/demonic-pacts/planner" },
@@ -18,6 +19,7 @@ const navItems = [
   {
     label: "Raging Echoes",
     href: "/leagues/raging-echoes",
+    status: "ended" as const,
     children: [
       { label: "Overview", href: "/leagues/raging-echoes" },
       { label: "Build Planner", href: "/leagues/raging-echoes/planner" },
@@ -61,11 +63,17 @@ export function Header() {
               >
                 <Link
                   href={item.href}
-                  className="px-4 py-2 rounded-lg text-sm font-medium text-osrs-text-dim hover:text-osrs-gold hover:bg-osrs-panel transition-all"
+                  className="px-4 py-2 rounded-lg text-sm font-medium text-osrs-text-dim hover:text-osrs-gold hover:bg-osrs-panel transition-all flex items-center gap-1.5"
                 >
                   {item.label}
+                  {"status" in item && item.status === "live" && (
+                    <span className="w-1.5 h-1.5 rounded-full bg-osrs-green animate-pulse" />
+                  )}
+                  {"status" in item && item.status === "ended" && (
+                    <span className="text-[10px] text-osrs-text-dim opacity-60">ended</span>
+                  )}
                   {item.children && (
-                    <svg className="inline-block ml-1 w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg className="inline-block w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
                   )}

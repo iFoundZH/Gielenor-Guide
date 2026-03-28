@@ -68,8 +68,16 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* What is a League? */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 -mt-4 mb-4 relative z-10">
+        <div className="text-center text-sm text-osrs-text-dim max-w-2xl mx-auto">
+          <span className="text-osrs-gold font-bold">New to Leagues?</span> Leagues are temporary OSRS game modes with boosted XP, unique abilities called Relics, and exclusive cosmetic rewards.
+          Pick regions, choose powerful relics, and complete tasks to earn points. Plan your strategy here before launch day.
+        </div>
+      </section>
+
       {/* Featured League Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 -mt-8 relative z-10">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 -mt-0 relative z-10">
         <Card glow="red" className="bg-parchment">
           <div className="flex flex-col lg:flex-row gap-8">
             <div className="flex-1">
@@ -145,19 +153,19 @@ export default function HomePage() {
             badgeVariant="red"
           />
           <FeatureCard
-            href="/guides"
-            icon="🗡️"
-            title="Account Guides"
-            description="Guides tailored for mains, ironmen, hardcore, ultimate, and group ironmen. Level-specific recommendations."
-            badge="All Accounts"
+            href="/leagues/demonic-pacts"
+            icon="🏆"
+            title="League Overview"
+            description="Everything about the Demonic Pacts League — regions, relics, pacts, rewards, and mechanic changes."
+            badge="Reference"
             badgeVariant="purple"
           />
           <FeatureCard
-            href="/leagues/demonic-pacts"
-            icon="🏆"
-            title="Rewards"
-            description="Preview all league rewards, from Bronze to Dragon tier. Track how many points you need for your target rewards."
-            badge="Cosmetics"
+            href="/leagues/raging-echoes"
+            icon="📜"
+            title="Raging Echoes"
+            description="Browse the previous league's relics, combat masteries, and rewards. Content preserved for reference."
+            badge="Previous"
             badgeVariant="gold"
           />
         </div>

@@ -96,8 +96,8 @@ test.describe("Demonic Pacts Task Tracker", () => {
   });
 
   test("uses correct localStorage key (gielinor-dp-tasks)", async ({ page }) => {
-    // Complete a task
-    await page.locator("div.rounded-lg.border.cursor-pointer").first().click();
+    // Complete a task - target rows that have pts text (task rows)
+    await page.locator("div.rounded-lg.border.cursor-pointer:has-text('pts')").first().click();
     // Wait a moment for state to settle
     await page.waitForTimeout(500);
     const stored = await page.evaluate(() => localStorage.getItem("gielinor-dp-tasks"));

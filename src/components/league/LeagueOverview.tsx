@@ -21,6 +21,7 @@ export function LeagueOverview({ league, basePath, otherLeaguePath, otherLeagueN
   const allRelics = league.relicTiers.flatMap((t) => t.relics);
   const hasRegions = league.regions.length > 1;
   const hasMechanics = league.mechanicChanges.length > 0;
+  const isEnded = new Date() > new Date(league.endDate);
 
   const tabs = [
     { id: "overview", label: "Overview" },
@@ -40,6 +41,13 @@ export function LeagueOverview({ league, basePath, otherLeaguePath, otherLeagueN
           <span>/</span>
           <span className="text-osrs-gold">{league.name}</span>
         </div>
+
+        {isEnded && (
+          <div className="mb-4 flex items-center gap-2 px-4 py-3 rounded-lg bg-osrs-gold/10 border border-osrs-gold/30">
+            <span className="text-osrs-gold text-sm font-bold">League Ended</span>
+            <span className="text-osrs-text-dim text-sm">— This league ended on {league.endDate}. Content is preserved for reference.</span>
+          </div>
+        )}
 
         <div className="flex flex-col sm:flex-row sm:items-center gap-4">
           <div>
@@ -81,15 +89,19 @@ export function LeagueOverview({ league, basePath, otherLeaguePath, otherLeagueN
           <>
             {activeTab === "overview" && (
               <div className="space-y-8">
+                {/* Quick Facts */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+                  <StatBox label="Relic Tiers" value={league.relicTiers.length.toString()} />
+                  <StatBox label="Named Relics" value={allRelics.length.toString()} />
+                  {hasRegions && <StatBox label="Choosable Regions" value={`${league.maxRegions} of ${league.regions.filter((r) => r.type === "choosable").length}`} />}
+                  <StatBox label="Pacts" value={league.pacts.length.toString()} />
+                  <StatBox label="Tasks" value={league.tasks.length.toString()} />
+                  <StatBox label="XP Rate" value={`${league.baseXpMultiplier}x–${league.relicTiers.reduce((max, t) => { const xpEffect = t.passiveEffects.find((e) => e.includes("XP multiplier")); if (xpEffect) { const match = xpEffect.match(/(\d+)x/); if (match) return Math.max(max, parseInt(match[1])); } return max; }, league.baseXpMultiplier)}x`} />
+                </div>
+
                 <Card>
                   <h2 className="text-xl font-bold text-osrs-gold mb-4" style={{ fontFamily: "var(--font-runescape)" }}>About</h2>
-                  <p className="text-osrs-text-dim leading-relaxed mb-6">{league.description}</p>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                    <StatBox label="Relic Tiers" value={league.relicTiers.length.toString()} />
-                    <StatBox label="Named Relics" value={allRelics.length.toString()} />
-                    <StatBox label="Tasks" value={league.tasks.length.toString()} />
-                    <StatBox label="Base XP" value={`${league.baseXpMultiplier}x`} />
-                  </div>
+                  <p className="text-osrs-text-dim leading-relaxed">{league.description}</p>
                 </Card>
 
                 <Card>

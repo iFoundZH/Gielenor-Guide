@@ -18,12 +18,27 @@ const categoryColors: Record<string, "gold" | "red" | "green" | "blue" | "purple
   exploration: "green",
 };
 
+const tierRiskColors: Record<number, string> = {
+  1: "border-osrs-border",
+  2: "border-osrs-gold/50",
+  3: "border-demon-glow/50",
+};
+
+const tierRiskLabels: Record<number, { label: string; variant: "green" | "gold" | "red" }> = {
+  1: { label: "Low Risk", variant: "green" },
+  2: { label: "Medium Risk", variant: "gold" },
+  3: { label: "High Risk", variant: "red" },
+};
+
 export function PactCard({ pact, selected, onToggle }: PactCardProps) {
+  const risk = tierRiskLabels[pact.tier] || tierRiskLabels[1];
+  const riskBorder = tierRiskColors[pact.tier] || tierRiskColors[1];
+
   return (
     <Card
       hover={!!onToggle}
       glow={selected ? "red" : "none"}
-      className={`${onToggle ? "cursor-pointer" : ""} ${selected ? "ring-2 ring-demon-glow" : ""}`}
+      className={`${onToggle ? "cursor-pointer" : ""} ${selected ? "ring-2 ring-demon-glow" : riskBorder}`}
     >
       <div onClick={() => onToggle?.(pact.id)}>
         <div className="flex items-center justify-between mb-2">
@@ -34,7 +49,7 @@ export function PactCard({ pact, selected, onToggle }: PactCardProps) {
             </Badge>
           </div>
           <div className="flex items-center gap-2">
-            <Badge variant="default">Tier {pact.tier}</Badge>
+            <Badge variant={risk.variant}>{risk.label}</Badge>
             {selected && <Badge variant="red">Active</Badge>}
           </div>
         </div>

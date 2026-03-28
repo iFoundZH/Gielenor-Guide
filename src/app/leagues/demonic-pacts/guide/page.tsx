@@ -3,7 +3,10 @@
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Tabs } from "@/components/ui/Tabs";
+import { demonicPactsLeague } from "@/data/demonic-pacts";
+import { encodeBuild } from "@/lib/build-storage";
 import Link from "next/link";
+import type { LeagueBuild } from "@/types/league";
 
 const strategies = [
   {
@@ -149,6 +152,35 @@ const strategies = [
   },
 ];
 
+function buildPlannerUrl(strategy: typeof strategies[number]): string {
+  const league = demonicPactsLeague;
+  const allRelics = league.relicTiers.flatMap((t) => t.relics);
+
+  const matchedRelicIds = strategy.relics
+    .map((name) => allRelics.find((r) => r.name.toLowerCase() === name.toLowerCase())?.id)
+    .filter((id): id is string => !!id);
+
+  const matchedPactIds = strategy.pacts
+    .map((name) => league.pacts.find((p) => p.name.toLowerCase() === name.toLowerCase())?.id)
+    .filter((id): id is string => !!id);
+
+  const build: LeagueBuild = {
+    id: "",
+    name: `${strategy.name} Build`,
+    accountType: strategy.accountType === "Ironman" ? "ironman" : "main",
+    regions: [],
+    relics: matchedRelicIds,
+    pacts: matchedPactIds,
+    completedTasks: [],
+    notes: `Pre-loaded from ${strategy.name} strategy guide.`,
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+  };
+
+  const encoded = encodeBuild(build);
+  return `/leagues/demonic-pacts/planner?build=${encoded}`;
+}
+
 export default function StrategyGuide() {
   const tabs = strategies.map((s) => ({
     id: s.id,
@@ -206,7 +238,7 @@ export default function StrategyGuide() {
                     <p className="text-osrs-text-dim">{strategy.description}</p>
                   </div>
                   <Link
-                    href="/leagues/demonic-pacts/planner"
+                    href={buildPlannerUrl(strategy)}
                     className="px-4 py-2 bg-osrs-gold text-osrs-darker rounded-lg text-sm font-bold hover:bg-osrs-gold/90 transition-all whitespace-nowrap"
                   >
                     Open in Planner →

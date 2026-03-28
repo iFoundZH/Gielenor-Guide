@@ -75,10 +75,10 @@ test.describe("Build Analysis Panel", () => {
 
   test("shows pact risk assessment when pacts selected", async ({ page }) => {
     await page.locator("text=Glass Cannon").first().click();
-    const riskSection = page.locator("text=Pact Risk Assessment");
+    const riskSection = page.locator("button:has-text('Pact Risk Assessment')");
     await expect(riskSection).toBeVisible();
     await riskSection.click();
-    await expect(page.locator("text=high risk")).toBeVisible();
+    await expect(page.locator("#analysis >> text=high risk")).toBeVisible();
   });
 
   test("shows task accessibility section", async ({ page }) => {

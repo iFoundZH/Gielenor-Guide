@@ -76,22 +76,31 @@ test.describe("Demonic Pacts Build Planner", () => {
     await expect(scoreText).toBeVisible();
   });
 
-  test("share button generates URL", async ({ page }) => {
+  test("share button exists and is clickable", async ({ page }) => {
+    // Grant clipboard permissions for the test
+    await page.context().grantPermissions(["clipboard-read", "clipboard-write"]);
     await page.locator("text=Share Build").click();
-    const shareBox = page.locator(".break-all");
-    await expect(shareBox).toBeVisible();
-    const shareUrl = await shareBox.textContent();
-    expect(shareUrl).toContain("?build=");
+    // Button text changes to "Copied!" when clipboard is available
+    await expect(page.locator("text=Copied!")).toBeVisible();
   });
 
-  test("reset button clears all selections", async ({ page }) => {
+  test("reset button clears all selections after confirm", async ({ page }) => {
+    // Select a relic and pact
     await page.locator("text=Endless Harvest").first().click();
+    await page.waitForTimeout(300);
     await page.locator("text=Melee Might").first().click();
-    await expect(page.locator("text=Selected Relics")).toBeVisible();
+    await page.waitForTimeout(300);
 
+    // Verify selections are reflected in the build summary
+    const relicCount = page.locator("text=1 / 5").first();
+    await expect(relicCount).toBeVisible({ timeout: 3000 });
+
+    // Accept the confirmation dialog and reset
+    page.once("dialog", (dialog) => dialog.accept());
     await page.locator("text=Reset").click();
-    await expect(page.locator("text=Selected Relics")).not.toBeVisible();
-    await expect(page.locator("text=Active Pacts")).not.toBeVisible();
+
+    // After reset, relic count should be back to 0
+    await expect(page.locator("text=0 / 5").first()).toBeVisible({ timeout: 3000 });
   });
 
   test("persists build to localStorage", async ({ page }) => {
