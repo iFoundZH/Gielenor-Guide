@@ -3,14 +3,15 @@ import { test, expect } from "@playwright/test";
 // ─── Helper: select a relic by name ─────────────────────────────────────
 async function selectRelic(page: import("@playwright/test").Page, name: string) {
   const card = page.locator("h4").filter({ hasText: name });
-  await card.click();
+  // Use evaluate click to bypass sticky nav overlay issues
+  await card.evaluate(el => (el as HTMLElement).click());
   // Wait for the relic card to show "ring-osrs-gold" class (selected state)
   await expect(card.locator("xpath=ancestor::div[contains(@class,'bg-osrs-panel')]")).toHaveClass(/ring-osrs-gold/, { timeout: 5000 });
 }
 
 // ─── Helper: select a mastery by name ───────────────────────────────────
 async function selectMastery(page: import("@playwright/test").Page, name: string) {
-  await page.locator(`text=${name}`).first().click();
+  await page.locator(`text=${name}`).first().evaluate(el => (el as HTMLElement).click());
   // Wait for React state update to propagate
   await page.waitForTimeout(600);
 }
@@ -101,7 +102,7 @@ test.describe("RE Planner - Speedrunner Build", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/leagues/raging-echoes/planner");
     await page.evaluate(() => localStorage.clear());
-    await page.reload();
+    await page.reload({ waitUntil: "networkidle" });
   });
 
   test("select full Speedrunner build and verify analysis", async ({ page }) => {
@@ -146,7 +147,7 @@ test.describe("RE Planner - PvM Destroyer Build", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/leagues/raging-echoes/planner");
     await page.evaluate(() => localStorage.clear());
-    await page.reload();
+    await page.reload({ waitUntil: "networkidle" });
   });
 
   test("select full PvM build and verify Summoner archetype", async ({ page }) => {
@@ -198,7 +199,7 @@ test.describe("RE Planner - Completionist Build", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/leagues/raging-echoes/planner");
     await page.evaluate(() => localStorage.clear());
-    await page.reload();
+    await page.reload({ waitUntil: "networkidle" });
   });
 
   test("select full Completionist build and verify Unkillable archetype", async ({ page }) => {
@@ -263,7 +264,7 @@ test.describe("RE Planner - Missed Synergies", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/leagues/raging-echoes/planner");
     await page.evaluate(() => localStorage.clear());
-    await page.reload();
+    await page.reload({ waitUntil: "networkidle" });
   });
 
   test("Power Miner without Production Master shows missed synergy", async ({ page }) => {
@@ -303,7 +304,7 @@ test.describe("RE Planner - Edge Cases", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/leagues/raging-echoes/planner");
     await page.evaluate(() => localStorage.clear());
-    await page.reload();
+    await page.reload({ waitUntil: "networkidle" });
   });
 
   test("empty build shows Undecided archetype", async ({ page }) => {
@@ -333,7 +334,8 @@ test.describe("RE Planner - Edge Cases", () => {
     await selectRelic(page, "Power Miner");
     await expect(page.locator("text=1 / 8").first()).toBeVisible();
 
-    await selectRelic(page, "Power Miner");
+    // Click again to deselect (don't use selectRelic — it asserts selected state)
+    await page.locator("h4").filter({ hasText: "Power Miner" }).evaluate(el => (el as HTMLElement).click());
     await expect(page.locator("text=0 / 8").first()).toBeVisible();
   });
 
@@ -355,7 +357,7 @@ test.describe("RE Planner - Edge Cases", () => {
     await selectRelic(page, "Corner Cutter");
     await selectMastery(page, "Melee Mastery");
 
-    await page.reload();
+    await page.reload({ waitUntil: "networkidle" });
     await expect(page.locator("text=2 / 8").first()).toBeVisible();
   });
 
@@ -396,7 +398,7 @@ test.describe("RE Planner - Build Balance", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/leagues/raging-echoes/planner");
     await page.evaluate(() => localStorage.clear());
-    await page.reload();
+    await page.reload({ waitUntil: "networkidle" });
   });
 
   test("combat-focused build shows combat-heavy balance", async ({ page }) => {
@@ -438,7 +440,7 @@ test.describe("RE Task Tracker - Comprehensive", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/leagues/raging-echoes/tasks");
     await page.evaluate(() => localStorage.clear());
-    await page.reload();
+    await page.reload({ waitUntil: "networkidle" });
   });
 
   test("shows all difficulty levels", async ({ page }) => {
@@ -493,7 +495,7 @@ test.describe("RE Task Tracker - Comprehensive", () => {
     await page.waitForTimeout(500);
     const stored = await page.evaluate(() => localStorage.getItem("gielinor-re-tasks"));
     expect(stored).toBeTruthy();
-    await page.reload();
+    await page.reload({ waitUntil: "networkidle" });
     const firstTask = page.locator("div.rounded-lg.border.cursor-pointer").first();
     await expect(firstTask).toHaveClass(/bg-osrs-green/);
   });

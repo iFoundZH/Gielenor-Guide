@@ -91,32 +91,31 @@ function RegionCard({
   return (
     <Card
       hover={status === "available" || status === "selected"}
+      onClick={onClick}
       className={`${borderClass} ${onClick ? "cursor-pointer" : ""}`}
     >
-      <div onClick={onClick}>
-        <div className="flex items-center justify-between mb-1">
-          <h5 className="font-bold text-osrs-text text-sm">{region.name}</h5>
-          {status === "locked-in" && <Badge variant="green">Auto</Badge>}
-          {status === "selected" && <Badge variant="gold">Selected</Badge>}
-          {status === "inaccessible" && <Badge variant="red">Locked</Badge>}
-        </div>
-        <p className="text-xs text-osrs-text-dim mb-2">{region.description}</p>
-        <div className="flex flex-wrap gap-1">
-          {region.keyContent.slice(0, 4).map((content, i) => (
-            <span key={i} className="text-xs bg-osrs-darker/50 rounded px-1.5 py-0.5 text-osrs-text-dim">
-              {content}
-            </span>
-          ))}
-          {region.keyContent.length > 4 && (
-            <span className="text-xs text-osrs-text-dim">+{region.keyContent.length - 4} more</span>
-          )}
-        </div>
-        {region.echoBoss && (
-          <div className="mt-2 text-xs text-demon-ember">
-            Echo Boss: {region.echoBoss}
-          </div>
+      <div className="flex items-center justify-between mb-1">
+        <h5 className="font-bold text-osrs-text text-sm">{region.name}</h5>
+        {status === "locked-in" && <Badge variant="green">Auto</Badge>}
+        {status === "selected" && <Badge variant="gold">Selected</Badge>}
+        {status === "inaccessible" && <Badge variant="red">Locked</Badge>}
+      </div>
+      <p className="text-xs text-osrs-text-dim mb-2">{region.description}</p>
+      <div className="flex flex-wrap gap-1">
+        {region.keyContent.slice(0, 4).map((content, i) => (
+          <span key={i} className="text-xs bg-osrs-darker/50 rounded px-1.5 py-0.5 text-osrs-text-dim">
+            {content}
+          </span>
+        ))}
+        {region.keyContent.length > 4 && (
+          <span className="text-xs text-osrs-text-dim">+{region.keyContent.length - 4} more</span>
         )}
       </div>
+      {region.echoBoss && (
+        <div className="mt-2 text-xs text-demon-ember">
+          Echo Boss: {region.echoBoss}
+        </div>
+      )}
     </Card>
   );
 }

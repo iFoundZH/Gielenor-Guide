@@ -38,35 +38,33 @@ export function PactCard({ pact, selected, onToggle }: PactCardProps) {
     <Card
       hover={!!onToggle}
       glow={selected ? "red" : "none"}
+      onClick={onToggle ? () => onToggle(pact.id) : undefined}
       className={`${onToggle ? "cursor-pointer" : ""} ${selected ? "ring-2 ring-demon-glow" : riskBorder}`}
     >
-      <div onClick={() => onToggle?.(pact.id)}>
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2">
-            <h4 className="font-bold text-osrs-text">{pact.name}</h4>
-            <Badge variant={categoryColors[pact.category] || "default"}>
-              {pact.category}
-            </Badge>
-          </div>
-          <div className="flex items-center gap-2">
-            <Badge variant={risk.variant}>{risk.label}</Badge>
-            {selected && <Badge variant="red">Active</Badge>}
-          </div>
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-2">
+          <h4 className="font-bold text-osrs-text">{pact.name}</h4>
+          <Badge variant={categoryColors[pact.category] || "default"}>
+            {pact.category}
+          </Badge>
         </div>
-
-        <p className="text-sm text-osrs-text-dim mb-3">{pact.description}</p>
-
-        <div className="space-y-2">
-          <div className="flex items-start gap-2 text-sm">
-            <span className="text-osrs-green font-bold text-xs mt-0.5">BONUS</span>
-            <span className="text-osrs-green">{pact.bonus}</span>
-          </div>
-          <div className="flex items-start gap-2 text-sm">
-            <span className="text-demon-glow font-bold text-xs mt-0.5">COST</span>
-            <span className="text-demon-glow">{pact.penalty}</span>
-          </div>
+        <div className="flex items-center gap-2">
+          <Badge variant={risk.variant}>{risk.label}</Badge>
+          {selected && <Badge variant="red">Active</Badge>}
         </div>
+      </div>
 
+      <p className="text-sm text-osrs-text-dim mb-3">{pact.description}</p>
+
+      <div className="space-y-2">
+        <div className="flex items-start gap-2 text-sm">
+          <span className="text-osrs-green font-bold text-xs mt-0.5">BONUS</span>
+          <span className="text-osrs-green">{pact.bonus}</span>
+        </div>
+        <div className="flex items-start gap-2 text-sm">
+          <span className="text-demon-glow font-bold text-xs mt-0.5">COST</span>
+          <span className="text-demon-glow">{pact.penalty}</span>
+        </div>
       </div>
     </Card>
   );

@@ -3,7 +3,8 @@ import { test, expect } from "@playwright/test";
 // ─── Helper: select a relic by name ─────────────────────────────────────
 async function selectRelic(page: import("@playwright/test").Page, name: string) {
   const card = page.locator(`h4:has-text("${name}")`).first();
-  await card.click();
+  // Use evaluate click to bypass sticky nav overlay issues
+  await card.evaluate(el => (el as HTMLElement).click());
   // Wait for the relic card to show "ring-osrs-gold" class (selected state)
   await expect(card.locator("xpath=ancestor::div[contains(@class,'bg-osrs-panel')]")).toHaveClass(/ring-osrs-gold/, { timeout: 5000 });
 }
@@ -101,7 +102,7 @@ test.describe("DP Planner - Strategy Builds", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/leagues/demonic-pacts/planner");
     await page.evaluate(() => localStorage.clear());
-    await page.reload();
+    await page.reload({ waitUntil: "networkidle" });
   });
 
   test("Gathering Lord archetype with Endless Harvest + Woodsman", async ({ page }) => {
@@ -119,14 +120,14 @@ test.describe("DP Planner - Strategy Builds", () => {
   test("PvM Powerhouse archetype with Evil Eye + Culling Spree + combat pact", async ({ page }) => {
     await selectRelic(page, "Evil Eye");
     await selectRelic(page, "Culling Spree");
-    await page.locator("text=Melee Might").first().click();
+    await page.locator("text=Melee Might").first().evaluate(el => (el as HTMLElement).click());
     await expect(page.locator("text=PvM Powerhouse")).toBeVisible();
   });
 
   test("Demonlord archetype with Minion + Glass Cannon + Berserker's Oath", async ({ page }) => {
     await selectRelic(page, "Minion");
-    await page.locator("text=Glass Cannon").first().click();
-    await page.locator("text=Berserker's Oath").first().click();
+    await page.locator("text=Glass Cannon").first().evaluate(el => (el as HTMLElement).click());
+    await page.locator("text=Berserker's Oath").first().evaluate(el => (el as HTMLElement).click());
     await expect(page.locator("text=Demonlord")).toBeVisible();
   });
 
@@ -144,8 +145,8 @@ test.describe("DP Planner - Strategy Builds", () => {
   });
 
   test("Glass Cannon + Berserker's Oath triggers critical warning", async ({ page }) => {
-    await page.locator("text=Glass Cannon").first().click();
-    await page.locator("text=Berserker's Oath").first().click();
+    await page.locator("text=Glass Cannon").first().evaluate(el => (el as HTMLElement).click());
+    await page.locator("text=Berserker's Oath").first().evaluate(el => (el as HTMLElement).click());
     await page.locator("button:has-text('Warnings & Tips')").click();
     await expect(page.locator("text=Glass Cannon + Berserker")).toBeVisible();
   });
@@ -160,21 +161,21 @@ test.describe("DP Planner - Strategy Builds", () => {
 
   test("Evil Eye + combat pact triggers Boss Blitz synergy", async ({ page }) => {
     await selectRelic(page, "Evil Eye");
-    await page.locator("text=Melee Might").first().click();
+    await page.locator("text=Melee Might").first().evaluate(el => (el as HTMLElement).click());
     await page.locator("button:has-text('Active Synergies')").click();
     await expect(page.locator("text=Boss Blitz")).toBeVisible();
   });
 
   test("Culling Spree + combat pact triggers Slayer Machine synergy", async ({ page }) => {
     await selectRelic(page, "Culling Spree");
-    await page.locator("text=Melee Might").first().click();
+    await page.locator("text=Melee Might").first().evaluate(el => (el as HTMLElement).click());
     await page.locator("button:has-text('Active Synergies')").click();
     await expect(page.locator("text=Slayer Machine")).toBeVisible();
   });
 
   test("Minion + Glass Cannon triggers Glass Cannon + Minion synergy", async ({ page }) => {
     await selectRelic(page, "Minion");
-    await page.locator("text=Glass Cannon").first().click();
+    await page.locator("text=Glass Cannon").first().evaluate(el => (el as HTMLElement).click());
     await page.locator("button:has-text('Active Synergies')").click();
     await expect(page.locator("text=Glass Cannon + Minion")).toBeVisible();
   });
@@ -193,7 +194,7 @@ test.describe("DP Planner - Region Mechanics", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/leagues/demonic-pacts/planner");
     await page.evaluate(() => localStorage.clear());
-    await page.reload();
+    await page.reload({ waitUntil: "networkidle" });
   });
 
   test("Varlamore is always accessible (starting)", async ({ page }) => {
@@ -224,7 +225,7 @@ test.describe("DP Task Tracker - Comprehensive", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/leagues/demonic-pacts/tasks");
     await page.evaluate(() => localStorage.clear());
-    await page.reload();
+    await page.reload({ waitUntil: "networkidle" });
   });
 
   test("shows correct task count", async ({ page }) => {

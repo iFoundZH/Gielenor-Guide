@@ -4,7 +4,7 @@ test.describe("Demonic Pacts Build Planner", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/leagues/demonic-pacts/planner");
     await page.evaluate(() => localStorage.clear());
-    await page.reload();
+    await page.reload({ waitUntil: "networkidle" });
   });
 
   test("loads with default build state", async ({ page }) => {
@@ -40,22 +40,22 @@ test.describe("Demonic Pacts Build Planner", () => {
   });
 
   test("can select a relic", async ({ page }) => {
-    await page.locator("text=Endless Harvest").first().click();
+    await page.locator("text=Endless Harvest").first().evaluate(el => (el as HTMLElement).click());
     await expect(page.locator("text=Selected Relics")).toBeVisible();
   });
 
   test("switching relics in same tier replaces selection", async ({ page }) => {
-    await page.locator("text=Endless Harvest").first().click();
+    await page.locator("text=Endless Harvest").first().evaluate(el => (el as HTMLElement).click());
     await expect(page.locator("text=Selected Relics")).toBeVisible();
 
     // Select Abundance instead (same tier)
-    await page.locator("text=Abundance").first().click();
+    await page.locator("text=Abundance").first().evaluate(el => (el as HTMLElement).click());
     const selectedRelics = page.locator("text=Selected Relics").locator("..");
     await expect(selectedRelics).toContainText("Abundance");
   });
 
   test("can toggle pacts", async ({ page }) => {
-    await page.locator("text=Melee Might").first().click();
+    await page.locator("text=Melee Might").first().evaluate(el => (el as HTMLElement).click());
     await expect(page.locator("text=Active Pacts")).toBeVisible();
   });
 
@@ -63,8 +63,8 @@ test.describe("Demonic Pacts Build Planner", () => {
     const scoreCard = page.locator("text=Gielinor Score").first();
     await expect(scoreCard).toBeVisible();
 
-    await page.locator("text=Endless Harvest").first().click();
-    await page.locator("text=Melee Might").first().click();
+    await page.locator("text=Endless Harvest").first().evaluate(el => (el as HTMLElement).click());
+    await page.locator("text=Melee Might").first().evaluate(el => (el as HTMLElement).click());
 
     const scoreText = page.locator("text=Gielinor Score").locator("..").locator("..").first();
     await expect(scoreText).toBeVisible();
@@ -79,13 +79,13 @@ test.describe("Demonic Pacts Build Planner", () => {
   });
 
   test("reset button clears all selections after confirm", async ({ page }) => {
-    // Select a relic — wait for "ring-osrs-gold" class to confirm selection
+    // Select a relic — use evaluate click to bypass sticky nav overlay
     const relicCard = page.locator("h4:has-text('Endless Harvest')");
-    await relicCard.click();
+    await relicCard.evaluate(el => (el as HTMLElement).click());
     await expect(relicCard.locator("xpath=ancestor::div[contains(@class,'bg-osrs-panel')]")).toHaveClass(/ring-osrs-gold/, { timeout: 5000 });
 
     // Select a pact
-    await page.locator("text=Melee Might").first().click();
+    await page.locator("text=Melee Might").first().evaluate(el => (el as HTMLElement).click());
     await expect(page.locator("text=Active Pacts")).toBeVisible({ timeout: 5000 });
 
     // Accept the confirmation dialog and reset
@@ -97,8 +97,10 @@ test.describe("Demonic Pacts Build Planner", () => {
   });
 
   test("persists build to localStorage", async ({ page }) => {
-    await page.locator("text=Endless Harvest").first().click();
-    await page.reload();
+    await page.locator("text=Endless Harvest").first().evaluate(el => (el as HTMLElement).click());
+    // Verify selection registered before testing persistence
+    await expect(page.locator("text=Selected Relics")).toBeVisible();
+    await page.reload({ waitUntil: "networkidle" });
     await expect(page.locator("text=Selected Relics")).toBeVisible();
   });
 });

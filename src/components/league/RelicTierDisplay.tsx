@@ -57,34 +57,33 @@ export function RelicTierDisplay({ relicTier, selectedRelicId, onSelect }: Relic
                 key={relic.id}
                 hover={!!onSelect}
                 glow={isSelected ? "gold" : "none"}
+                onClick={onSelect ? () => onSelect(relic.id) : undefined}
                 className={`relative ${onSelect ? "cursor-pointer" : ""} ${
                   isSelected ? "ring-2 ring-osrs-gold" : ""
                 }`}
               >
-                <div onClick={() => onSelect?.(relic.id)}>
-                  {isSelected && (
-                    <div className="absolute top-3 right-3">
-                      <Badge variant="gold">Selected</Badge>
+                {isSelected && (
+                  <div className="absolute top-3 right-3">
+                    <Badge variant="gold">Selected</Badge>
+                  </div>
+                )}
+                <h4 className="font-bold text-osrs-text mb-1">{relic.name}</h4>
+                <p className="text-sm text-osrs-text-dim mb-3">{relic.description}</p>
+                <div className="space-y-1.5">
+                  {relic.effects.map((effect, i) => (
+                    <div key={i} className="flex items-start gap-2 text-xs">
+                      <span className="text-osrs-green mt-0.5">✦</span>
+                      <span className="text-osrs-text-dim">{effect}</span>
                     </div>
-                  )}
-                  <h4 className="font-bold text-osrs-text mb-1">{relic.name}</h4>
-                  <p className="text-sm text-osrs-text-dim mb-3">{relic.description}</p>
-                  <div className="space-y-1.5">
-                    {relic.effects.map((effect, i) => (
-                      <div key={i} className="flex items-start gap-2 text-xs">
-                        <span className="text-osrs-green mt-0.5">✦</span>
-                        <span className="text-osrs-text-dim">{effect}</span>
-                      </div>
+                  ))}
+                </div>
+                {relic.synergies && relic.synergies.length > 0 && (
+                  <div className="mt-3 pt-3 border-t border-osrs-border flex flex-wrap gap-1">
+                    {relic.synergies.map((s, i) => (
+                      <Badge key={i} variant="blue">{s}</Badge>
                     ))}
                   </div>
-                  {relic.synergies && relic.synergies.length > 0 && (
-                    <div className="mt-3 pt-3 border-t border-osrs-border flex flex-wrap gap-1">
-                      {relic.synergies.map((s, i) => (
-                        <Badge key={i} variant="blue">{s}</Badge>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                )}
               </Card>
             );
           })}

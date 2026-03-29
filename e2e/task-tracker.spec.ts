@@ -4,7 +4,7 @@ test.describe("Demonic Pacts Task Tracker", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/leagues/demonic-pacts/tasks");
     await page.evaluate(() => localStorage.clear());
-    await page.reload();
+    await page.reload({ waitUntil: "networkidle" });
   });
 
   test("loads and shows all tasks", async ({ page }) => {
@@ -91,7 +91,7 @@ test.describe("Demonic Pacts Task Tracker", () => {
       expect(JSON.parse(stored!).length).toBeGreaterThan(0);
     }).toPass({ timeout: 5000 });
     // Reload and check task is still completed
-    await page.reload();
+    await page.reload({ waitUntil: "networkidle" });
     const firstTaskAfter = page.locator("div.rounded-lg.border.cursor-pointer").first();
     await expect(firstTaskAfter).toHaveClass(/bg-osrs-green/);
   });
@@ -117,7 +117,7 @@ test.describe("Raging Echoes Task Tracker", () => {
   test("uses separate localStorage key from DP", async ({ page }) => {
     await page.goto("/leagues/raging-echoes/tasks");
     await page.evaluate(() => localStorage.clear());
-    await page.reload();
+    await page.reload({ waitUntil: "networkidle" });
     await page.locator("div.rounded-lg.border.cursor-pointer").first().click();
     await page.waitForTimeout(500);
     const reStored = await page.evaluate(() => localStorage.getItem("gielinor-re-tasks"));

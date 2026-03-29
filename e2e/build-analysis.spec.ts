@@ -4,7 +4,7 @@ test.describe("Build Analysis Panel", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/leagues/demonic-pacts/planner");
     await page.evaluate(() => localStorage.clear());
-    await page.reload();
+    await page.reload({ waitUntil: "networkidle" });
   });
 
   test("shows Build Analysis section", async ({ page }) => {
@@ -19,7 +19,7 @@ test.describe("Build Analysis Panel", () => {
 
   test("archetype changes when relics are selected", async ({ page }) => {
     // Select Endless Harvest + Woodsman for gathering archetype
-    await page.locator("text=Endless Harvest").first().click();
+    await page.locator("text=Endless Harvest").first().evaluate(el => (el as HTMLElement).click());
     // Archetype should update
     const archetypeCard = page.locator("text=Build Analysis").locator("..").locator("..").locator("div").first();
     await expect(archetypeCard).not.toContainText("Undecided");
@@ -49,7 +49,7 @@ test.describe("Build Analysis Panel", () => {
 
   test("shows active synergies when combos selected", async ({ page }) => {
     // Select Endless Harvest + Woodsman (strong synergy)
-    await page.locator("text=Endless Harvest").first().click();
+    await page.locator("text=Endless Harvest").first().evaluate(el => (el as HTMLElement).click());
     // Woodsman is T2 only option, auto-selected display
     // Check if synergies appear
     const synergiesHeader = page.locator("text=Active Synergies");
@@ -74,7 +74,7 @@ test.describe("Build Analysis Panel", () => {
   });
 
   test("shows pact risk assessment when pacts selected", async ({ page }) => {
-    await page.locator("text=Glass Cannon").first().click();
+    await page.locator("text=Glass Cannon").first().evaluate(el => (el as HTMLElement).click());
     const riskSection = page.locator("button:has-text('Pact Risk Assessment')");
     await expect(riskSection).toBeVisible();
     await riskSection.click();
@@ -88,8 +88,8 @@ test.describe("Build Analysis Panel", () => {
   });
 
   test("warns about glass cannon + berserker combo", async ({ page }) => {
-    await page.locator("text=Glass Cannon").first().click();
-    await page.locator("text=Berserker").first().click();
+    await page.locator("text=Glass Cannon").first().evaluate(el => (el as HTMLElement).click());
+    await page.locator("text=Berserker").first().evaluate(el => (el as HTMLElement).click());
     await page.locator("text=Warnings & Tips").click();
     await expect(
       page.locator("text=Glass Cannon + Berserker"),
@@ -107,7 +107,7 @@ test.describe("Raging Echoes Build Analysis", () => {
 
   test("shows balance bars for RE relics", async ({ page }) => {
     await page.goto("/leagues/raging-echoes/planner");
-    await page.locator("text=Power Miner").first().click();
+    await page.locator("text=Power Miner").first().evaluate(el => (el as HTMLElement).click());
     await page.locator("text=Build Balance").click();
     await expect(page.getByText("Gathering", { exact: true })).toBeVisible();
   });
