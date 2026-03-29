@@ -23,6 +23,7 @@ export interface Relic {
 
 export interface RelicTier {
   tier: number;
+  pointsToUnlock?: number;
   passiveEffects: string[];
   relics: Relic[];
 }
@@ -32,6 +33,7 @@ export interface Region {
   name: string;
   description: string;
   type: "starting" | "auto-unlock" | "choosable" | "inaccessible";
+  tasksToUnlock?: number;
   keyContent: string[];
   echoBoss?: string;
 }

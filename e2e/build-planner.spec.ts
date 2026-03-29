@@ -92,7 +92,7 @@ test.describe("Demonic Pacts Build Planner", () => {
     await page.waitForTimeout(300);
 
     // Verify selections are reflected in the build summary
-    const relicCount = page.locator("text=1 / 5").first();
+    const relicCount = page.locator("text=1 / 6").first();
     await expect(relicCount).toBeVisible({ timeout: 3000 });
 
     // Accept the confirmation dialog and reset
@@ -100,7 +100,7 @@ test.describe("Demonic Pacts Build Planner", () => {
     await page.locator("text=Reset").click();
 
     // After reset, relic count should be back to 0
-    await expect(page.locator("text=0 / 5").first()).toBeVisible({ timeout: 3000 });
+    await expect(page.locator("text=0 / 6").first()).toBeVisible({ timeout: 3000 });
   });
 
   test("persists build to localStorage", async ({ page }) => {

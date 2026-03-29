@@ -14,76 +14,79 @@ const strategies = [
     name: "Speedrunner",
     description: "Maximize points per hour with fast task completion routing.",
     difficulty: "Advanced",
-    relics: ["Trickster", "Fairy's Flight", "Infernal Gathering", "Clue Compass", "Last Recall", "Weapon Specialist", "Echo Augmentation", "Dodgy Dealings"],
+    relics: ["Animal Wrangler", "Dodgy Deals", "Clue Compass", "Golden God", "Treasure Arbiter", "Total Recall", "Grimoire", "Specialist"],
     masteries: ["Melee Mastery"],
+    regions: ["Morytania", "Kourend", "Kandarin"],
     earlyGame: [
-      "Trickster (T1): instant agility shortcuts + always-succeed pickpocketing",
-      "Fairy's Flight (T2): teleport to any fairy ring/spirit tree from anywhere",
+      "Animal Wrangler (T1): enhanced fishing/hunting, auto-cook, traps never fail",
+      "Dodgy Deals (T2): 100% pickpocket success, noted loot, multi-NPC targeting",
       "Rush easy + medium tasks across all skill categories",
-      "Quest heavily for fast QP — aim for 100 QP early",
+      "Unlock first region at 90 tasks — pick Morytania for Barrows",
     ],
     midGame: [
-      "Infernal Gathering (T3): resources auto-process for double skill XP",
-      "Clue Compass (T4): 10x clue rate + double casket loot",
-      "Last Recall (T5): return to previous location after any teleport",
-      "Mass clue completions for task points and unique rewards",
+      "Clue Compass (T3): teleport to STASH units and clue steps instantly",
+      "Golden God (T4): free alchemy with 65% item preservation for GP generation",
+      "Treasure Arbiter (T5): 10x clue drops + max casket rewards",
+      "Mass clue completions for task points and collection log slots",
     ],
     lateGame: [
-      "Weapon Specialist (T6): 2-tick attacks + infinite special attack",
-      "Echo Augmentation (T7): halved KC thresholds + double Echo uniques",
-      "Dodgy Dealings (T8): pickpocket bosses for their drop tables",
-      "Target remaining elite/master tasks with overpowered setup",
+      "Total Recall (T6): save location/stats, teleport back after banking",
+      "Grimoire (T7): swap spellbooks freely, unlock all prayers/spells",
+      "Specialist (T8): 20% spec cost + energy on kills/misses",
+      "Target remaining elite/master tasks with overpowered combat setup",
     ],
   },
   {
     id: "pvm",
     name: "PvM Destroyer",
-    description: "Maximum combat power to dominate every boss and Echo boss.",
+    description: "Maximum combat power to dominate every boss in the league.",
     difficulty: "Intermediate",
-    relics: ["Production Prodigy", "Banker's Note", "Knife's Edge", "Soul Stealer", "Last Recall", "Weapon Specialist", "Echo Augmentation", "Absolute Unit"],
+    relics: ["Power Miner", "Corner Cutter", "Bank Heist", "Reloaded", "Slayer Master", "Banker's Note", "Grimoire", "Guardian"],
     masteries: ["Melee Mastery", "Ranged Mastery"],
+    regions: ["Morytania", "Kourend", "Asgarnia"],
     earlyGame: [
-      "Production Prodigy (T1): 2x faster crafting with material savings",
-      "Banker's Note (T2): note/unnote any item at any banker",
+      "Power Miner (T1): auto-bank ores, auto-smelt for early gear",
+      "Corner Cutter (T2): always succeed agility, double completion, free GP from marks",
       "Train combat through Slayer for task overlap",
-      "Rush Barrows for early gear upgrades",
+      "Rush Barrows with first region unlock (Morytania at 90 tasks)",
     ],
     midGame: [
-      "Knife's Edge (T3): 3x damage multiplier, HP capped at 10",
-      "Soul Stealer (T4): kills restore 25% prayer + 15% auto-bank drops",
-      "Last Recall (T5): teleport-kill-return bossing loop",
-      "Start GWD bosses — 3x damage melts them",
+      "Bank Heist (T3): teleport to any bank/deposit box instantly",
+      "Reloaded (T4): pick a second relic from T1-T3 for more power",
+      "Slayer Master (T5): always on task, free perks, bonus XP milestones",
+      "Start GWD bosses (Asgarnia) — Slayer Master makes everything count",
     ],
     lateGame: [
-      "Weapon Specialist (T6): 2-tick speed + infinite spec on all weapons",
-      "Echo Augmentation (T7): halved KC + double Echo boss uniques",
-      "Absolute Unit (T8): +10 all combat stats, AoE melee, 20% dmg reduction",
-      "Solo every raid and Echo boss with ridiculous DPS + tankiness",
+      "Banker's Note (T6): note/unnote items for efficient inventory management",
+      "Grimoire (T7): all prayers and spells unlocked, swap books freely",
+      "Guardian (T8): 30-min combat thrall with adaptive style + AoE",
+      "Solo every raid and boss with Guardian + full mastery stacks",
     ],
   },
   {
     id: "completionist",
     name: "Completionist",
-    description: "Touch every piece of content. Reach Dragon tier.",
+    description: "Touch every piece of content. Reach Dragon tier (60,000 points).",
     difficulty: "Expert",
-    relics: ["Endless Harvest", "Banker's Note", "Equilibrium", "Clue Compass", "Friendly Forager", "Ruinous Powers", "Treasure Seeker", "Riftwalker"],
+    relics: ["Lumberjack", "Friendly Forager", "Fairy's Flight", "Equilibrium", "Production Master", "Total Recall", "Overgrown", "Last Stand"],
     masteries: ["Melee Mastery", "Ranged Mastery", "Magic Mastery"],
+    regions: ["Morytania", "Kourend", "Kandarin"],
     earlyGame: [
-      "Endless Harvest (T1): double resources that auto-bank + nodes never deplete",
-      "Banker's Note (T2): note/unnote for efficient inventory management",
+      "Lumberjack (T1): auto-bank wood, auto-burn/fletch, 50% fail recovery",
+      "Friendly Forager (T2): auto-find herbs, 90% secondary preservation, 4-dose potions",
       "Complete ALL easy tasks first for fast point accumulation",
       "Build a broad skill base across every category",
     ],
     midGame: [
-      "Equilibrium (T3): combat XP split evenly + 15% bonus — level everything",
-      "Clue Compass (T4): 10x clue rate for clue task completion",
-      "Friendly Forager (T5): pet companion gathers and banks resources passively",
+      "Fairy's Flight (T3): teleport to fairy rings, spirit trees, and tool leprechauns",
+      "Equilibrium (T4): +10-20% of total level as bonus XP per action",
+      "Production Master (T5): batch-process all crafting simultaneously",
       "Touch every task category — completion breadth matters for points",
     ],
     lateGame: [
-      "Ruinous Powers (T6): stronger offensive prayers + switch without altar",
-      "Treasure Seeker (T7): 3x boss unique rate + guaranteed pets at KC milestones",
-      "Riftwalker (T8): place 5 permanent portals for instant travel network",
+      "Total Recall (T6): save and restore location/stats for efficient bossing loops",
+      "Overgrown (T7): crops never die, auto-harvest/replant, 75% seed preservation",
+      "Last Stand (T8): survive lethal damage with 255 stats for 16 ticks",
       "Push all elite/master tasks — aim for 60,000 points for Dragon tier",
     ],
   },
@@ -101,11 +104,15 @@ function buildPlannerUrl(strategy: typeof strategies[number]): string {
     .map((name) => league.pacts.find((p) => p.name.toLowerCase() === name.toLowerCase())?.id)
     .filter((id): id is string => !!id);
 
+  const matchedRegionIds = strategy.regions
+    .map((name) => league.regions.find((r) => r.name.toLowerCase() === name.toLowerCase())?.id)
+    .filter((id): id is string => !!id);
+
   const build: LeagueBuild = {
     id: "",
     name: `${strategy.name} Build`,
     accountType: "ironman",
-    regions: [],
+    regions: matchedRegionIds,
     relics: matchedRelicIds,
     pacts: matchedMasteryIds,
     completedTasks: [],
@@ -134,7 +141,7 @@ export default function RagingEchoesGuide() {
       <h1 className="text-3xl font-bold text-osrs-gold text-glow-gold mb-2" style={{ fontFamily: "var(--font-runescape)" }}>
         Raging Echoes Strategy Guide
       </h1>
-      <p className="text-osrs-text-dim mb-8">Optimized strategies for every playstyle. 8 relic tiers, all areas open.</p>
+      <p className="text-osrs-text-dim mb-8">Optimized strategies for every playstyle. 8 relic tiers, 3 region unlocks (Misthalin + Karamja start).</p>
 
       <Tabs tabs={tabs}>
         {(activeTab) => {
@@ -190,6 +197,18 @@ export default function RagingEchoesGuide() {
                       </div>
                     ))}
                   </div>
+                  <h3 className="font-bold text-osrs-blue mt-4 mb-3" style={{ fontFamily: "var(--font-runescape)" }}>
+                    Region Unlocks (3 of 9)
+                  </h3>
+                  <div className="space-y-2">
+                    {strategy.regions.map((region) => (
+                      <div key={region} className="flex items-center gap-2 text-sm">
+                        <span className="text-osrs-blue">&#x25C6;</span>
+                        <span className="text-osrs-text">{region}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-xs text-osrs-text-dim mt-2">Misthalin + Karamja always available. Regions unlock at 90/200/400 tasks.</p>
                 </Card>
               </div>
 

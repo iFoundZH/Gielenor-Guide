@@ -55,7 +55,7 @@ test.describe("Demonic Pacts Strategy Guide", () => {
   });
 
   test("auto-selected relics note is shown", async ({ page }) => {
-    await expect(page.locator("text=Woodsman, T3 Evil Eye")).toBeVisible();
+    await expect(page.locator("text=Woodsman, T3 Evil Eye, T4 Conniving Clues")).toBeVisible();
   });
 
   test("shows Open in Planner button for each strategy", async ({ page }) => {
@@ -186,6 +186,13 @@ test.describe("DP Planner - Strategy Builds", () => {
     await page.locator("button:has-text('Active Synergies')").click();
     await expect(page.locator("text=Glass Cannon + Minion")).toBeVisible();
   });
+
+  test("Evil Eye + Conniving Clues triggers Clue Blitz synergy", async ({ page }) => {
+    await selectRelic(page, "Evil Eye");
+    await selectRelic(page, "Conniving Clues");
+    await page.locator("button:has-text('Active Synergies')").click();
+    await expect(page.locator("text=Clue Blitz")).toBeVisible();
+  });
 });
 
 // ─── DP Planner: Region Mechanics ───────────────────────────────────────
@@ -236,9 +243,10 @@ test.describe("DP Task Tracker - Comprehensive", () => {
   test("sort by difficulty works", async ({ page }) => {
     // DP task tracker sort select is at index 3 (difficulty, category, region, sort)
     const sortSelect = page.locator("select").nth(3);
-    await sortSelect.selectOption("difficulty");
+    await sortSelect.selectOption("points-desc");
     const firstPoints = await page.locator("div.rounded-lg.border.cursor-pointer").first().locator("text=/\\d+ pts/").textContent();
-    expect(firstPoints).toContain("10");
+    // DP master tasks are 200 pts (placeholder data, not yet confirmed from wiki)
+    expect(firstPoints).toContain("200");
   });
 
   test("region filter shows only matching tasks", async ({ page }) => {

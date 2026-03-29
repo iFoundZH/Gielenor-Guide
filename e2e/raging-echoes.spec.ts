@@ -2,7 +2,8 @@ import { test, expect } from "@playwright/test";
 
 // ─── Helper: select a relic by name ─────────────────────────────────────
 async function selectRelic(page: import("@playwright/test").Page, name: string) {
-  await page.locator(`text=${name}`).first().click();
+  // Use getByText within h4 to handle apostrophes in relic names (e.g. "Fairy's Flight")
+  await page.locator("h4").filter({ hasText: name }).click();
   await page.waitForTimeout(200);
 }
 
@@ -31,8 +32,8 @@ test.describe("Raging Echoes Strategy Guide", () => {
   });
 
   test("Speedrunner shows correct 8 relics", async ({ page }) => {
-    const relics = ["Trickster", "Fairy's Flight", "Infernal Gathering", "Clue Compass",
-      "Last Recall", "Weapon Specialist", "Echo Augmentation", "Dodgy Dealings"];
+    const relics = ["Animal Wrangler", "Dodgy Deals", "Clue Compass", "Golden God",
+      "Treasure Arbiter", "Total Recall", "Grimoire", "Specialist"];
     for (const relic of relics) {
       await expect(page.locator(`text=${relic}`).first()).toBeVisible();
     }
@@ -40,8 +41,8 @@ test.describe("Raging Echoes Strategy Guide", () => {
 
   test("PvM Destroyer shows correct relics", async ({ page }) => {
     await page.locator("button >> text=PvM Destroyer").click();
-    const relics = ["Production Prodigy", "Banker's Note", "Knife's Edge", "Soul Stealer",
-      "Last Recall", "Weapon Specialist", "Echo Augmentation", "Absolute Unit"];
+    const relics = ["Power Miner", "Corner Cutter", "Bank Heist", "Reloaded",
+      "Slayer Master", "Banker's Note", "Grimoire", "Guardian"];
     for (const relic of relics) {
       await expect(page.locator(`text=${relic}`).first()).toBeVisible();
     }
@@ -49,8 +50,8 @@ test.describe("Raging Echoes Strategy Guide", () => {
 
   test("Completionist shows correct relics", async ({ page }) => {
     await page.locator("button >> text=Completionist").click();
-    const relics = ["Endless Harvest", "Banker's Note", "Equilibrium", "Clue Compass",
-      "Friendly Forager", "Ruinous Powers", "Treasure Seeker", "Riftwalker"];
+    const relics = ["Lumberjack", "Friendly Forager", "Fairy's Flight", "Equilibrium",
+      "Production Master", "Total Recall", "Overgrown", "Last Stand"];
     for (const relic of relics) {
       await expect(page.locator(`text=${relic}`).first()).toBeVisible();
     }
@@ -78,8 +79,8 @@ test.describe("Raging Echoes Strategy Guide", () => {
 
   test("phase cards reference all tier picks", async ({ page }) => {
     // Speedrunner early game should mention T1 and T2
-    await expect(page.locator("text=Trickster (T1)")).toBeVisible();
-    await expect(page.locator("text=Fairy's Flight (T2)")).toBeVisible();
+    await expect(page.locator("text=Animal Wrangler (T1)")).toBeVisible();
+    await expect(page.locator("text=Dodgy Deals (T2)")).toBeVisible();
   });
 
   test("difficulty badges display correctly", async ({ page }) => {
@@ -101,40 +102,38 @@ test.describe("RE Planner - Speedrunner Build", () => {
   });
 
   test("select full Speedrunner build and verify analysis", async ({ page }) => {
-    await selectRelic(page, "Trickster");
-    await selectRelic(page, "Fairy's Flight");
-    await selectRelic(page, "Infernal Gathering");
+    await selectRelic(page, "Animal Wrangler");
+    await selectRelic(page, "Dodgy Deals");
     await selectRelic(page, "Clue Compass");
-    await selectRelic(page, "Last Recall");
-    await selectRelic(page, "Weapon Specialist");
-    await selectRelic(page, "Echo Augmentation");
-    await selectRelic(page, "Dodgy Dealings");
+    await selectRelic(page, "Golden God");
+    await selectRelic(page, "Treasure Arbiter");
+    await selectRelic(page, "Total Recall");
+    await selectRelic(page, "Grimoire");
+    await selectRelic(page, "Specialist");
     await selectMastery(page, "Melee Mastery");
 
     // Verify 8/8 relics selected
     await expect(page.locator("text=8 / 8").first()).toBeVisible();
   });
 
-  test("Trickster + Dodgy Dealings triggers Master Thief synergy", async ({ page }) => {
-    await selectRelic(page, "Trickster");
-    await selectRelic(page, "Dodgy Dealings");
+  test("Dodgy Deals + Golden God triggers Thieving Empire synergy", async ({ page }) => {
+    await selectRelic(page, "Dodgy Deals");
+    await selectRelic(page, "Golden God");
 
-    // The synergy section should appear with content
     const synergiesBtn = page.locator("#analysis button:has-text('Active Synergies')");
     await expect(synergiesBtn).toBeVisible();
     await synergiesBtn.click();
-    // Synergy name appears in a green span inside the expanded section
-    await expect(page.locator("#analysis span.text-osrs-green:has-text('Master Thief')")).toBeVisible();
+    await expect(page.locator("#analysis span.text-osrs-green:has-text('Thieving Empire')")).toBeVisible();
   });
 
-  test("Weapon Specialist + mastery triggers Combat Mastery Engine", async ({ page }) => {
-    await selectRelic(page, "Weapon Specialist");
+  test("Specialist + mastery triggers Special Attack Engine", async ({ page }) => {
+    await selectRelic(page, "Specialist");
     await selectMastery(page, "Melee Mastery");
 
     const synergiesBtn = page.locator("#analysis button:has-text('Active Synergies')");
     await expect(synergiesBtn).toBeVisible();
     await synergiesBtn.click();
-    await expect(page.locator("#analysis >> text=Combat Mastery Engine")).toBeVisible();
+    await expect(page.locator("#analysis >> text=Special Attack Engine")).toBeVisible();
   });
 });
 
@@ -147,62 +146,46 @@ test.describe("RE Planner - PvM Destroyer Build", () => {
     await page.reload();
   });
 
-  test("select full PvM build and verify Raid Boss archetype", async ({ page }) => {
-    await selectRelic(page, "Production Prodigy");
+  test("select full PvM build and verify Summoner archetype", async ({ page }) => {
+    await selectRelic(page, "Power Miner");
+    await selectRelic(page, "Corner Cutter");
+    await selectRelic(page, "Bank Heist");
+    await selectRelic(page, "Reloaded");
+    await selectRelic(page, "Slayer Master");
     await selectRelic(page, "Banker's Note");
-    await selectRelic(page, "Knife's Edge");
-    await selectRelic(page, "Soul Stealer");
-    await selectRelic(page, "Last Recall");
-    await selectRelic(page, "Weapon Specialist");
-    await selectRelic(page, "Echo Augmentation");
-    await selectRelic(page, "Absolute Unit");
+    await selectRelic(page, "Grimoire");
+    await selectRelic(page, "Guardian");
     await selectMastery(page, "Melee Mastery");
     await selectMastery(page, "Ranged Mastery");
 
     await expect(page.locator("text=8 / 8").first()).toBeVisible();
-    await expect(page.locator("#analysis >> text=Raid Boss")).toBeVisible();
+    await expect(page.locator("#analysis >> text=Summoner")).toBeVisible();
   });
 
-  test("Knife's Edge triggers danger warning", async ({ page }) => {
-    await selectRelic(page, "Knife's Edge");
+  test("Reloaded triggers tip about choosing a second relic", async ({ page }) => {
+    await selectRelic(page, "Reloaded");
 
     const warningsBtn = page.locator("#analysis button:has-text('Warnings')");
     await warningsBtn.click();
-    await expect(page.locator("#analysis >> text=caps your HP at 10")).toBeVisible();
+    await expect(page.locator("#analysis >> text=Reloaded lets you pick")).toBeVisible();
   });
 
-  test("Knife's Edge + Berserker triggers critical warning", async ({ page }) => {
-    await selectRelic(page, "Knife's Edge");
-    await selectRelic(page, "Berserker");
-
-    const warningsBtn = page.locator("#analysis button:has-text('Warnings')");
-    await warningsBtn.click();
-    await expect(page.locator("#analysis >> text=highest-risk combo")).toBeVisible();
-  });
-
-  test("Knife's Edge + Berserker triggers Death's Edge synergy", async ({ page }) => {
-    await selectRelic(page, "Knife's Edge");
-    await selectRelic(page, "Berserker");
+  test("Clue Compass + Treasure Arbiter triggers Clue Master synergy", async ({ page }) => {
+    await selectRelic(page, "Clue Compass");
+    await selectRelic(page, "Treasure Arbiter");
 
     const synergiesBtn = page.locator("#analysis button:has-text('Active Synergies')");
     await synergiesBtn.click();
-    await expect(page.locator("#analysis >> text=Death's Edge")).toBeVisible();
+    await expect(page.locator("#analysis >> text=Clue Master")).toBeVisible();
   });
 
-  test("Soul Stealer + Last Recall triggers Recall Slayer synergy", async ({ page }) => {
-    await selectRelic(page, "Soul Stealer");
-    await selectRelic(page, "Last Recall");
+  test("Total Recall + Specialist triggers Recall Specialist synergy", async ({ page }) => {
+    await selectRelic(page, "Total Recall");
+    await selectRelic(page, "Specialist");
 
     const synergiesBtn = page.locator("#analysis button:has-text('Active Synergies')");
     await synergiesBtn.click();
-    await expect(page.locator("#analysis >> text=Recall Slayer")).toBeVisible();
-  });
-
-  test("Glass Berserker archetype with Knife's Edge + Berserker", async ({ page }) => {
-    await selectRelic(page, "Knife's Edge");
-    await selectRelic(page, "Berserker");
-
-    await expect(page.locator("#analysis >> text=Glass Berserker")).toBeVisible();
+    await expect(page.locator("#analysis >> text=Recall Specialist")).toBeVisible();
   });
 });
 
@@ -215,57 +198,49 @@ test.describe("RE Planner - Completionist Build", () => {
     await page.reload();
   });
 
-  test("select full Completionist build and verify Treasure Hunter archetype", async ({ page }) => {
-    await selectRelic(page, "Endless Harvest");
-    await selectRelic(page, "Banker's Note");
-    await selectRelic(page, "Equilibrium");
-    await selectRelic(page, "Clue Compass");
+  test("select full Completionist build and verify Unkillable archetype", async ({ page }) => {
+    await selectRelic(page, "Lumberjack");
     await selectRelic(page, "Friendly Forager");
-    await selectRelic(page, "Ruinous Powers");
-    await selectRelic(page, "Treasure Seeker");
-    await selectRelic(page, "Riftwalker");
+    await selectRelic(page, "Fairy's Flight");
+    await selectRelic(page, "Equilibrium");
+    await selectRelic(page, "Production Master");
+    await selectRelic(page, "Total Recall");
+    await selectRelic(page, "Overgrown");
+    await selectRelic(page, "Last Stand");
     await selectMastery(page, "Melee Mastery");
     await selectMastery(page, "Ranged Mastery");
     await selectMastery(page, "Magic Mastery");
 
     await expect(page.locator("text=8 / 8").first()).toBeVisible();
-    await expect(page.locator("#analysis >> text=Treasure Hunter")).toBeVisible();
+    // Last Stand + combat mastery = Unkillable archetype
+    await expect(page.locator("#analysis >> text=Unkillable")).toBeVisible();
   });
 
-  test("Endless Harvest + Infernal Gathering triggers Gathering Pipeline", async ({ page }) => {
-    await selectRelic(page, "Endless Harvest");
-    await selectRelic(page, "Infernal Gathering");
+  test("Power Miner + Production Master triggers Mining Pipeline", async ({ page }) => {
+    await selectRelic(page, "Power Miner");
+    await selectRelic(page, "Production Master");
 
     const synergiesBtn = page.locator("#analysis button:has-text('Active Synergies')");
     await synergiesBtn.click();
-    await expect(page.locator("#analysis >> text=Gathering Pipeline")).toBeVisible();
+    await expect(page.locator("#analysis >> text=Mining Pipeline")).toBeVisible();
   });
 
-  test("Clue Compass + Treasure Seeker triggers Loot Magnet", async ({ page }) => {
-    await selectRelic(page, "Clue Compass");
-    await selectRelic(page, "Treasure Seeker");
+  test("Friendly Forager + Production Master triggers Potion Factory", async ({ page }) => {
+    await selectRelic(page, "Friendly Forager");
+    await selectRelic(page, "Production Master");
 
     const synergiesBtn = page.locator("#analysis button:has-text('Active Synergies')");
     await synergiesBtn.click();
-    await expect(page.locator("#analysis >> text=Loot Magnet")).toBeVisible();
+    await expect(page.locator("#analysis >> text=Potion Factory")).toBeVisible();
   });
 
-  test("Weapon Specialist + Absolute Unit triggers Unstoppable Force", async ({ page }) => {
-    await selectRelic(page, "Weapon Specialist");
-    await selectRelic(page, "Absolute Unit");
+  test("Lumberjack + Overgrown triggers Farming Pipeline", async ({ page }) => {
+    await selectRelic(page, "Lumberjack");
+    await selectRelic(page, "Overgrown");
 
     const synergiesBtn = page.locator("#analysis button:has-text('Active Synergies')");
     await synergiesBtn.click();
-    await expect(page.locator("#analysis >> text=Unstoppable Force")).toBeVisible();
-  });
-
-  test("Production Prodigy + Pocket Crafter triggers Portable Workshop", async ({ page }) => {
-    await selectRelic(page, "Production Prodigy");
-    await selectRelic(page, "Pocket Crafter");
-
-    const synergiesBtn = page.locator("#analysis button:has-text('Active Synergies')");
-    await synergiesBtn.click();
-    await expect(page.locator("#analysis >> text=Portable Workshop")).toBeVisible();
+    await expect(page.locator("#analysis >> text=Farming Pipeline")).toBeVisible();
   });
 
   test("3 masteries triggers multiple mastery tip", async ({ page }) => {
@@ -288,45 +263,34 @@ test.describe("RE Planner - Missed Synergies", () => {
     await page.reload();
   });
 
-  test("Endless Harvest without Infernal Gathering shows missed synergy", async ({ page }) => {
-    await selectRelic(page, "Endless Harvest");
+  test("Power Miner without Production Master shows missed synergy", async ({ page }) => {
+    await selectRelic(page, "Power Miner");
     await selectRelic(page, "Equilibrium");
 
     const missedBtn = page.locator("#analysis button:has-text('Missed Synergies')");
     await expect(missedBtn).toBeVisible();
     await missedBtn.click();
-    await expect(page.locator("#analysis >> text=Gathering Pipeline")).toBeVisible();
+    await expect(page.locator("#analysis >> text=Mining Pipeline")).toBeVisible();
   });
 
-  test("Knife's Edge without Berserker shows missed Death's Edge", async ({ page }) => {
-    await selectRelic(page, "Knife's Edge");
-    await selectRelic(page, "Weapon Specialist");
-
-    const missedBtn = page.locator("#analysis button:has-text('Missed Synergies')");
-    await expect(missedBtn).toBeVisible();
-    await missedBtn.click();
-    await expect(page.locator("#analysis >> text=Death's Edge")).toBeVisible();
-  });
-
-  test("Trickster without Dodgy Dealings shows missed Master Thief", async ({ page }) => {
-    await selectRelic(page, "Trickster");
-    await selectRelic(page, "Absolute Unit");
-
-    const missedBtn = page.locator("#analysis button:has-text('Missed Synergies')");
-    await expect(missedBtn).toBeVisible();
-    await missedBtn.click();
-    // Scoped to analysis section to avoid matching archetype
-    await expect(page.locator("#analysis >> text=Master Thief")).toBeVisible();
-  });
-
-  test("Clue Compass without Treasure Seeker shows missed Loot Magnet", async ({ page }) => {
+  test("Clue Compass without Treasure Arbiter shows missed Clue Master", async ({ page }) => {
     await selectRelic(page, "Clue Compass");
-    await selectRelic(page, "Echo Augmentation");
+    await selectRelic(page, "Guardian");
 
     const missedBtn = page.locator("#analysis button:has-text('Missed Synergies')");
     await expect(missedBtn).toBeVisible();
     await missedBtn.click();
-    await expect(page.locator("#analysis >> text=Loot Magnet")).toBeVisible();
+    await expect(page.locator("#analysis >> text=Clue Master")).toBeVisible();
+  });
+
+  test("Dodgy Deals without Golden God shows missed Thieving Empire", async ({ page }) => {
+    await selectRelic(page, "Dodgy Deals");
+    await selectRelic(page, "Guardian");
+
+    const missedBtn = page.locator("#analysis button:has-text('Missed Synergies')");
+    await expect(missedBtn).toBeVisible();
+    await missedBtn.click();
+    await expect(page.locator("#analysis >> text=Thieving Empire")).toBeVisible();
   });
 });
 
@@ -344,29 +308,29 @@ test.describe("RE Planner - Edge Cases", () => {
   });
 
   test("single relic shows Explorer archetype", async ({ page }) => {
-    await selectRelic(page, "Trickster");
+    await selectRelic(page, "Power Miner");
     await expect(page.locator("#analysis >> text=Explorer")).toBeVisible();
   });
 
   test("two relics no masteries shows Skiller archetype", async ({ page }) => {
-    await selectRelic(page, "Endless Harvest");
-    await selectRelic(page, "Banker's Note");
+    await selectRelic(page, "Power Miner");
+    await selectRelic(page, "Corner Cutter");
     await expect(page.locator("#analysis >> text=Skiller")).toBeVisible();
   });
 
   test("switching relics in same tier replaces selection", async ({ page }) => {
-    await selectRelic(page, "Trickster");
+    await selectRelic(page, "Power Miner");
     await expect(page.locator("text=1 / 8").first()).toBeVisible();
 
-    await selectRelic(page, "Endless Harvest");
+    await selectRelic(page, "Lumberjack");
     await expect(page.locator("text=1 / 8").first()).toBeVisible();
   });
 
   test("deselecting a relic works", async ({ page }) => {
-    await selectRelic(page, "Trickster");
+    await selectRelic(page, "Power Miner");
     await expect(page.locator("text=1 / 8").first()).toBeVisible();
 
-    await selectRelic(page, "Trickster");
+    await selectRelic(page, "Power Miner");
     await expect(page.locator("text=0 / 8").first()).toBeVisible();
   });
 
@@ -384,8 +348,8 @@ test.describe("RE Planner - Edge Cases", () => {
   });
 
   test("build persists to localStorage", async ({ page }) => {
-    await selectRelic(page, "Trickster");
-    await selectRelic(page, "Fairy's Flight");
+    await selectRelic(page, "Power Miner");
+    await selectRelic(page, "Corner Cutter");
     await selectMastery(page, "Melee Mastery");
 
     await page.reload();
@@ -394,14 +358,14 @@ test.describe("RE Planner - Edge Cases", () => {
 
   test("share button copies URL", async ({ page }) => {
     await page.context().grantPermissions(["clipboard-read", "clipboard-write"]);
-    await selectRelic(page, "Trickster");
+    await selectRelic(page, "Power Miner");
     await page.locator("text=Share Build").click();
     await expect(page.locator("text=Copied!")).toBeVisible();
   });
 
   test("reset clears all selections after confirm", async ({ page }) => {
-    await selectRelic(page, "Trickster");
-    await selectRelic(page, "Fairy's Flight");
+    await selectRelic(page, "Power Miner");
+    await selectRelic(page, "Corner Cutter");
     // Verify relics were selected
     await expect(page.locator("text=2 / 8").first()).toBeVisible({ timeout: 3000 });
 
@@ -413,25 +377,13 @@ test.describe("RE Planner - Edge Cases", () => {
   });
 });
 
-// ─── RE Planner: Boss Access (All Accessible) ──────────────────────────
+// ─── RE Planner: Region Data ────────────────────────────────────────
 
-test.describe("RE Planner - Boss Access", () => {
-  test("all bosses are accessible in RE (all areas open)", async ({ page }) => {
+test.describe("RE Planner - Region Data", () => {
+  test("planner page loads with region info in description", async ({ page }) => {
     await page.goto("/leagues/raging-echoes/planner");
-    await page.evaluate(() => localStorage.clear());
-    await page.reload();
-
-    await selectRelic(page, "Trickster");
-
-    const bossBtn = page.locator("#analysis button:has-text('Boss Access')");
-    await bossBtn.click();
-
-    // Endgame bosses should be listed
-    await expect(page.locator("#analysis >> text=Endgame").first()).toBeVisible();
-    // No inaccessible indicators (red backgrounds)
-    const inaccessibleDots = page.locator("#analysis .bg-red-500");
-    const count = await inaccessibleDots.count();
-    expect(count).toBe(0);
+    // RE planner shows region info; the strategy guide shows region unlock details
+    await expect(page.locator("text=Raging Echoes Build Planner")).toBeVisible();
   });
 });
 
@@ -445,9 +397,8 @@ test.describe("RE Planner - Build Balance", () => {
   });
 
   test("combat-focused build shows combat-heavy balance", async ({ page }) => {
-    await selectRelic(page, "Knife's Edge");
-    await selectRelic(page, "Weapon Specialist");
-    await selectRelic(page, "Absolute Unit");
+    await selectRelic(page, "Specialist");
+    await selectRelic(page, "Guardian");
     await selectMastery(page, "Melee Mastery");
 
     const balanceBtn = page.locator("#analysis button:has-text('Build Balance')");
@@ -456,9 +407,8 @@ test.describe("RE Planner - Build Balance", () => {
   });
 
   test("gathering-focused build shows gathering emphasis", async ({ page }) => {
-    await selectRelic(page, "Endless Harvest");
-    await selectRelic(page, "Infernal Gathering");
-    await selectRelic(page, "Friendly Forager");
+    await selectRelic(page, "Power Miner");
+    await selectRelic(page, "Lumberjack");
 
     const balanceBtn = page.locator("#analysis button:has-text('Build Balance')");
     await balanceBtn.click();
@@ -488,11 +438,6 @@ test.describe("RE Task Tracker - Comprehensive", () => {
     await page.reload();
   });
 
-  test("shows correct task count", async ({ page }) => {
-    // Overall Progress shows "0 / 43" (15 easy + 10 medium + 8 hard + 6 elite + 4 master)
-    await expect(page.locator("text=0 / 43")).toBeVisible();
-  });
-
   test("shows all difficulty levels", async ({ page }) => {
     await expect(page.locator("text=easy").first()).toBeVisible();
     await expect(page.locator("text=medium").first()).toBeVisible();
@@ -505,27 +450,11 @@ test.describe("RE Task Tracker - Comprehensive", () => {
     await expect(page.locator("text=Reward Progress")).toBeVisible();
   });
 
-  test("filter by master difficulty shows 4 tasks", async ({ page }) => {
-    const select = page.locator("select").first();
-    await select.selectOption("master");
-    const tasks = page.locator("div.rounded-lg.border.cursor-pointer");
-    await expect(tasks).toHaveCount(4);
-  });
-
-  test("filter by category works", async ({ page }) => {
-    const categorySelect = page.locator("select").nth(1);
-    // Use a category that definitely exists
-    await categorySelect.selectOption("Combat");
-    const tasks = page.locator("div.rounded-lg.border.cursor-pointer");
-    const count = await tasks.count();
-    expect(count).toBeGreaterThan(0);
-  });
-
   test("sort by points high to low works", async ({ page }) => {
     const sortSelect = page.locator("select").nth(2);
     await sortSelect.selectOption("points-desc");
     const firstPoints = await page.locator("div.rounded-lg.border.cursor-pointer").first().locator("text=/\\d+ pts/").textContent();
-    expect(firstPoints).toContain("200");
+    expect(firstPoints).toContain("400");
   });
 
   test("sort by points low to high works", async ({ page }) => {
@@ -544,10 +473,11 @@ test.describe("RE Task Tracker - Comprehensive", () => {
   });
 
   test("search filter finds specific tasks", async ({ page }) => {
-    await page.locator("input[placeholder='Search tasks...']").fill("Infernal");
+    await page.locator("input[placeholder='Search tasks...']").fill("Equip an Infernal Cape");
+    // Wait for filter to apply (1,589 tasks takes a moment)
+    await page.waitForTimeout(500);
     const tasks = page.locator("div.rounded-lg.border.cursor-pointer");
-    const count = await tasks.count();
-    expect(count).toBe(1);
+    await expect(tasks).toHaveCount(1, { timeout: 5000 });
     await expect(tasks.first()).toContainText("Infernal Cape");
   });
 

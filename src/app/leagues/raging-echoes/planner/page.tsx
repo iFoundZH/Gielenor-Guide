@@ -139,7 +139,7 @@ export default function RagingEchoesPlanner() {
             <h1 className="text-3xl font-bold text-osrs-gold text-glow-gold" style={{ fontFamily: "var(--font-runescape)" }}>
               Raging Echoes Build Planner
             </h1>
-            <p className="text-osrs-text-dim mt-1">Plan your relic choices across all 8 tiers. All regions available.</p>
+            <p className="text-osrs-text-dim mt-1">Plan your relic choices across all 8 tiers. Start in Misthalin + Karamja, unlock 3 more regions via tasks.</p>
           </div>
 
           {/* Sticky Section Nav */}

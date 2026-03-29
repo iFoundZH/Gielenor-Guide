@@ -34,8 +34,8 @@ const strategies = [
     ],
     midGame: [
       "Evil Eye (T3) unlocks boss teleports — start Barrows, GWD",
+      "Conniving Clues (T4): caskets give clue contracts + 1/15 clue drop rate",
       "Activate Glass Cannon for massive damage boost",
-      "Start Slayer grind — 5x points, free Bigger & Badder",
       "Kebos: Chambers of Xeric + Hydra for elite tasks",
     ],
     lateGame: [
@@ -142,8 +142,8 @@ const strategies = [
     ],
     midGame: [
       "Evil Eye (T3): boss teleports for efficient bossing",
-      "Melee Might for combat task efficiency",
-      "Vampiric Touch for lifesteal sustain without food",
+      "Conniving Clues (T4): clue contracts + enhanced clue drops",
+      "Melee Might + Vampiric Touch for combat sustain",
       "Start Slayer — 5x points + free Bigger & Badder",
     ],
     lateGame: [
@@ -264,7 +264,7 @@ export default function StrategyGuide() {
                     <span className="text-osrs-text">{strategy.relic}</span>
                   </div>
                   <p className="text-xs text-osrs-text-dim mt-2">
-                    T2 Woodsman, T3 Evil Eye, T6 Culling Spree, T8 Minion are auto-selected (only one option per tier).
+                    T2 Woodsman, T3 Evil Eye, T4 Conniving Clues, T6 Culling Spree, T8 Minion are auto-selected (only one option per tier).
                   </p>
                 </Card>
 

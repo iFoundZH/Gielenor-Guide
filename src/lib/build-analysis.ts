@@ -153,6 +153,13 @@ const REGION_BOSSES: Record<string, { name: string; difficulty: "mid" | "high" |
     { name: "Chambers of Xeric", difficulty: "endgame" },
     { name: "Alchemical Hydra", difficulty: "high" },
   ],
+  kourend: [
+    { name: "Chambers of Xeric", difficulty: "endgame" },
+    { name: "Alchemical Hydra", difficulty: "high" },
+  ],
+  misthalin: [
+    { name: "Giant Mole", difficulty: "mid" },
+  ],
 };
 
 // Tags for what each relic focuses on
@@ -163,33 +170,33 @@ const RELIC_TAGS: Record<string, string[]> = {
   "relic-t1-3": ["skilling", "money", "all-skills", "production"],
   "relic-t2-1": ["production", "fletching", "firemaking", "hunter", "gathering"],
   "relic-t3-1": ["combat", "bossing", "teleport", "utility"],
+  "relic-t4-1": ["clues", "utility", "teleport"],
   "relic-t6-1": ["combat", "slayer", "clues", "utility"],
   "relic-t8-1": ["combat", "bossing", "utility", "auto-loot"],
-  // RE relics
-  "re-t1-1": ["utility", "thieving", "agility"],
-  "re-t1-2": ["gathering", "mining", "woodcutting", "fishing", "banking"],
-  "re-t1-3": ["production", "skilling"],
-  "re-t2-1": ["utility", "banking"],
-  "re-t2-2": ["utility", "money"],
-  "re-t2-3": ["utility", "teleport"],
-  "re-t3-1": ["combat", "skilling"],
-  "re-t3-2": ["gathering", "production"],
-  "re-t3-3": ["combat", "bossing"],
-  "re-t4-1": ["clues", "utility"],
-  "re-t4-2": ["combat", "slayer", "utility"],
-  "re-t4-3": ["utility", "teleport"],
-  "re-t5-1": ["gathering", "utility"],
-  "re-t5-2": ["utility", "teleport"],
-  "re-t5-3": ["utility", "teleport"],
-  "re-t6-1": ["combat", "bossing"],
-  "re-t6-2": ["combat", "bossing"],
-  "re-t6-3": ["combat", "utility"],
-  "re-t7-1": ["combat", "bossing"],
-  "re-t7-2": ["combat", "bossing"],
-  "re-t7-3": ["production", "skilling"],
-  "re-t8-1": ["utility", "teleport"],
-  "re-t8-2": ["combat", "bossing"],
-  "re-t8-3": ["utility", "thieving", "combat"],
+  // RE relics (real wiki names)
+  "re-t1-1": ["gathering", "mining", "banking", "production"],       // Power Miner
+  "re-t1-2": ["gathering", "woodcutting", "banking", "firemaking"],  // Lumberjack
+  "re-t1-3": ["gathering", "fishing", "hunter", "cooking"],          // Animal Wrangler
+  "re-t2-1": ["utility", "agility"],                                 // Corner Cutter
+  "re-t2-2": ["utility", "herblore", "gathering"],                   // Friendly Forager
+  "re-t2-3": ["utility", "thieving", "money"],                       // Dodgy Deals
+  "re-t3-1": ["clues", "teleport", "utility"],                       // Clue Compass
+  "re-t3-2": ["utility", "banking", "teleport"],                     // Bank Heist
+  "re-t3-3": ["utility", "teleport", "farming"],                     // Fairy's Flight
+  "re-t4-1": ["utility", "money", "prayer"],                         // Golden God
+  "re-t4-2": ["utility"],                                            // Reloaded
+  "re-t4-3": ["skilling", "all-skills"],                             // Equilibrium
+  "re-t5-1": ["clues", "utility"],                                   // Treasure Arbiter
+  "re-t5-2": ["production", "skilling"],                             // Production Master
+  "re-t5-3": ["combat", "slayer"],                                   // Slayer Master
+  "re-t6-1": ["utility", "teleport", "combat"],                      // Total Recall
+  "re-t6-2": ["utility", "banking"],                                 // Banker's Note
+  "re-t7-1": ["utility", "gathering", "money"],                      // Pocket Kingdom
+  "re-t7-2": ["combat", "utility", "magic"],                         // Grimoire
+  "re-t7-3": ["gathering", "farming"],                               // Overgrown
+  "re-t8-1": ["combat", "bossing"],                                  // Specialist
+  "re-t8-2": ["combat", "bossing"],                                  // Guardian
+  "re-t8-3": ["combat", "utility"],                                  // Last Stand
 };
 
 // ─── Main Analysis Function ─────────────────────────────────────────────
@@ -380,70 +387,89 @@ function findActiveSynergies(relics: Relic[], pacts: Pact[]): Synergy[] {
       components: ["Culling Spree", "Minion"],
     });
   }
+  if (relicIds.has("relic-t3-1") && relicIds.has("relic-t4-1")) {
+    synergies.push({
+      name: "Clue Blitz",
+      description: "Evil Eye teleports to bosses for fast kills. Conniving Clues turns every casket into more clue contracts. Infinite clue farming loop.",
+      strength: "strong",
+      components: ["Evil Eye", "Conniving Clues"],
+    });
+  }
 
-  // RE synergies
-  if (relicIds.has("re-t1-2") && relicIds.has("re-t3-2")) {
+  // RE synergies (real wiki relic names)
+  if (relicIds.has("re-t1-1") && relicIds.has("re-t5-2")) {
     synergies.push({
-      name: "Gathering Pipeline",
-      description: "Endless Harvest auto-banks doubled resources, then Infernal Gathering auto-processes them. Mine ore → get bars in bank. Chop logs → get planks/bows.",
+      name: "Mining Pipeline",
+      description: "Power Miner auto-banks ores with auto-smelting. Production Master batch-processes all smithing at once. Mine ore → instantly get finished items.",
       strength: "strong",
-      components: ["Endless Harvest", "Infernal Gathering"],
+      components: ["Power Miner", "Production Master"],
     });
   }
-  if (relicIds.has("re-t3-3") && relicIds.has("re-t6-2")) {
+  if (relicIds.has("re-t1-3") && relicIds.has("re-t5-3")) {
     synergies.push({
-      name: "Death's Edge",
-      description: "Knife's Edge caps HP at 10 with 3x damage. Berserker scales damage with missing HP. At 1 HP you deal up to 15x damage. Extremely dangerous but devastating.",
+      name: "Hunter-Slayer",
+      description: "Animal Wrangler's enhanced Hunter traps + Slayer Master's always-on-task synergy. Everything you kill counts for Slayer; everything you catch is doubled.",
       strength: "strong",
-      components: ["Knife's Edge", "Berserker"],
+      components: ["Animal Wrangler", "Slayer Master"],
     });
   }
-  if (relicIds.has("re-t6-1") && pacts.some((p) => p.category === "combat")) {
+  if (relicIds.has("re-t8-1") && pacts.some((p) => p.category === "combat")) {
     synergies.push({
-      name: "Combat Mastery Engine",
-      description: "Weapon Specialist's 2-tick attacks with infinite special builds mastery stacks rapidly. Each hit increases your damage further.",
+      name: "Special Attack Engine",
+      description: "Specialist's 20% spec cost + energy on kills/misses pairs with combat mastery damage boosts. Infinite special attacks with increasing power.",
       strength: "strong",
-      components: ["Weapon Specialist", ...pacts.filter((p) => p.category === "combat").map((p) => p.name)],
+      components: ["Specialist", ...pacts.filter((p) => p.category === "combat").map((p) => p.name)],
     });
   }
-  if (relicIds.has("re-t1-1") && relicIds.has("re-t8-3")) {
+  if (relicIds.has("re-t8-2") && pacts.some((p) => p.category === "combat")) {
     synergies.push({
-      name: "Master Thief",
-      description: "Trickster guarantees pickpocket success and doubles loot. Dodgy Dealings lets you pickpocket any NPC (including bosses) for their drop table, also doubled.",
+      name: "Guardian Force",
+      description: "Guardian thrall fights alongside you with adaptive combat style + AoE. Combat mastery stacks boost both your and the Guardian's effectiveness.",
       strength: "strong",
-      components: ["Trickster", "Dodgy Dealings"],
+      components: ["Guardian", ...pacts.filter((p) => p.category === "combat").map((p) => p.name)],
     });
   }
-  if (relicIds.has("re-t5-2") && relicIds.has("re-t4-2")) {
+  if (relicIds.has("re-t8-3") && relicIds.has("re-t8-1")) {
+    // Can't pick both (same tier) but defensive check
+  }
+  if (relicIds.has("re-t5-1") && relicIds.has("re-t3-1")) {
     synergies.push({
-      name: "Recall Slayer",
-      description: "Kill monsters with Soul Stealer restoring prayer and auto-banking drops. Last Recall teleports you back instantly after banking. Zero downtime.",
+      name: "Clue Master",
+      description: "Clue Compass teleports to STASH units and clue steps. Treasure Arbiter gives 10x clue drops and max casket rewards. Complete clues at light speed.",
+      strength: "strong",
+      components: ["Clue Compass", "Treasure Arbiter"],
+    });
+  }
+  if (relicIds.has("re-t2-3") && relicIds.has("re-t4-1")) {
+    synergies.push({
+      name: "Thieving Empire",
+      description: "Dodgy Deals gives 100% pickpocket success with noted loot across all nearby NPCs. Golden God's free alchemy converts everything to GP instantly.",
+      strength: "strong",
+      components: ["Dodgy Deals", "Golden God"],
+    });
+  }
+  if (relicIds.has("re-t6-1") && relicIds.has("re-t8-1")) {
+    synergies.push({
+      name: "Recall Specialist",
+      description: "Total Recall saves your location/stats. Specialist gives cheap spec attacks. Teleport away, restore, recall back with full HP/prayer/spec.",
+      strength: "strong",
+      components: ["Total Recall", "Specialist"],
+    });
+  }
+  if (relicIds.has("re-t7-3") && relicIds.has("re-t1-2")) {
+    synergies.push({
+      name: "Farming Pipeline",
+      description: "Lumberjack auto-banks and auto-burns/fletches logs. Overgrown's auto-harvest/replant with 75% seed preservation means infinite farming loops.",
       strength: "moderate",
-      components: ["Last Recall", "Soul Stealer"],
+      components: ["Lumberjack", "Overgrown"],
     });
   }
-  if (relicIds.has("re-t1-3") && relicIds.has("re-t7-3")) {
+  if (relicIds.has("re-t2-2") && relicIds.has("re-t5-2")) {
     synergies.push({
-      name: "Portable Workshop",
-      description: "Production Prodigy makes crafting 2x faster with material savings. Pocket Crafter lets you craft anywhere using bank materials. Craft top-tier gear on the move.",
+      name: "Potion Factory",
+      description: "Friendly Forager auto-finds herbs with 90% secondary preservation and 4-dose potions. Production Master batch-processes all potions at once.",
       strength: "moderate",
-      components: ["Production Prodigy", "Pocket Crafter"],
-    });
-  }
-  if (relicIds.has("re-t4-1") && relicIds.has("re-t7-2")) {
-    synergies.push({
-      name: "Loot Magnet",
-      description: "Clue Compass gives 10x clue drop rate with double casket loot. Treasure Seeker gives 3x unique boss drops. Everything drops more and drops better.",
-      strength: "strong",
-      components: ["Clue Compass", "Treasure Seeker"],
-    });
-  }
-  if (relicIds.has("re-t6-1") && relicIds.has("re-t8-2")) {
-    synergies.push({
-      name: "Unstoppable Force",
-      description: "Weapon Specialist's 2-tick infinite-spec attacks on an Absolute Unit with AoE melee and +10 stats. You're a walking raid boss.",
-      strength: "strong",
-      components: ["Weapon Specialist", "Absolute Unit"],
+      components: ["Friendly Forager", "Production Master"],
     });
   }
 
@@ -460,7 +486,7 @@ function findMissedSynergies(
   const relicIds = new Set(selectedRelics.map((r) => r.id));
   const pactIds = new Set(selectedPacts.map((p) => p.id));
 
-  // Has Endless Harvest but not Woodsman
+  // DP missed synergies
   if (relicIds.has("relic-t1-1") && !relicIds.has("relic-t2-1")) {
     missed.push({
       name: "Gathering Pipeline",
@@ -469,7 +495,6 @@ function findMissedSynergies(
       components: ["Endless Harvest", "Woodsman (not selected)"],
     });
   }
-  // Has combat pacts but no Evil Eye
   if (selectedPacts.some((p) => p.category === "combat") && !relicIds.has("relic-t3-1")) {
     missed.push({
       name: "Boss Blitz",
@@ -478,7 +503,6 @@ function findMissedSynergies(
       components: [...selectedPacts.filter((p) => p.category === "combat").map((p) => p.name), "Evil Eye (not selected)"],
     });
   }
-  // Has Glass Cannon but no Vampiric Touch
   if (pactIds.has("pact-glass-cannon") && !pactIds.has("pact-vampiric-touch")) {
     missed.push({
       name: "Lifesteal Safety Net",
@@ -487,7 +511,6 @@ function findMissedSynergies(
       components: ["Glass Cannon", "Vampiric Touch (not selected)"],
     });
   }
-  // Has Culling Spree but no combat pacts
   if (relicIds.has("relic-t6-1") && !selectedPacts.some((p) => p.category === "combat")) {
     missed.push({
       name: "Slayer Machine",
@@ -497,45 +520,37 @@ function findMissedSynergies(
     });
   }
 
-  // RE missed synergies
-  if (relicIds.has("re-t1-2") && !relicIds.has("re-t3-2")) {
+  // RE missed synergies (real wiki names)
+  if (relicIds.has("re-t1-1") && !relicIds.has("re-t5-2")) {
     missed.push({
-      name: "Gathering Pipeline",
-      description: "Add Infernal Gathering (T3) to auto-process your doubled resources. Ores become bars, logs become planks, fish get cooked — all automatically.",
+      name: "Mining Pipeline",
+      description: "Add Production Master (T5) to batch-process all your auto-banked ores and gems. Power Miner + Production Master = instant finished items.",
       strength: "strong",
-      components: ["Endless Harvest", "Infernal Gathering (not selected)"],
+      components: ["Power Miner", "Production Master (not selected)"],
     });
   }
-  if (relicIds.has("re-t3-3") && !relicIds.has("re-t6-2")) {
+  if (relicIds.has("re-t3-1") && !relicIds.has("re-t5-1")) {
     missed.push({
-      name: "Death's Edge",
-      description: "You're capped at 10 HP from Knife's Edge. Adding Berserker (T6) would make your low HP a massive damage boost instead of just a liability.",
+      name: "Clue Master",
+      description: "You have Clue Compass for teleporting to clue steps. Add Treasure Arbiter (T5) for 10x clue drops and max casket rewards.",
       strength: "strong",
-      components: ["Knife's Edge", "Berserker (not selected)"],
+      components: ["Clue Compass", "Treasure Arbiter (not selected)"],
     });
   }
-  if (relicIds.has("re-t6-1") && !selectedPacts.some((p) => p.category === "combat")) {
+  if (relicIds.has("re-t8-1") && !selectedPacts.some((p) => p.category === "combat")) {
     missed.push({
-      name: "Combat Mastery Engine",
-      description: "Weapon Specialist's fast attacks would build mastery stacks rapidly. Add a combat mastery to amplify your damage per hit.",
+      name: "Special Attack Engine",
+      description: "Specialist gives cheap spec attacks with energy on kills. Add a combat mastery to amplify your damage per hit.",
       strength: "moderate",
-      components: ["Weapon Specialist", "Any mastery (not selected)"],
+      components: ["Specialist", "Any mastery (not selected)"],
     });
   }
-  if (relicIds.has("re-t1-1") && !relicIds.has("re-t8-3")) {
+  if (relicIds.has("re-t2-3") && !relicIds.has("re-t4-1")) {
     missed.push({
-      name: "Master Thief",
-      description: "Trickster makes pickpocketing always succeed. Add Dodgy Dealings (T8) to pickpocket bosses for their drop tables with doubled loot.",
+      name: "Thieving Empire",
+      description: "Dodgy Deals gives 100% pickpocket with noted loot. Add Golden God (T4) for free alchemy to convert everything to GP.",
       strength: "strong",
-      components: ["Trickster", "Dodgy Dealings (not selected)"],
-    });
-  }
-  if (relicIds.has("re-t4-1") && !relicIds.has("re-t7-2")) {
-    missed.push({
-      name: "Loot Magnet",
-      description: "You have 10x clue rates from Clue Compass. Add Treasure Seeker (T7) for 3x boss uniques too — complete the loot pipeline.",
-      strength: "moderate",
-      components: ["Clue Compass", "Treasure Seeker (not selected)"],
+      components: ["Dodgy Deals", "Golden God (not selected)"],
     });
   }
 
@@ -550,9 +565,11 @@ function getMultiplierTimeline(league: LeagueData): MultiplierTier[] {
 
   return league.relicTiers.map((rt) => {
     for (const eff of rt.passiveEffects) {
-      const xpMatch = eff.match(/XP multiplier increased to (\d+)x/);
+      // Match "XP multiplier increased to Nx", "XP multiplier is increased from Nx to Mx", "XP multiplier is Nx"
+      const xpMatch = eff.match(/XP multiplier.*\b(\d+)x/i);
       if (xpMatch) xp = parseInt(xpMatch[1]);
-      const dropMatch = eff.match(/Drop rate multiplier increased to (\d+)x/);
+      // Match "Drop rate multiplier increased to Nx" or "items...Nx as common"
+      const dropMatch = eff.match(/Drop rate multiplier.*?(\d+)x/i) ?? eff.match(/items.*?(\d+)x\s+as\s+common/i);
       if (dropMatch) drop = parseInt(dropMatch[1]);
     }
     return {
@@ -641,23 +658,19 @@ function generateWarnings(
     });
   }
 
-  // Glass Cannon + Berserker = extreme risk
+  // DP-specific warnings
   if (pactIds.has("pact-glass-cannon") && pactIds.has("pact-berserker")) {
     warnings.push({
       severity: "critical",
       message: "Glass Cannon + Berserker's Oath: you take extra damage AND can't use protection prayers. This is extremely dangerous for bossing. Consider Vampiric Touch for sustain.",
     });
   }
-
-  // Glass Cannon without sustain
   if (pactIds.has("pact-glass-cannon") && !pactIds.has("pact-vampiric-touch")) {
     warnings.push({
       severity: "caution",
       message: "Glass Cannon active without Vampiric Touch. You'll take increased damage with no lifesteal. Bring extra food.",
     });
   }
-
-  // Multiple T1 combat pacts (redundant)
   const t1CombatPacts = pacts.filter((p) => p.tier === 1 && p.category === "combat");
   if (t1CombatPacts.length >= 2) {
     warnings.push({
@@ -667,23 +680,22 @@ function generateWarnings(
   }
 
   // No raid access
-  const hasRaidAccess = accessible.has("kebos") || accessible.has("morytania") || accessible.has("desert");
+  const hasRaidAccess = accessible.has("kebos") || accessible.has("kourend") || accessible.has("morytania") || accessible.has("desert");
   if (!hasRaidAccess && league.maxRegions > 0) {
     warnings.push({
       severity: "caution",
-      message: "No raid access! You're missing Chambers of Xeric (Kebos), Theatre of Blood (Morytania), and Tombs of Amascut (Desert).",
+      message: "No raid access! You're missing Chambers of Xeric (Kourend), Theatre of Blood (Morytania), and Tombs of Amascut (Desert).",
     });
   }
 
   // Has gathering relic but no gathering regions
   if ((relicIds.has("relic-t1-1") || relicIds.has("relic-t1-2")) && build.regions.length > 0) {
-    // Check if any regions have good gathering
-    const gatheringRegions = ["kebos", "kandarin", "fremennik"];
+    const gatheringRegions = ["kebos", "kourend", "kandarin", "fremennik"];
     const hasGathering = gatheringRegions.some((r) => accessible.has(r));
     if (!hasGathering) {
       warnings.push({
         severity: "tip",
-        message: "You have a gathering relic but limited gathering regions. Kebos (Wintertodt, GOTR) and Kandarin (Catherby fishing) are great for gathering.",
+        message: "You have a gathering relic but limited gathering regions. Kebos/Kourend (Wintertodt, GOTR) and Kandarin (Catherby fishing) are great for gathering.",
       });
     }
   }
@@ -692,11 +704,10 @@ function generateWarnings(
   if (accessible.has("karamja") && pacts.some((p) => p.category === "combat")) {
     warnings.push({
       severity: "tip",
-      message: "Karamja + combat pacts = Inferno access. This is the highest-prestige task in the league (500 pts).",
+      message: "Karamja + combat pacts = Inferno access. This is the highest-prestige task in the league.",
     });
   }
 
-  // Relic T1-3 Abundance money tip
   if (relicIds.has("relic-t1-3")) {
     warnings.push({
       severity: "tip",
@@ -705,37 +716,37 @@ function generateWarnings(
   }
 
   // RE-specific warnings
-  if (relicIds.has("re-t3-3")) {
+  if (relicIds.has("re-t8-3")) {
     warnings.push({
-      severity: "caution",
-      message: "Knife's Edge caps your HP at 10. You deal 3x damage but can be one-shot by most bosses. Pair with prayer flicking or Berserker to make the risk worthwhile.",
+      severity: "tip",
+      message: "Last Stand saves you from lethal damage with stats boosted to 255. Has a 3-minute cooldown — don't rely on it for sustained tanking.",
     });
   }
-  if (relicIds.has("re-t3-3") && relicIds.has("re-t6-2")) {
+  if (relicIds.has("re-t4-2")) {
     warnings.push({
-      severity: "critical",
-      message: "Knife's Edge + Berserker: you're capped at 10 HP with damage scaling from missing HP. At 1 HP you deal ~15x damage but ANY hit kills you. This is the highest-risk combo in the league.",
+      severity: "tip",
+      message: "Reloaded lets you pick a second relic from a previous tier. Choose the tier that synergizes best with your other selections.",
     });
   }
   if (pacts.filter((p) => p.id.startsWith("re-mastery-")).length >= 2) {
     warnings.push({
       severity: "tip",
-      message: "Multiple masteries active. Each resets on death independently — dying loses all accumulated progress. Consider focusing on 1-2 styles to minimize the cost of dying.",
+      message: "Multiple masteries active. You only have 10 mastery points total — spreading across styles means fewer high-tier unlocks per style.",
     });
   }
-  if (relicIds.has("re-t1-2") && relicIds.has("re-t1-3")) {
+  if (relicIds.has("re-t2-1") && relicIds.has("re-t2-3")) {
     // Can't happen (same tier) but defensive
   }
-  if (relicIds.has("re-t5-2") && relicIds.has("re-t4-2")) {
+  if (relicIds.has("re-t8-1") && relicIds.has("re-t7-2")) {
     warnings.push({
       severity: "tip",
-      message: "Last Recall + Soul Stealer: teleport to boss, kill with prayer restored on each kill, auto-bank 15% of drops, then recall back. Perfect bossing loop.",
+      message: "Specialist + Grimoire: cheap spec attacks + all prayers and spells unlocked. You can use any special attack with any prayer book.",
     });
   }
-  if (relicIds.has("re-t7-1") && !relics.some((r) => RELIC_TAGS[r.id]?.includes("combat"))) {
+  if (relicIds.has("re-t5-3") && !relics.some((r) => RELIC_TAGS[r.id]?.includes("combat"))) {
     warnings.push({
       severity: "caution",
-      message: "Echo Augmentation boosts Echo bosses but you have no combat relics. You'll struggle to actually kill the bosses efficiently.",
+      message: "Slayer Master makes you always on-task but you have no combat relics. You'll struggle to kill efficiently.",
     });
   }
 
@@ -787,27 +798,30 @@ function classifyArchetype(relics: Relic[], pacts: Pact[], build: LeagueBuild): 
     return { name: "Summoner", description: "Your Minion companion fights, loots, and powers up. You bring a friend to every fight.", icon: "🐾" };
   }
 
-  // RE-specific archetypes
-  if (relicIds.has("re-t3-3") && relicIds.has("re-t6-2")) {
-    return { name: "Glass Berserker", description: "Knife's Edge + Berserker: 3x damage at 10 HP, scaling to 15x at 1 HP. Maximum risk, maximum reward. One mistake is death.", icon: "💀" };
+  // RE-specific archetypes (real wiki names)
+  if (relicIds.has("re-t8-1") && relicIds.has("re-t6-1") && combatPacts >= 1) {
+    return { name: "Spec Master", description: "Specialist + Total Recall with combat mastery. Cheap spec attacks, infinite energy restoration, and instant stat recovery. Bosses can't outlast you.", icon: "⚔️" };
   }
-  if (relicIds.has("re-t6-1") && relicIds.has("re-t8-2") && combatPacts >= 1) {
-    return { name: "Raid Boss", description: "Weapon Specialist + Absolute Unit with combat mastery. 2-tick AoE attacks, +10 stats, 20% damage reduction. You ARE the boss.", icon: "👑" };
+  if (relicIds.has("re-t8-2") && combatPacts >= 1) {
+    return { name: "Summoner", description: "Guardian thrall fights alongside you with adaptive combat style + AoE. Combat mastery makes you both stronger.", icon: "🐾" };
   }
-  if (relicIds.has("re-t1-1") && relicIds.has("re-t8-3")) {
-    return { name: "Master Thief", description: "Pickpocket always succeeds. Pickpocket anyone — even bosses — for their full drop table, doubled. Why fight when you can steal?", icon: "🎭" };
+  if (relicIds.has("re-t8-3") && combatPacts >= 1) {
+    return { name: "Unkillable", description: "Last Stand saves you from lethal damage with 255 stats. Combined with combat mastery, you're nearly impossible to kill.", icon: "🛡️" };
   }
-  if (relicIds.has("re-t1-2") && relicIds.has("re-t3-2")) {
-    return { name: "Gathering Lord", description: "Endless Harvest + Infernal Gathering: double resources auto-bank and auto-process. Mine ore, get bars in your bank instantly.", icon: "⛏️" };
+  if (relicIds.has("re-t2-3") && relicIds.has("re-t4-1")) {
+    return { name: "Master Thief", description: "100% pickpocket success across all nearby NPCs with noted loot, then alchemy everything for free GP. Rob the entire world.", icon: "🎭" };
   }
-  if (relicIds.has("re-t4-1") && relicIds.has("re-t7-2")) {
-    return { name: "Treasure Hunter", description: "10x clue drops, double casket loot, 3x boss uniques, guaranteed pets. Everything the game can drop, you're getting more of.", icon: "💎" };
+  if (relicIds.has("re-t1-1") && relicIds.has("re-t5-2")) {
+    return { name: "Gathering Lord", description: "Power Miner + Production Master: auto-bank ores, auto-smelt, batch-process everything. Mine to bank in one step.", icon: "⛏️" };
   }
-  if (relicIds.has("re-t1-3") && relicIds.has("re-t7-3")) {
-    return { name: "Artisan", description: "Production Prodigy + Pocket Crafter: craft anywhere from your bank, 2x faster, saving materials. A walking workshop.", icon: "🔨" };
+  if (relicIds.has("re-t5-1") && relicIds.has("re-t3-1")) {
+    return { name: "Treasure Hunter", description: "Clue Compass + Treasure Arbiter: teleport to clue steps, 10x clue drops, max casket rewards. You are the clue scroll.", icon: "💎" };
   }
-  if (relicIds.has("re-t6-1") && combatPacts >= 1) {
-    return { name: "PvM Destroyer", description: "Weapon Specialist with combat mastery stacking. 2-tick attacks build mastery fast, infinite special attack energy. Bosses melt.", icon: "⚔️" };
+  if (relicIds.has("re-t5-3") && combatPacts >= 1) {
+    return { name: "PvM Destroyer", description: "Slayer Master with combat mastery. Always on task, free perks, bonus XP milestones. Everything you fight counts.", icon: "⚔️" };
+  }
+  if (relicIds.has("re-t7-3") && (relicIds.has("re-t1-2") || relicIds.has("re-t1-3"))) {
+    return { name: "Artisan", description: "Gathering relic + Overgrown: auto-harvest, auto-replant, 75% seed preservation. A self-sustaining farming empire.", icon: "🔨" };
   }
 
   // Generic archetypes (both leagues)

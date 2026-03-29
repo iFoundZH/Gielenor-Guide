@@ -62,8 +62,8 @@ export function calculateGielinorScore(
   build: LeagueBuild,
   league: LeagueData
 ): GielinorScore {
-  // Task Score (0-1500): weighted by difficulty (aligned to OSRS point ratios)
-  const difficultyWeights = { easy: 1, medium: 3, hard: 5, elite: 10, master: 20 };
+  // Task Score (0-1500): weighted by difficulty (aligned to OSRS league point ratios)
+  const difficultyWeights = { easy: 1, medium: 3, hard: 8, elite: 20, master: 40 };
   const maxTaskScore = league.tasks.reduce(
     (sum, t) => sum + (difficultyWeights[t.difficulty] || 1),
     0
@@ -122,6 +122,8 @@ function calculateBuildSynergy(relics: Relic[], pacts: Pact[]): number {
   if (relicIds.has("relic-t1-1") && relicIds.has("relic-t2-1")) score += 60;
   // Evil Eye (boss teleports) + any combat pact
   if (relicIds.has("relic-t3-1") && pacts.some((p) => p.category === "combat")) score += 50;
+  // Evil Eye + Conniving Clues: boss teleports + clue farming
+  if (relicIds.has("relic-t3-1") && relicIds.has("relic-t4-1")) score += 60;
   // Culling Spree (slayer relic) + Melee Might or Ranged Fury or Magic Surge
   if (relicIds.has("relic-t6-1") && (pactIds.has("pact-melee-might") || pactIds.has("pact-ranged-fury") || pactIds.has("pact-magic-surge"))) score += 70;
   // Minion + Glass Cannon: companion deals damage while you're fragile
@@ -131,19 +133,25 @@ function calculateBuildSynergy(relics: Relic[], pacts: Pact[]): number {
   // Abundance (+10 skill boost) + any T2+ pact: strong early-game synergy
   if (relicIds.has("relic-t1-3") && pacts.length >= 2) score += 50;
 
-  // Raging Echoes synergies
-  // Endless Harvest + Infernal Gathering: auto-bank + auto-process
-  if (relicIds.has("re-t1-2") && relicIds.has("re-t3-2")) score += 70;
-  // Knife's Edge (3x dmg at 10hp) + Berserker (dmg scales with missing hp)
-  if (relicIds.has("re-t3-3") && relicIds.has("re-t6-2")) score += 80;
-  // Weapon Specialist (fast attacks) + any combat mastery
-  if (relicIds.has("re-t6-1") && pacts.some((p) => p.category === "combat")) score += 60;
-  // Trickster + Dodgy Dealings: thieving synergy
-  if (relicIds.has("re-t1-1") && relicIds.has("re-t8-3")) score += 70;
-  // Last Recall + Soul Stealer: teleport-kill-return cycle
-  if (relicIds.has("re-t5-2") && relicIds.has("re-t4-2")) score += 60;
-  // Production Prodigy + Pocket Crafter: production everywhere
-  if (relicIds.has("re-t1-3") && relicIds.has("re-t7-3")) score += 50;
+  // Raging Echoes synergies (real wiki relic names/IDs)
+  // Power Miner + Production Master: auto-bank ores + batch-process everything
+  if (relicIds.has("re-t1-1") && relicIds.has("re-t5-2")) score += 70;
+  // Animal Wrangler + Slayer Master: enhanced hunting + always on task
+  if (relicIds.has("re-t1-3") && relicIds.has("re-t5-3")) score += 60;
+  // Specialist (cheap spec) + any combat mastery
+  if (relicIds.has("re-t8-1") && pacts.some((p) => p.category === "combat")) score += 70;
+  // Guardian + any combat mastery
+  if (relicIds.has("re-t8-2") && pacts.some((p) => p.category === "combat")) score += 70;
+  // Clue Compass + Treasure Arbiter: clue teleports + 10x drops + max rewards
+  if (relicIds.has("re-t3-1") && relicIds.has("re-t5-1")) score += 70;
+  // Dodgy Deals + Golden God: thieving empire + free alchemy
+  if (relicIds.has("re-t2-3") && relicIds.has("re-t4-1")) score += 60;
+  // Total Recall + Specialist: save location/stats + cheap specs
+  if (relicIds.has("re-t6-1") && relicIds.has("re-t8-1")) score += 60;
+  // Friendly Forager + Production Master: auto herbs + batch potions
+  if (relicIds.has("re-t2-2") && relicIds.has("re-t5-2")) score += 50;
+  // Lumberjack + Overgrown: auto wood processing + auto farming
+  if (relicIds.has("re-t1-2") && relicIds.has("re-t7-3")) score += 50;
 
   return Math.min(500, score);
 }

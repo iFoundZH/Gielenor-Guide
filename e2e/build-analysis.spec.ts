@@ -107,8 +107,8 @@ test.describe("Raging Echoes Build Analysis", () => {
 
   test("shows balance bars for RE relics", async ({ page }) => {
     await page.goto("/leagues/raging-echoes/planner");
-    await page.locator("text=Trickster").first().click();
+    await page.locator("text=Power Miner").first().click();
     await page.locator("text=Build Balance").click();
-    await expect(page.getByText("Utility", { exact: true })).toBeVisible();
+    await expect(page.getByText("Gathering", { exact: true })).toBeVisible();
   });
 });
