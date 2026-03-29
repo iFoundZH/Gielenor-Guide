@@ -17,6 +17,13 @@ const guideCategories = [
         badgeVariant: "gold" as const,
       },
       {
+        title: "Main Account Guide",
+        description: "Complete progression guide from Tutorial Island to end-game. Quests, gear, bossing, and money making.",
+        href: "/guides/main",
+        badge: "Progression",
+        badgeVariant: "gold" as const,
+      },
+      {
         title: "Ironman Guides",
         description: "Comprehensive guides for Standard, Hardcore, Ultimate, and Group Ironman accounts.",
         href: "/guides/ironman",
@@ -51,6 +58,13 @@ const guideCategories = [
     icon: "❄",
     guides: [
       {
+        title: "Snowflake Guides",
+        description: "Guides for area-locked and restriction accounts. Karamja Only, 1 Def Pure, Skiller, and more.",
+        href: "/guides/snowflake",
+        badge: "8 Guides",
+        badgeVariant: "purple" as const,
+      },
+      {
         title: "Snowflake Planner",
         description: "Plan area-locked and skill-restricted accounts. See what content is available with your restrictions.",
         href: "/snowflake",
@@ -79,7 +93,7 @@ const guideCategories = [
       },
       {
         title: "Strategy Guide",
-        description: "Optimized strategies for Speedrunner, PvM, Completionist, and Ironman playstyles.",
+        description: "Optimized strategies for Speedrunner, PvM, and Completionist playstyles.",
         href: "/leagues/demonic-pacts/guide",
         badge: "Strategies",
         badgeVariant: "blue" as const,

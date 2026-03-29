@@ -12,10 +12,17 @@ test.describe("Guides Index Page", () => {
   test("shows main game guide cards", async ({ page }) => {
     await page.goto("/guides");
     await expect(page.locator("h3:has-text('Skill Training')")).toBeVisible();
+    await expect(page.locator("h3:has-text('Main Account Guide')")).toBeVisible();
     await expect(page.locator("h3:has-text('Ironman Guides')")).toBeVisible();
     await expect(page.locator("h3:has-text('Optimal Quest Order')")).toBeVisible();
     await expect(page.locator("h3:has-text('Achievement Diaries')")).toBeVisible();
     await expect(page.locator("h3:has-text('Combat Achievements')")).toBeVisible();
+  });
+
+  test("shows snowflake guide cards", async ({ page }) => {
+    await page.goto("/guides");
+    await expect(page.locator("h3:has-text('Snowflake Guides')")).toBeVisible();
+    await expect(page.locator("h3:has-text('Snowflake Planner')")).toBeVisible();
   });
 
   test("skill training link navigates correctly", async ({ page }) => {
@@ -124,5 +131,44 @@ test.describe("Combat Achievements", () => {
     await page.locator("input[placeholder='Search tasks or monsters...']").fill("Jad");
     // Should find Jad-related tasks
     await expect(page.locator("text=Overall Progress")).toBeVisible();
+  });
+});
+
+test.describe("Main Account Guide", () => {
+  test("main account guide loads", async ({ page }) => {
+    await page.goto("/guides/main");
+    await expect(page.locator("h1")).toContainText("Main Account Guide");
+  });
+
+  test("main account guide shows sections", async ({ page }) => {
+    await page.goto("/guides/main");
+    await expect(page.locator("button:has-text('Getting Started')").first()).toBeVisible();
+    await expect(page.locator("button:has-text('Gear Progression')").first()).toBeVisible();
+  });
+});
+
+test.describe("Snowflake Guides", () => {
+  test("snowflake guides index loads", async ({ page }) => {
+    await page.goto("/guides/snowflake");
+    await expect(page.locator("h1")).toContainText("Snowflake Account Guides");
+    await expect(page.locator("text=Area-Locked Accounts")).toBeVisible();
+    await expect(page.locator("text=Restriction Accounts")).toBeVisible();
+  });
+
+  test("snowflake guides index shows guide cards", async ({ page }) => {
+    await page.goto("/guides/snowflake");
+    await expect(page.locator("h3:has-text('Karamja Only')")).toBeVisible();
+    await expect(page.locator("h3:has-text('1 Defence Pure')")).toBeVisible();
+  });
+
+  test("individual snowflake guide loads", async ({ page }) => {
+    await page.goto("/guides/snowflake/karamja-only");
+    await expect(page.locator("h1")).toContainText("Karamja Only");
+    await expect(page.locator("button:has-text('Overview')").first()).toBeVisible();
+  });
+
+  test("snowflake guide shows planner link", async ({ page }) => {
+    await page.goto("/guides/snowflake/karamja-only");
+    await expect(page.locator("text=Open Snowflake Planner")).toBeVisible();
   });
 });

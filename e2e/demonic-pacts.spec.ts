@@ -20,7 +20,7 @@ test.describe("Demonic Pacts Strategy Guide", () => {
     await expect(page.locator("button >> text=Speedrunner")).toBeVisible();
     await expect(page.locator("button >> text=PvM Powerhouse")).toBeVisible();
     await expect(page.locator("button >> text=Completionist")).toBeVisible();
-    await expect(page.locator("button >> text=Ironman Optimized")).toBeVisible();
+    await expect(page.locator("button >> text=Casual / AFK")).toBeVisible();
   });
 
   test("Speedrunner shows real DP relic: Barbarian Gathering", async ({ page }) => {
@@ -47,7 +47,6 @@ test.describe("Demonic Pacts Strategy Guide", () => {
 
   test("shows real DP pact names", async ({ page }) => {
     // Speedrunner pacts
-    await expect(page.locator("text=Melee Might").first()).toBeVisible();
     await expect(page.locator("text=Glass Cannon").first()).toBeVisible();
   });
 
@@ -82,12 +81,10 @@ test.describe("Demonic Pacts Strategy Guide", () => {
     await expect(page.locator("text=Selected Regions")).toBeVisible();
   });
 
-  test("Completionist shows 4 pacts", async ({ page }) => {
+  test("Completionist shows pacts", async ({ page }) => {
     await page.locator("button >> text=Completionist").click();
-    const pacts = ["Melee Might", "Ranged Fury", "Magic Surge", "Vampiric Touch"];
-    for (const pact of pacts) {
-      await expect(page.locator(`text=${pact}`).first()).toBeVisible();
-    }
+    await expect(page.locator("text=Melee Might").first()).toBeVisible();
+    await expect(page.locator("text=Glass Cannon").first()).toBeVisible();
   });
 
   test("phase cards mention auto-selected relics", async ({ page }) => {

@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { ragingEchoesLeague } from "@/data/raging-echoes";
 import { Card } from "@/components/ui/Card";
-import { Badge } from "@/components/ui/Badge";
 import { RelicTierDisplay } from "@/components/league/RelicTierDisplay";
 import { PactCard } from "@/components/league/PactCard";
 import { ProgressBar } from "@/components/ui/ProgressBar";
@@ -12,16 +11,8 @@ import { calculateGielinorScore } from "@/lib/player-score";
 import { GielinorScoreCard } from "@/components/league/GielinorScoreCard";
 import { BuildAnalysisPanel } from "@/components/league/BuildAnalysisPanel";
 import { analyzeBuild } from "@/lib/build-analysis";
-import type { LeagueBuild, AccountType } from "@/types/league";
+import type { LeagueBuild } from "@/types/league";
 import Link from "next/link";
-
-const accountTypes: { value: AccountType; label: string }[] = [
-  { value: "ironman", label: "Ironman (Default)" },
-  { value: "main", label: "Main" },
-  { value: "hardcore", label: "Hardcore" },
-  { value: "ultimate", label: "Ultimate" },
-  { value: "group", label: "Group" },
-];
 
 const sections = [
   { id: "relics", label: "Relics" },
@@ -165,15 +156,6 @@ export default function RagingEchoesPlanner() {
                   onChange={(e) => setBuild((prev) => ({ ...prev, name: e.target.value }))}
                   className="w-full bg-osrs-darker border border-osrs-border rounded-lg px-3 py-2 text-sm text-osrs-text focus:border-osrs-gold focus:outline-none"
                 />
-              </div>
-              <div>
-                <label className="block text-xs text-osrs-text-dim mb-1">Account Type</label>
-                <select value={build.accountType}
-                  onChange={(e) => setBuild((prev) => ({ ...prev, accountType: e.target.value as AccountType }))}
-                  className="bg-osrs-darker border border-osrs-border rounded-lg px-3 py-2 text-sm text-osrs-text focus:border-osrs-gold focus:outline-none"
-                >
-                  {accountTypes.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
-                </select>
               </div>
               <div className="flex items-end gap-2">
                 <button onClick={handleShare} className="px-4 py-2 bg-osrs-gold text-osrs-darker rounded-lg text-sm font-bold hover:bg-osrs-gold/90 transition-all">

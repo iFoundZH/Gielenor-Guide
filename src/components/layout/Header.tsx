@@ -33,7 +33,9 @@ const navItems = [
     children: [
       { label: "All Guides", href: "/guides" },
       { label: "Skill Training", href: "/guides/skills" },
+      { label: "Main Account Guide", href: "/guides/main" },
       { label: "Ironman Guides", href: "/guides/ironman" },
+      { label: "Snowflake Guides", href: "/guides/snowflake" },
       { label: "Quest Order", href: "/guides/quests" },
       { label: "Achievement Diaries", href: "/guides/diaries" },
       { label: "Combat Achievements", href: "/guides/combat-achievements" },

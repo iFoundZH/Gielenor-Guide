@@ -19,12 +19,6 @@ test.describe("Demonic Pacts Build Planner", () => {
     await expect(nameInput).toHaveValue("Test Build");
   });
 
-  test("can change account type", async ({ page }) => {
-    const select = page.locator("select").first();
-    await select.selectOption("hardcore");
-    await expect(select).toHaveValue("hardcore");
-  });
-
   test("can select a region", async ({ page }) => {
     // Click on a choosable region card - find by region name
     await page.locator("h5 >> text=Asgarnia").click();
@@ -120,14 +114,6 @@ test.describe("Raging Echoes Build Planner", () => {
     for (let tier = 1; tier <= 8; tier++) {
       await expect(page.locator(`text=Tier ${tier}`).first()).toBeVisible();
     }
-  });
-
-  test("has account type selector", async ({ page }) => {
-    await page.goto("/leagues/raging-echoes/planner");
-    const select = page.locator("select").first();
-    await expect(select).toBeVisible();
-    await select.selectOption("hardcore");
-    await expect(select).toHaveValue("hardcore");
   });
 
   test("shows combat masteries section", async ({ page }) => {

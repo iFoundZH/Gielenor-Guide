@@ -107,3 +107,15 @@ export interface IronmanGuide {
   sections: GuideSection[];
   wikiUrl: string;
 }
+
+export interface MainAccountGuide {
+  sections: GuideSection[];
+}
+
+export interface SnowflakeGuide {
+  id: string;
+  name: string;
+  category: "area-locked" | "restriction";
+  description: string;
+  sections: GuideSection[];
+}

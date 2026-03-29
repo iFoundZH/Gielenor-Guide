@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { demonicPactsLeague } from "@/data/demonic-pacts";
 import { Card } from "@/components/ui/Card";
-import { Badge } from "@/components/ui/Badge";
 import { RelicTierDisplay } from "@/components/league/RelicTierDisplay";
 import { PactCard } from "@/components/league/PactCard";
 import { RegionPicker } from "@/components/league/RegionPicker";
@@ -13,16 +12,8 @@ import { calculateGielinorScore } from "@/lib/player-score";
 import { GielinorScoreCard } from "@/components/league/GielinorScoreCard";
 import { BuildAnalysisPanel } from "@/components/league/BuildAnalysisPanel";
 import { analyzeBuild } from "@/lib/build-analysis";
-import type { LeagueBuild, AccountType } from "@/types/league";
+import type { LeagueBuild } from "@/types/league";
 import Link from "next/link";
-
-const accountTypes: { value: AccountType; label: string }[] = [
-  { value: "ironman", label: "Ironman (Default)" },
-  { value: "main", label: "Main" },
-  { value: "hardcore", label: "Hardcore" },
-  { value: "ultimate", label: "Ultimate" },
-  { value: "group", label: "Group" },
-];
 
 const sections = [
   { id: "regions", label: "Regions" },
@@ -180,15 +171,6 @@ export default function BuildPlanner() {
                   className="w-full bg-osrs-darker border border-osrs-border rounded-lg px-3 py-2 text-sm text-osrs-text focus:border-osrs-gold focus:outline-none"
                 />
               </div>
-              <div>
-                <label className="block text-xs text-osrs-text-dim mb-1">Account Type</label>
-                <select value={build.accountType}
-                  onChange={(e) => setBuild((prev) => ({ ...prev, accountType: e.target.value as AccountType }))}
-                  className="bg-osrs-darker border border-osrs-border rounded-lg px-3 py-2 text-sm text-osrs-text focus:border-osrs-gold focus:outline-none"
-                >
-                  {accountTypes.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
-                </select>
-              </div>
               <div className="flex items-end gap-2">
                 <button onClick={handleShare} className="px-4 py-2 bg-osrs-gold text-osrs-darker rounded-lg text-sm font-bold hover:bg-osrs-gold/90 transition-all">
                   {copied ? "Copied!" : "Share Build"}
@@ -295,10 +277,6 @@ export default function BuildPlanner() {
               <h3 className="text-lg font-bold text-osrs-gold mb-4" style={{ fontFamily: "var(--font-runescape)" }}>Build Summary</h3>
               <div className="space-y-3 mb-4">
                 <div className="flex justify-between text-sm">
-                  <span className="text-osrs-text-dim">Account</span>
-                  <Badge variant="gold">{build.accountType}</Badge>
-                </div>
-                <div className="flex justify-between text-sm">
                   <span className="text-osrs-text-dim">Regions</span>
                   <span className="text-osrs-text">{build.regions.length} / {league.maxRegions}</span>
                 </div>
@@ -365,10 +343,6 @@ export default function BuildPlanner() {
         {mobileExpanded && (
           <div className="bg-osrs-dark border-t border-osrs-border px-4 py-3 max-h-64 overflow-y-auto">
             <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-osrs-text-dim">Account</span>
-                <Badge variant="gold">{build.accountType}</Badge>
-              </div>
               <div className="flex justify-between">
                 <span className="text-osrs-text-dim">Regions</span>
                 <span className="text-osrs-text">{build.regions.map((id) => league.regions.find((r) => r.id === id)?.name).filter(Boolean).join(", ") || "None"}</span>

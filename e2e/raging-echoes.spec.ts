@@ -27,10 +27,11 @@ test.describe("Raging Echoes Strategy Guide", () => {
     await expect(page.locator("h2 >> text=Speedrunner")).toBeVisible();
   });
 
-  test("shows all 3 strategy tabs", async ({ page }) => {
+  test("shows all 4 strategy tabs", async ({ page }) => {
     await expect(page.locator("button >> text=Speedrunner")).toBeVisible();
     await expect(page.locator("button >> text=PvM Destroyer")).toBeVisible();
     await expect(page.locator("button >> text=Completionist")).toBeVisible();
+    await expect(page.locator("button >> text=Casual / AFK")).toBeVisible();
   });
 
   test("Speedrunner shows correct 8 relics", async ({ page }) => {
