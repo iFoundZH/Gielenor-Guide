@@ -64,6 +64,14 @@ export default function RagingEchoesTaskTracker() {
     return tasks;
   }, [league.tasks, filterDifficulty, filterCategory, showCompleted, search, completed, sortMode]);
 
+  const PAGE_SIZE = 50;
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+
+  // Reset visible count when filters change
+  useEffect(() => {
+    setVisibleCount(PAGE_SIZE);
+  }, [filterDifficulty, filterCategory, showCompleted, search, sortMode]);
+
   const totalPoints = league.tasks.reduce((sum, t) => sum + t.points, 0);
   const earnedPoints = league.tasks.filter((t) => completed.has(t.id)).reduce((sum, t) => sum + t.points, 0);
   const currentTier = league.rewardTiers.filter((t) => earnedPoints >= t.pointsRequired).pop();
@@ -178,8 +186,9 @@ export default function RagingEchoesTaskTracker() {
         </div>
       </Card>
 
+      <div className="text-xs text-osrs-text-dim mb-2">Showing {Math.min(visibleCount, filteredTasks.length)} of {filteredTasks.length} tasks</div>
       <div className="space-y-2">
-        {filteredTasks.map((task) => {
+        {filteredTasks.slice(0, visibleCount).map((task) => {
           const isDone = completed.has(task.id);
           return (
             <div key={task.id} onClick={() => toggleTask(task.id)} className={`flex items-center gap-4 p-3 rounded-lg border cursor-pointer transition-all ${isDone ? "bg-osrs-green/5 border-osrs-green/20 opacity-70" : "bg-osrs-panel border-osrs-border hover:border-osrs-gold/50"}`}>
@@ -199,6 +208,12 @@ export default function RagingEchoesTaskTracker() {
           );
         })}
         {filteredTasks.length === 0 && <Card className="text-center py-8"><p className="text-osrs-text-dim">No tasks match your filters.</p></Card>}
+        {visibleCount < filteredTasks.length && (
+          <button onClick={() => setVisibleCount((v) => v + PAGE_SIZE)}
+            className="w-full py-3 rounded-lg border border-osrs-border bg-osrs-panel hover:border-osrs-gold/50 text-osrs-gold text-sm font-bold transition-colors">
+            Load More ({filteredTasks.length - visibleCount} remaining)
+          </button>
+        )}
       </div>
     </div>
   );
