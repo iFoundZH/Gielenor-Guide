@@ -48,8 +48,11 @@ test.describe("Demonic Pacts Task Tracker", () => {
   });
 
   test("difficulty filter works", async ({ page }) => {
-    const select = page.locator("select").first();
+    // Difficulty filter is the first select inside the filter Card
+    const select = page.locator("select:has(option[value='master'])").first();
     await select.selectOption("master");
+    // Wait for the filter to take effect
+    await page.waitForTimeout(300);
     const tasks = page.locator("div.rounded-lg.border.cursor-pointer");
     const count = await tasks.count();
     expect(count).toBeGreaterThan(0);
@@ -77,33 +80,31 @@ test.describe("Demonic Pacts Task Tracker", () => {
   });
 
   test("task completion persists after reload", async ({ page }) => {
-    // Complete a task
+    // Complete a task and wait for the green checkbox to appear
     const firstTask = page.locator("div.rounded-lg.border.cursor-pointer").first();
     await firstTask.click();
-    // Wait for localStorage to persist
-    await page.waitForTimeout(500);
-    // Verify it saved
-    const stored = await page.evaluate(() => localStorage.getItem("gielinor-dp-tasks"));
-    expect(stored).toBeTruthy();
-    const parsed = JSON.parse(stored!);
-    expect(parsed.length).toBeGreaterThan(0);
+    await expect(firstTask.locator("div.bg-osrs-green").first()).toBeVisible({ timeout: 5000 });
+    // Poll until localStorage has the data
+    await expect(async () => {
+      const stored = await page.evaluate(() => localStorage.getItem("gielinor-dp-tasks"));
+      expect(stored).toBeTruthy();
+      expect(JSON.parse(stored!).length).toBeGreaterThan(0);
+    }).toPass({ timeout: 5000 });
     // Reload and check task is still completed
     await page.reload();
-    await page.waitForTimeout(500);
-    // The first task row should still have green styling
     const firstTaskAfter = page.locator("div.rounded-lg.border.cursor-pointer").first();
     await expect(firstTaskAfter).toHaveClass(/bg-osrs-green/);
   });
 
   test("uses correct localStorage key (gielinor-dp-tasks)", async ({ page }) => {
-    // Complete a task - target rows that have pts text (task rows)
+    // Complete a task
     await page.locator("div.rounded-lg.border.cursor-pointer:has-text('pts')").first().click();
-    // Wait a moment for state to settle
-    await page.waitForTimeout(500);
-    const stored = await page.evaluate(() => localStorage.getItem("gielinor-dp-tasks"));
-    expect(stored).toBeTruthy();
-    const parsed = JSON.parse(stored!);
-    expect(parsed.length).toBeGreaterThan(0);
+    // Poll until localStorage is written
+    await expect(async () => {
+      const stored = await page.evaluate(() => localStorage.getItem("gielinor-dp-tasks"));
+      expect(stored).toBeTruthy();
+      expect(JSON.parse(stored!).length).toBeGreaterThan(0);
+    }).toPass({ timeout: 5000 });
   });
 });
 

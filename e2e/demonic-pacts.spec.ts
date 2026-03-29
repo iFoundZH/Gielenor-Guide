@@ -2,8 +2,10 @@ import { test, expect } from "@playwright/test";
 
 // ─── Helper: select a relic by name ─────────────────────────────────────
 async function selectRelic(page: import("@playwright/test").Page, name: string) {
-  await page.locator(`text=${name}`).first().click();
-  await page.waitForTimeout(200);
+  const card = page.locator(`h4:has-text("${name}")`).first();
+  await card.click();
+  // Wait for the relic card to show "ring-osrs-gold" class (selected state)
+  await expect(card.locator("xpath=ancestor::div[contains(@class,'bg-osrs-panel')]")).toHaveClass(/ring-osrs-gold/, { timeout: 5000 });
 }
 
 // ─── DP Guide Page ──────────────────────────────────────────────────────
@@ -106,19 +108,14 @@ test.describe("DP Planner - Strategy Builds", () => {
   });
 
   test("Gathering Lord archetype with Endless Harvest + Woodsman", async ({ page }) => {
-    // Click the relic card heading to select
-    await page.locator("h4:has-text('Endless Harvest')").click();
-    await page.waitForTimeout(300);
-    await page.locator("h4:has-text('Woodsman')").click();
-    await page.waitForTimeout(300);
+    await selectRelic(page, "Endless Harvest");
+    await selectRelic(page, "Woodsman");
     await expect(page.locator("#analysis >> text=Gathering Lord")).toBeVisible();
   });
 
   test("Skill Prodigy archetype with Abundance + another relic", async ({ page }) => {
-    await page.locator("h4:has-text('Abundance')").click();
-    await page.waitForTimeout(300);
-    await page.locator("h4:has-text('Woodsman')").click();
-    await page.waitForTimeout(300);
+    await selectRelic(page, "Abundance");
+    await selectRelic(page, "Woodsman");
     await expect(page.locator("#analysis >> text=Skill Prodigy")).toBeVisible();
   });
 
@@ -157,10 +154,8 @@ test.describe("DP Planner - Strategy Builds", () => {
   });
 
   test("Endless Harvest + Woodsman triggers Gathering Pipeline synergy", async ({ page }) => {
-    await page.locator("h4:has-text('Endless Harvest')").click();
-    await page.waitForTimeout(300);
-    await page.locator("h4:has-text('Woodsman')").click();
-    await page.waitForTimeout(300);
+    await selectRelic(page, "Endless Harvest");
+    await selectRelic(page, "Woodsman");
     const synergiesBtn = page.locator("#analysis button:has-text('Active Synergies')");
     await synergiesBtn.click();
     await expect(page.locator("#analysis >> text=Gathering Pipeline")).toBeVisible();

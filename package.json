@@ -4,11 +4,12 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "prebuild": "npx tsx src/lib/wiki-sync.ts --merge",
+    "prebuild": "npx tsx src/lib/wiki-sync.ts --merge && npx tsx src/lib/wiki-sync-guides.ts",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "sync-wiki": "npx tsx src/lib/wiki-sync.ts",
+    "sync-guides": "npx tsx src/lib/wiki-sync-guides.ts",
     "test": "npx playwright test",
     "test:ui": "npx playwright test --ui"
   },

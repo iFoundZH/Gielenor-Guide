@@ -6,6 +6,60 @@ import Link from "next/link";
 
 const guideCategories = [
   {
+    title: "Main Game Guides",
+    icon: "📚",
+    guides: [
+      {
+        title: "Skill Training",
+        description: "Training methods for all 23 skills with XP rates, level ranges, and P2P/F2P variants.",
+        href: "/guides/skills",
+        badge: "23 Skills",
+        badgeVariant: "gold" as const,
+      },
+      {
+        title: "Ironman Guides",
+        description: "Comprehensive guides for Standard, Hardcore, Ultimate, and Group Ironman accounts.",
+        href: "/guides/ironman",
+        badge: "4 Variants",
+        badgeVariant: "green" as const,
+      },
+      {
+        title: "Optimal Quest Order",
+        description: "Most efficient quest order for main accounts and ironmen. Maximize rewards, minimize requirements.",
+        href: "/guides/quests",
+        badge: "Quest Order",
+        badgeVariant: "blue" as const,
+      },
+      {
+        title: "Achievement Diaries",
+        description: "Track completion across all 12 diary areas with requirements and rewards for each tier.",
+        href: "/guides/diaries",
+        badge: "12 Areas",
+        badgeVariant: "purple" as const,
+      },
+      {
+        title: "Combat Achievements",
+        description: "Track combat achievement tasks from Easy to Grandmaster. Filter by monster and type.",
+        href: "/guides/combat-achievements",
+        badge: "6 Tiers",
+        badgeVariant: "red" as const,
+      },
+    ],
+  },
+  {
+    title: "Snowflake Accounts",
+    icon: "❄",
+    guides: [
+      {
+        title: "Snowflake Planner",
+        description: "Plan area-locked and skill-restricted accounts. See what content is available with your restrictions.",
+        href: "/snowflake",
+        badge: "Interactive",
+        badgeVariant: "blue" as const,
+      },
+    ],
+  },
+  {
     title: "League Guides",
     icon: "🏆",
     guides: [

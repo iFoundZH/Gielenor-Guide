@@ -161,12 +161,28 @@ export default function HomePage() {
             badgeVariant="purple"
           />
           <FeatureCard
-            href="/leagues/raging-echoes"
-            icon="📜"
-            title="Raging Echoes"
-            description="Browse the previous league's relics, combat masteries, and rewards. Content preserved for reference."
-            badge="Previous"
-            badgeVariant="gold"
+            href="/guides/skills"
+            icon="📚"
+            title="Skill Guides"
+            description="Training methods for all 23 skills with XP rates. P2P and F2P variants sourced from the OSRS Wiki."
+            badge="23 Skills"
+            badgeVariant="blue"
+          />
+          <FeatureCard
+            href="/guides/diaries"
+            icon="📋"
+            title="Achievement Diaries"
+            description="Track completion across all 12 diary areas. Checklist with requirements and reward summaries."
+            badge="12 Areas"
+            badgeVariant="purple"
+          />
+          <FeatureCard
+            href="/snowflake"
+            icon="❄"
+            title="Snowflake Tracker"
+            description="Plan area-locked and skill-restricted accounts. See what quests and bosses are available with your restrictions."
+            badge="New"
+            badgeVariant="blue"
           />
         </div>
       </section>

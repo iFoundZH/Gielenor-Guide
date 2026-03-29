@@ -27,7 +27,19 @@ const navItems = [
       { label: "Strategy Guide", href: "/leagues/raging-echoes/guide" },
     ],
   },
-  { label: "Guides", href: "/guides" },
+  {
+    label: "Guides",
+    href: "/guides",
+    children: [
+      { label: "All Guides", href: "/guides" },
+      { label: "Skill Training", href: "/guides/skills" },
+      { label: "Ironman Guides", href: "/guides/ironman" },
+      { label: "Quest Order", href: "/guides/quests" },
+      { label: "Achievement Diaries", href: "/guides/diaries" },
+      { label: "Combat Achievements", href: "/guides/combat-achievements" },
+    ],
+  },
+  { label: "Snowflake", href: "/snowflake" },
 ];
 
 export function Header() {

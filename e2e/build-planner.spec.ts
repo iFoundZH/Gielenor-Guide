@@ -85,22 +85,21 @@ test.describe("Demonic Pacts Build Planner", () => {
   });
 
   test("reset button clears all selections after confirm", async ({ page }) => {
-    // Select a relic and pact
-    await page.locator("text=Endless Harvest").first().click();
-    await page.waitForTimeout(300);
-    await page.locator("text=Melee Might").first().click();
-    await page.waitForTimeout(300);
+    // Select a relic — wait for "ring-osrs-gold" class to confirm selection
+    const relicCard = page.locator("h4:has-text('Endless Harvest')");
+    await relicCard.click();
+    await expect(relicCard.locator("xpath=ancestor::div[contains(@class,'bg-osrs-panel')]")).toHaveClass(/ring-osrs-gold/, { timeout: 5000 });
 
-    // Verify selections are reflected in the build summary
-    const relicCount = page.locator("text=1 / 6").first();
-    await expect(relicCount).toBeVisible({ timeout: 3000 });
+    // Select a pact
+    await page.locator("text=Melee Might").first().click();
+    await expect(page.locator("text=Active Pacts")).toBeVisible({ timeout: 5000 });
 
     // Accept the confirmation dialog and reset
     page.once("dialog", (dialog) => dialog.accept());
     await page.locator("text=Reset").click();
 
-    // After reset, relic count should be back to 0
-    await expect(page.locator("text=0 / 6").first()).toBeVisible({ timeout: 3000 });
+    // After reset, the relic should no longer have gold ring
+    await expect(relicCard.locator("xpath=ancestor::div[contains(@class,'bg-osrs-panel')]")).not.toHaveClass(/ring-osrs-gold/, { timeout: 5000 });
   });
 
   test("persists build to localStorage", async ({ page }) => {

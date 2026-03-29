@@ -2,15 +2,17 @@ import { test, expect } from "@playwright/test";
 
 // ─── Helper: select a relic by name ─────────────────────────────────────
 async function selectRelic(page: import("@playwright/test").Page, name: string) {
-  // Use getByText within h4 to handle apostrophes in relic names (e.g. "Fairy's Flight")
-  await page.locator("h4").filter({ hasText: name }).click();
-  await page.waitForTimeout(200);
+  const card = page.locator("h4").filter({ hasText: name });
+  await card.click();
+  // Wait for the relic card to show "ring-osrs-gold" class (selected state)
+  await expect(card.locator("xpath=ancestor::div[contains(@class,'bg-osrs-panel')]")).toHaveClass(/ring-osrs-gold/, { timeout: 5000 });
 }
 
 // ─── Helper: select a mastery by name ───────────────────────────────────
 async function selectMastery(page: import("@playwright/test").Page, name: string) {
   await page.locator(`text=${name}`).first().click();
-  await page.waitForTimeout(200);
+  // Wait for React state update to propagate
+  await page.waitForTimeout(600);
 }
 
 // ─── RE Guide Page ──────────────────────────────────────────────────────

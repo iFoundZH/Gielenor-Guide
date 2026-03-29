@@ -1,12 +1,12 @@
 interface CardProps {
   children: React.ReactNode;
   className?: string;
-  glow?: "gold" | "red" | "none";
+  glow?: "gold" | "red" | "blue" | "none";
   hover?: boolean;
 }
 
 export function Card({ children, className = "", glow = "none", hover = false }: CardProps) {
-  const glowClass = glow === "gold" ? "border-glow-gold" : glow === "red" ? "border-glow-red" : "";
+  const glowClass = glow === "gold" ? "border-glow-gold" : glow === "red" ? "border-glow-red" : glow === "blue" ? "border-glow-blue" : "";
   const hoverClass = hover ? "card-hover cursor-pointer" : "";
 
   return (

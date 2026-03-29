@@ -1,0 +1,93 @@
+import type { SkillTrainingGuide } from "@/types/guides";
+
+export const woodcuttingP2pGuide: SkillTrainingGuide = {
+  skill: "Woodcutting" as SkillTrainingGuide["skill"],
+  variant: "p2p",
+  wikiUrl: "https://oldschool.runescape.wiki/w/Pay-to-play_Woodcutting_training",
+  methods: [
+    {
+      name: "Questing",
+      levelRange: [1, 26],
+      xpPerHour: null,
+      description: "Completing Monk's Friend, Enlightened Journey, Icthlarin's Little Helper, and the Skrach Uglogwee subquest of Recipe for Disaster grants a total of 9,000 experience. This will get the player from l...",
+      members: true,
+    },
+    {
+      name: "Regular trees",
+      levelRange: [1, 15],
+      xpPerHour: null,
+      description: "From level 1 to 15, the player should cut regular trees. Each log gives 25 Woodcutting experience. 97 logs are required to reach level 15.",
+      members: true,
+    },
+    {
+      name: "Oak trees",
+      levelRange: [15, 35],
+      xpPerHour: null,
+      description: "From level 15 to 35, the player should cut oak trees. Each log gives 37.5 Woodcutting experience. 534 logs are required to reach level 35. Even though willow trees become available at level 30, cut...",
+      members: true,
+    },
+    {
+      name: "Teak trees",
+      levelRange: [35, 99],
+      xpPerHour: null,
+      description: "Cutting teak trees offers the fastest Woodcutting experience in the game when using tick manipulation. If the player is not using any sort of tick manipulation, cutting teak trees offers the fastes...",
+      members: true,
+    },
+    {
+      name: "Blisterwood tree",
+      levelRange: [62, 90],
+      xpPerHour: 69000,
+      description: "Cutting the blisterwood tree in Darkmeyer becomes a viable low-effort alternative at level 62. To access the tree in Darkmeyer, players must have partially completed Sins of the Father. The blister...",
+      members: true,
+    },
+    {
+      name: "978 sulliuscep caps, worth",
+      levelRange: [65, 99],
+      xpPerHour: null,
+      description: "978 sulliuscep caps, worth",
+      members: true,
+    },
+    {
+      name: "264,000 numulite, worth",
+      levelRange: [65, 99],
+      xpPerHour: null,
+      description: "264,000 numulite, worth",
+      members: true,
+    },
+    {
+      name: "1,399 unidentified small fossils, 70 of which are required for the Varrock mu...",
+      levelRange: [65, 99],
+      xpPerHour: null,
+      description: "1,399 unidentified small fossils, 70 of which are required for the Varrock museum, leaving 1329 unidentified small fossils to be used for Prayer experience at the mycelium pool.",
+      members: true,
+    },
+    {
+      name: "698 unidentified medium fossils, 60 of which are required for the museum, lea...",
+      levelRange: [65, 99],
+      xpPerHour: null,
+      description: "698 unidentified medium fossils, 60 of which are required for the museum, leaving 638 unidentified medium fossils for Prayer experience.",
+      members: true,
+    },
+    {
+      name: "559 unidentified large fossils, at least 50 of which are required for the museum",
+      levelRange: [65, 99],
+      xpPerHour: null,
+      description: "559 unidentified large fossils, at least 50 of which are required for the museum. The player should clean fossils until at least 25 large and 25 plant fossils have been obtained. Plant fossils cann...",
+      members: true,
+    },
+    {
+      name: "Ironwood trees",
+      levelRange: [80, 99],
+      xpPerHour: 90000,
+      description: "With 72 Sailing players can cut Ironwood trees on Sunbleak island gaining around 70,000–90,000 experience per hour with a dragon axe. This increases beyond 100,000 experience per hour with a crysta...",
+      members: true,
+    },
+    {
+      name: "Rosewood trees",
+      levelRange: [92, 99],
+      xpPerHour: 90000,
+      description: "Cutting rosewood trees is a very low-effort alternative to the faster methods. They are located on Drumstick Isle, which requires level 79 Sailing to access (not boostable). A rosewood tree takes a...",
+      members: true,
+    },
+  ],
+};
