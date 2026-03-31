@@ -17,6 +17,7 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import {
   fetchWikitext,
+  fetchBulkWikitext,
   fetchExpandedHtml,
   sleep,
   stripWikiMarkup,
@@ -118,48 +119,50 @@ async function syncSkillGuides(dryRun: boolean): Promise<void> {
 
   const allGuides: ParsedSkillGuide[] = [];
 
+  // Build all page names upfront for bulk fetch
+  const pageRequests: { skill: string; variant: "p2p" | "f2p"; pageName: string }[] = [];
+  for (const skill of ALL_SKILLS) {
+    pageRequests.push({ skill, variant: "p2p", pageName: `Pay-to-play_${skill}_training` });
+    pageRequests.push({ skill, variant: "f2p", pageName: `Free-to-play_${skill}_training` });
+    // Include alternate page names for P2P fallback
+    pageRequests.push({ skill, variant: "p2p", pageName: `${skill}_training` });
+  }
+
+  const allPageNames = [...new Set(pageRequests.map((r) => r.pageName))];
+  console.log(`  Bulk fetching ${allPageNames.length} skill guide pages...`);
+  const wikitextMap = await fetchBulkWikitext(allPageNames);
+  console.log(`  Got wikitext for ${wikitextMap.size} pages`);
+
   for (const skill of ALL_SKILLS) {
     for (const variant of ["p2p", "f2p"] as const) {
       const pageName = variant === "p2p"
         ? `Pay-to-play_${skill}_training`
         : `Free-to-play_${skill}_training`;
 
-      console.log(`  Fetching: ${pageName}`);
-      const wikitext = await fetchWikitext(pageName);
-      await sleep(REQUEST_DELAY_MS);
+      let wikitext = wikitextMap.get(pageName) ?? null;
 
       if (!wikitext) {
-        // Some skills don't have F2P guides
-        if (variant === "f2p") {
-          console.log(`    (no F2P guide for ${skill})`);
-          continue;
-        }
-        // Try alternate page name without prefix
-        console.log(`    Trying alternate: ${skill}_training`);
-        const altText = await fetchWikitext(`${skill}_training`);
-        await sleep(REQUEST_DELAY_MS);
-        if (!altText) {
-          console.log(`    SKIP: No guide found for ${skill} (${variant})`);
-          continue;
-        }
-        const methods = parseTrainingMethods(altText, true);
+        if (variant === "f2p") continue;
+        // Try alternate page name
+        const altName = `${skill}_training`;
+        wikitext = wikitextMap.get(altName) ?? null;
+        if (!wikitext) continue;
+
+        const methods = parseTrainingMethods(wikitext, true);
         if (methods.length > 0) {
           allGuides.push({
             skill,
             variant,
             methods,
-            wikiUrl: `https://oldschool.runescape.wiki/w/${skill}_training`,
+            wikiUrl: `https://oldschool.runescape.wiki/w/${altName}`,
           });
-          console.log(`    OK: ${methods.length} methods`);
+          console.log(`    ${skill} (${variant}): ${methods.length} methods (alt page)`);
         }
         continue;
       }
 
       const methods = parseTrainingMethods(wikitext, variant === "p2p");
-      if (methods.length === 0) {
-        console.log(`    SKIP: No methods parsed from ${pageName}`);
-        continue;
-      }
+      if (methods.length === 0) continue;
 
       allGuides.push({
         skill,
@@ -167,7 +170,7 @@ async function syncSkillGuides(dryRun: boolean): Promise<void> {
         methods,
         wikiUrl: `https://oldschool.runescape.wiki/w/${pageName}`,
       });
-      console.log(`    OK: ${methods.length} methods`);
+      console.log(`    ${skill} (${variant}): ${methods.length} methods`);
     }
   }
 
@@ -313,10 +316,14 @@ async function syncIronmanGuides(dryRun: boolean): Promise<void> {
   const indexImports: string[] = [];
   const indexExports: string[] = [];
 
+  // Bulk fetch all ironman guide pages
+  const pageNames = Object.values(IRONMAN_PAGES);
+  console.log(`  Bulk fetching ${pageNames.length} ironman guide pages...`);
+  const wikitextMap = await fetchBulkWikitext(pageNames);
+  console.log(`  Got wikitext for ${wikitextMap.size} pages`);
+
   for (const [variant, pageName] of Object.entries(IRONMAN_PAGES)) {
-    console.log(`  Fetching: ${pageName}`);
-    const wikitext = await fetchWikitext(pageName);
-    await sleep(REQUEST_DELAY_MS);
+    const wikitext = wikitextMap.get(pageName) ?? null;
 
     if (!wikitext) {
       console.log(`    SKIP: Could not fetch ${pageName}`);
@@ -415,10 +422,14 @@ async function syncQuestGuides(dryRun: boolean): Promise<void> {
     { name: "ironman", page: "Optimal_quest_guide/Ironman", file: "optimal-quest-guide-ironman", exportName: "ironmanQuestGuide" },
   ];
 
+  // Bulk fetch both quest guide pages
+  const pageNames = variants.map((v) => v.page);
+  console.log(`  Bulk fetching ${pageNames.length} quest guide pages...`);
+  const wikitextMap = await fetchBulkWikitext(pageNames);
+  console.log(`  Got wikitext for ${wikitextMap.size} pages`);
+
   for (const v of variants) {
-    console.log(`  Fetching: ${v.page}`);
-    const wikitext = await fetchWikitext(v.page);
-    await sleep(REQUEST_DELAY_MS);
+    const wikitext = wikitextMap.get(v.page) ?? null;
 
     if (!wikitext) {
       console.log(`    SKIP: Could not fetch ${v.page}`);
@@ -665,10 +676,13 @@ async function syncDiaryGuides(dryRun: boolean): Promise<void> {
 
   const diaries: ParsedDiary[] = [];
 
+  // Bulk fetch all diary pages in one call
+  console.log(`  Bulk fetching ${DIARY_AREAS.length} diary pages...`);
+  const wikitextMap = await fetchBulkWikitext(DIARY_AREAS);
+  console.log(`  Got wikitext for ${wikitextMap.size} pages`);
+
   for (const pageName of DIARY_AREAS) {
-    console.log(`  Fetching: ${pageName}`);
-    const wikitext = await fetchWikitext(pageName);
-    await sleep(REQUEST_DELAY_MS);
+    const wikitext = wikitextMap.get(pageName) ?? null;
 
     if (!wikitext) {
       console.log(`    SKIP: Could not fetch ${pageName}`);
@@ -792,14 +806,14 @@ async function syncCombatAchievements(dryRun: boolean): Promise<void> {
 
   const tiers: ParsedCATier[] = [];
 
-  // Try the main page first for an overview
-  console.log(`  Fetching: Combat_Achievements`);
-  const mainHtml = await fetchExpandedHtml("Combat_Achievements");
-  await sleep(REQUEST_DELAY_MS);
+  // Pre-fetch all CA tier wikitext in bulk (used as fallback if HTML parsing fails)
+  const caPages = CA_TIERS.map((t) => `Combat_Achievements/${t}`);
+  console.log(`  Bulk fetching ${caPages.length} CA tier pages (wikitext fallback)...`);
+  const wikitextMap = await fetchBulkWikitext(caPages);
 
-  // Then try individual tier sub-pages
+  // Fetch individual tier HTML pages (fetchExpandedHtml is single-page only)
   for (const tierName of CA_TIERS) {
-    console.log(`  Fetching: Combat_Achievements/${tierName}`);
+    console.log(`  Fetching HTML: Combat_Achievements/${tierName}`);
     const html = await fetchExpandedHtml(`Combat_Achievements/${tierName}`);
     await sleep(REQUEST_DELAY_MS);
 
@@ -838,10 +852,9 @@ async function syncCombatAchievements(dryRun: boolean): Promise<void> {
       }
     }
 
-    // Fallback: try fetching wikitext
+    // Fallback: use pre-fetched wikitext
     if (tasks.length === 0) {
-      const wikitext = await fetchWikitext(`Combat_Achievements/${tierName}`);
-      await sleep(REQUEST_DELAY_MS);
+      const wikitext = wikitextMap.get(`Combat_Achievements/${tierName}`) ?? null;
       if (wikitext) {
         const bullets = wikitext.match(/^\*\s+'''([^']+)'''[:\s]*(.+)$/gm);
         if (bullets) {

@@ -29,6 +29,9 @@ jobs:
       - name: Run guide wiki sync
         run: npx tsx src/lib/wiki-sync-guides.ts
 
+      - name: Run data wiki sync (quests + bosses)
+        run: npx tsx src/lib/wiki-sync-data.ts --merge
+
       - name: Check for data changes
         id: changes
         run: |

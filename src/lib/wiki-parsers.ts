@@ -13,7 +13,7 @@ export const WIKI_HEADERS = {
   Accept: "application/json",
 };
 
-export const REQUEST_DELAY_MS = 1000;
+export const REQUEST_DELAY_MS = 500;
 
 // ---------------------------------------------------------------------------
 // Wiki API fetching
@@ -102,6 +102,116 @@ export async function fetchExpandedHtml(pageTitle: string): Promise<string | nul
   }
 }
 
+/**
+ * Bulk-fetch wikitext for up to 50 pages per request.
+ * Uses action=query with revisions prop instead of action=parse (which only does one page).
+ * Returns a Map<title, wikitext> for pages that exist.
+ */
+export async function fetchBulkWikitext(pageTitles: string[]): Promise<Map<string, string>> {
+  const results = new Map<string, string>();
+  const BATCH_SIZE = 50;
+
+  for (let i = 0; i < pageTitles.length; i += BATCH_SIZE) {
+    const batch = pageTitles.slice(i, i + BATCH_SIZE);
+
+    const params = new URLSearchParams({
+      action: "query",
+      titles: batch.join("|"),
+      prop: "revisions",
+      rvprop: "content",
+      rvslots: "main",
+      format: "json",
+      formatversion: "2",
+    });
+
+    try {
+      const response = await fetch(`${WIKI_API}?${params}`, { headers: WIKI_HEADERS });
+      if (!response.ok) {
+        console.error(`  HTTP ${response.status} fetching bulk batch ${i / BATCH_SIZE + 1}`);
+        continue;
+      }
+      const data = await response.json();
+
+      // Build normalization map (wiki may normalize titles, e.g. underscores → spaces)
+      const normalizedMap = new Map<string, string>();
+      if (data.query?.normalized) {
+        for (const n of data.query.normalized) {
+          normalizedMap.set(n.to, n.from);
+        }
+      }
+
+      if (data.query?.pages) {
+        for (const page of data.query.pages) {
+          if (page.missing) continue;
+          const content = page.revisions?.[0]?.slots?.main?.content;
+          if (!content) continue;
+
+          // Use the original title (before normalization) if available
+          const originalTitle = normalizedMap.get(page.title) ?? page.title;
+          results.set(originalTitle, content);
+          // Also store under the normalized title for easy lookup
+          if (originalTitle !== page.title) {
+            results.set(page.title, content);
+          }
+        }
+      }
+    } catch (err) {
+      console.error(`  Network error fetching bulk batch ${i / BATCH_SIZE + 1}:`, err instanceof Error ? err.message : err);
+    }
+
+    // Sleep between batches (not after the last one)
+    if (i + BATCH_SIZE < pageTitles.length) {
+      await sleep(REQUEST_DELAY_MS);
+    }
+  }
+
+  return results;
+}
+
+/**
+ * Fetch all page titles in a MediaWiki category, handling pagination.
+ */
+export async function fetchCategoryMembers(categoryTitle: string): Promise<string[]> {
+  const titles: string[] = [];
+  let cmcontinue: string | undefined;
+
+  do {
+    const params = new URLSearchParams({
+      action: "query",
+      list: "categorymembers",
+      cmtitle: categoryTitle,
+      cmlimit: "500",
+      cmtype: "page",
+      format: "json",
+      formatversion: "2",
+    });
+    if (cmcontinue) params.set("cmcontinue", cmcontinue);
+
+    try {
+      const response = await fetch(`${WIKI_API}?${params}`, { headers: WIKI_HEADERS });
+      if (!response.ok) {
+        console.error(`  HTTP ${response.status} fetching category ${categoryTitle}`);
+        break;
+      }
+      const data = await response.json();
+
+      if (data.query?.categorymembers) {
+        for (const member of data.query.categorymembers) {
+          titles.push(member.title);
+        }
+      }
+
+      cmcontinue = data.continue?.cmcontinue;
+      if (cmcontinue) await sleep(REQUEST_DELAY_MS);
+    } catch (err) {
+      console.error(`  Network error fetching category ${categoryTitle}:`, err instanceof Error ? err.message : err);
+      break;
+    }
+  } while (cmcontinue);
+
+  return titles;
+}
+
 export function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -144,6 +254,9 @@ export function stripWikiMarkup(text: string): string {
   result = result.replace(/''(.*?)''/g, "$1");
   // Strip HTML tags
   result = result.replace(/<[^>]+>/g, "");
+  // Clean up fragment remnants from malformed templates
+  result = result.replace(/\{\{[^}]*$/g, "");  // trailing unclosed {{
+  result = result.replace(/\]\]/g, "");         // stray ]]
 
   return result.trim();
 }
@@ -275,7 +388,13 @@ export function q(s: string): string {
  * Strip HTML tags from a string (for parsing expanded wiki HTML).
  */
 export function stripHtml(html: string): string {
-  return html.replace(/<[^>]+>/g, "").trim();
+  let text = html.replace(/<[^>]+>/g, "");
+  // Decode numeric HTML entities (&#91; → [, &#39; → ', etc.)
+  text = text.replace(/&#(\d+);/g, (_, n) => String.fromCharCode(parseInt(n)));
+  // Decode named HTML entities
+  text = text.replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"').replace(/&nbsp;/g, " ").replace(/&apos;/g, "'");
+  return text.trim();
 }
 
 /**
