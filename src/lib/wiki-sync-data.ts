@@ -688,7 +688,16 @@ function parseBossFromWikitext(
     }
   }
 
-  const region = location ? mapLocationToRegion(location) : "misthalin";
+  // Try location first, then fall back to boss name for region mapping
+  let region = "misthalin";
+  if (location) {
+    region = mapLocationToRegion(location);
+  }
+  // If location didn't resolve (still misthalin fallback), try the boss name
+  if (region === "misthalin" && location !== "misthalin") {
+    const nameRegion = mapLocationToRegion(bossInfo.name);
+    if (nameRegion !== "misthalin") region = nameRegion;
+  }
   const category = classifyBossCategory(bossInfo.name, location, wikitext);
   const wikiUrl = `https://oldschool.runescape.wiki/w/${encodeURIComponent(bossInfo.name.replace(/ /g, "_"))}`;
 

@@ -55,12 +55,14 @@ interface ParsedSkillGuide {
 function parseTrainingMethods(wikitext: string, members: boolean): ParsedTrainingMethod[] {
   const methods: ParsedTrainingMethod[] = [];
 
-  // Split by section headers (=== or ==)
-  const sectionPattern = /^(={2,3})\s*(.+?)\s*\1/gm;
-  const sectionStarts: { index: number; title: string; raw: string }[] = [];
+  // Split by section headers (==, ===, ====)
+  const sectionPattern = /^(={2,4})\s*(.+?)\s*\1/gm;
+  const sectionStarts: { index: number; title: string; level: number }[] = [];
   let m;
   while ((m = sectionPattern.exec(wikitext)) !== null) {
-    sectionStarts.push({ index: m.index, title: stripWikiMarkup(m[2]), raw: m[2] });
+    // Clean title: strip wiki markup and any residual = signs
+    let title = stripWikiMarkup(m[2]).replace(/^=+\s*/, "").replace(/\s*=+$/, "").trim();
+    if (title) sectionStarts.push({ index: m.index, title, level: m[1].length });
   }
 
   for (let i = 0; i < sectionStarts.length; i++) {
@@ -134,10 +136,11 @@ function parseTrainingMethods(wikitext: string, members: boolean): ParsedTrainin
       const start = sectionStarts[i].index;
       const end = i + 1 < sectionStarts.length ? sectionStarts[i + 1].index : wikitext.length;
       const section = wikitext.slice(start, end);
-      const title = sectionStarts[i].title;
+      // Clean title: strip any residual = signs from sub-headers
+      const title = sectionStarts[i].title.replace(/^=+\s*/, "").replace(/\s*=+$/, "").trim();
 
       // Skip meta/navigation sections
-      if (/^(see also|references|external links|navigation|notes|equipment|recommended|general|contents)$/i.test(title)) continue;
+      if (/^(see also|references|external links|navigation|notes|equipment|recommended|general|contents|changes|trivia|gallery)$/i.test(title)) continue;
       if (title.length < 3 || title.length > 80) continue;
 
       // Try to extract a level from section body (e.g., "requires level 60" or {{SCP|Skill|60}})
@@ -145,11 +148,20 @@ function parseTrainingMethods(wikitext: string, members: boolean): ParsedTrainin
       const scpLevelMatch = section.match(/\{\{SCP\|[^|]+\|(\d+)/);
       const level = bodyLevelMatch ? parseInt(bodyLevelMatch[1]) : (scpLevelMatch ? parseInt(scpLevelMatch[1]) : 1);
 
-      const sectionBody = section.split("\n").filter((l) => l.trim() && !l.startsWith("=")).slice(0, 5).join(" ");
+      // Extract description from body text, skipping wiki headers, table markup, and empty lines
+      const sectionBody = section.split("\n")
+        .filter((l) => {
+          const t = l.trim();
+          return t && !t.startsWith("=") && !t.startsWith("{|") && !t.startsWith("|}") && !t.startsWith("!");
+        })
+        .slice(0, 5)
+        .join(" ");
       const description = stripWikiMarkup(sectionBody);
       if (description.length < 10) continue;
+      // Skip if description is still wiki table junk
+      if (/class\s*=\s*"|wikitable|rowspan|colspan/i.test(description)) continue;
 
-      function extractXpRate(text: string): number | null {
+      function extractXpRateFallback(text: string): number | null {
         const patterns = [
           /([\d,]+)\s*(?:xp|experience)\s*(?:per\s*hour|\/\s*h(?:our)?|ph)/i,
           /approximately\s+([\d,]+)\s*(?:xp|experience)/i,
@@ -164,7 +176,7 @@ function parseTrainingMethods(wikitext: string, members: boolean): ParsedTrainin
       methods.push({
         name: title.length > 80 ? title.slice(0, 77) + "..." : title,
         levelRange: [level, 99],
-        xpPerHour: extractXpRate(sectionBody),
+        xpPerHour: extractXpRateFallback(sectionBody),
         description: description.length > 200 ? description.slice(0, 197) + "..." : description,
         members,
       });
@@ -719,8 +731,12 @@ function parseDiaryTasks(wikitext: string, areaSlug: string): ParsedDiaryTier[] 
     // Split on |- to get individual rows
     const tableRows = section.split(/\n\|-/);
     for (const row of tableRows) {
-      // Skip header rows and empty rows
-      if (!row.trim() || /^[!\s]/.test(row.trim())) continue;
+      const trimmedRow = row.trim();
+      // Skip header rows, empty rows, and wiki table markup
+      if (!trimmedRow || /^[!\s]/.test(trimmedRow)) continue;
+      if (/\{\|/.test(trimmedRow)) continue;            // Wiki table opening {|
+      if (/class\s*=\s*".*wikitable/.test(trimmedRow)) continue; // Table class attr
+      if (/data-diary-/.test(trimmedRow)) continue;     // Diary table data attrs
 
       // Split row into cells on lines starting with |
       const cells = row.split(/\n\|/).filter((c) => c.trim());
@@ -728,12 +744,17 @@ function parseDiaryTasks(wikitext: string, areaSlug: string): ParsedDiaryTier[] 
 
       // First cell is the task description (e.g., "1. Have Wizard Cromperty...")
       const rawTaskCell = cells[0];
+
+      // Skip cells that are wiki table markup (not task descriptions)
+      if (/\{\|/.test(rawTaskCell) || /class\s*=\s*"/.test(rawTaskCell)) continue;
+
       // Extract description, stripping leading number prefix
       const descRaw = rawTaskCell.replace(/^\s*\d+\.\s*/, "");
       const description = stripWikiMarkup(descRaw).replace(/^\s*\d+\.\s*/, "").trim();
       if (!description || description.length < 5) continue;
-      // Skip if this looks like a table header
+      // Skip if this looks like a table header or wiki formatting junk
       if (/^Task$|^Requirements?$/i.test(description)) continue;
+      if (/^style=|^width:|^mw-collapsible/i.test(description)) continue;
 
       taskIdx++;
       const requirements: ParsedDiaryTask["requirements"] = [];

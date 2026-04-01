@@ -34,7 +34,7 @@ export const prayerF2pGuide: SkillTrainingGuide = {
       members: false,
     },
     {
-      name: "=Strategy",
+      name: "Strategy",
       levelRange: [1, 99],
       xpPerHour: null,
       description: "There are multiple strategies you could use for this method. Any way works, which one is best is for you to decide. Method one: #Run in and collect bones. #Run out to safety and bury the bones. #Re...",

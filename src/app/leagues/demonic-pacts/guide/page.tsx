@@ -16,34 +16,34 @@ const strategies = [
     name: "Speedrunner",
     description: "Maximize points per hour. Rush task completion with optimal routing.",
     difficulty: "Advanced",
-    relic: "Barbarian Gathering",
+    relics: { t1: "Barbarian Gathering", t2: "Woodsman", t8: "Minion" },
     regions: ["Kebos & Kourend", "Morytania", "Kandarin"],
     pacts: ["Glass Cannon"],
     priorities: [
       "Rush easy and medium tasks first for fast league points",
       "Barbarian Gathering's knapsack lets you stay out longer",
       "Prioritize quests that unlock multiple task categories",
-      "Expected: Evil Eye (T3) provides boss-related teleports",
+      "Evil Eye (T3) boss teleports minimize travel time between tasks",
       "Culling Spree (T6) optimizes Slayer tasks with configurable kills",
       "Complete Combat Achievements early — rewards compound with league drop multipliers",
     ],
     regionAnalysis:
       "Kebos & Kourend is the task density king — CoX, Hydra, Wintertodt, Tithe Farm, and GOTR pack the most completable tasks per hour. Morytania adds Barrows and ToB for elite/master tasks. Kandarin rounds it out with Zulrah, broad skilling, and clue-friendly geography.",
     earlyGame: [
-      "Grab Barbarian Gathering (T1) for knapsack + bare-hand gathering",
-      "Woodsman (T2) auto-unlocks: instant Fletching + double Hunter loot",
+      "Barbarian Gathering (T1): knapsack + bare-hand gathering with crystal-tier tools",
+      "Woodsman (T2): instant Fletching, double Hunter loot, no-charge Quetzal Whistles",
       "Complete easy tasks across all categories",
       "Start quests for QP — Dragon Slayer I is auto-completed",
     ],
     midGame: [
-      "Expected: Evil Eye (T3) unlocks boss-related teleports — start Barrows, GWD",
+      "Evil Eye (T3): teleport to any boss or raid entrance — start Barrows, GWD",
       "Conniving Clues (T4): caskets give clue contracts + 1/15 clue drop rate",
-      "Pick a pact once you have gear to handle the trade-off",
+      "Nature's Accord (T5): fairy mushroom teleports + 10x farming yield",
       "Kebos: Chambers of Xeric + Hydra for elite tasks",
     ],
     lateGame: [
       "Culling Spree (T6): choose Slayer tasks, superiors drop elite clues",
-      "Minion (T8): combat companion auto-loots while you kill",
+      "Minion (T8): combat companion auto-loots while you kill, AoE in multi",
       "Target remaining hard/elite/master tasks",
       "Push Combat Achievements alongside boss tasks for compounding rewards",
     ],
@@ -53,27 +53,27 @@ const strategies = [
     name: "PvM Powerhouse",
     description: "Maximize combat power. Dominate every boss in the game.",
     difficulty: "Intermediate",
-    relic: "Endless Harvest",
+    relics: { t1: "Endless Harvest", t2: "Hotfoot", t8: "Minion" },
     regions: ["Asgarnia", "Morytania", "Kebos & Kourend"],
     pacts: ["Glass Cannon", "Berserker's Oath"],
     priorities: [
       "Build toward end-game PvM as fast as possible",
-      "Stack pacts for maximum damage output (details revealed at launch)",
+      "Stack pacts for maximum damage output",
       "Endless Harvest auto-banks resources for passive supply generation",
-      "Expected: Evil Eye boss teleports minimize travel time",
+      "Hotfoot auto-cooks fish and auto-smelts ore — passive supply prep",
       "Minion companion adds extra DPS and auto-loots",
       "Asgarnia = GWD + Nex, Morytania = ToB + Barrows, Kebos = CoX + Hydra",
     ],
     regionAnalysis:
       "Asgarnia gives GWD (all four generals + Nex) and Corp Beast — the densest boss cluster in the game. Morytania adds ToB, Barrows, Nightmare, and the Slayer Tower for efficient task chaining. Kebos & Kourend completes the trio with CoX and Hydra, the two highest-value PvM encounters.",
     earlyGame: [
-      "Endless Harvest (T1): resources auto-bank, nodes never deplete",
-      "Woodsman (T2): Hunter loot doubled, instant Fletching for gear",
+      "Endless Harvest (T1): resources auto-bank, nodes never deplete, 2x resources",
+      "Hotfoot (T2): auto-cooks fish, auto-smelts ore, 100% success on Agility + Cooking",
       "Train combat through Slayer for task overlap",
       "Build supplies passively via Endless Harvest while training",
     ],
     midGame: [
-      "Expected: Evil Eye (T3) provides boss teleports — start GWD farming",
+      "Evil Eye (T3): teleport to any boss entrance — start GWD farming",
       "Start Barrows (Morytania) and God Wars bosses (Asgarnia)",
       "Activate pacts once you can handle the risk trade-offs",
       "Push Combat Achievements at every boss — rewards compound with league boosts",
@@ -90,7 +90,7 @@ const strategies = [
     name: "Completionist",
     description: "Complete every task. Reach Dragon tier rewards.",
     difficulty: "Expert",
-    relic: "Abundance",
+    relics: { t1: "Abundance", t2: "Woodsman", t8: "Flask of Fervour" },
     regions: ["Kebos & Kourend", "Kharidian Desert", "Morytania"],
     pacts: ["Melee Might", "Glass Cannon"],
     priorities: [
@@ -105,19 +105,19 @@ const strategies = [
       "Kebos & Kourend has the highest total task count across all categories. Kharidian Desert adds ToA (the most accessible raid with scaling difficulty) and Pyramid Plunder for Thieving tasks. Morytania rounds out PvM coverage with ToB and Barrows while adding Slayer Tower tasks.",
     earlyGame: [
       "Abundance (T1): +10 skill boost unlocks high-level content early",
-      "Woodsman (T2): auto-processes logs, doubles Hunter output",
+      "Woodsman (T2): auto-processes logs, doubles Hunter output, instant Fletching",
       "Complete ALL easy tasks before moving on to medium",
       "Build a broad skill base — Abundance makes everything efficient",
     ],
     midGame: [
-      "Expected: Evil Eye (T3) provides boss teleports for combat task coverage",
+      "Evil Eye (T3): boss teleports for combat task coverage",
       "Conniving Clues (T4): clue contracts + boosted drop rate for collection log",
-      "Coins from Abundance fund supplies for bossing",
+      "Nature's Accord (T5): fairy mushroom teleports + 10x farming yield noted",
       "Push medium + hard tasks across every category",
     ],
     lateGame: [
       "Culling Spree (T6): configurable Slayer for remaining combat tasks",
-      "Minion (T8): companion assists while you push final tasks",
+      "Flask of Fervour (T8): full HP/prayer/spec restore + AoE damage burst for survivability",
       "Rotate combat styles to cover all task requirements",
       "Target remaining elite and master tasks past 56,000 pts",
     ],
@@ -127,13 +127,13 @@ const strategies = [
     name: "Casual / AFK",
     description: "Sustainable play. Maximize rewards per hour of effort, not per tick.",
     difficulty: "Beginner",
-    relic: "Endless Harvest",
+    relics: { t1: "Endless Harvest", t2: "Hotfoot", t8: "Minion" },
     regions: ["Kebos & Kourend", "Kandarin", "Kharidian Desert"],
     pacts: [],
     priorities: [
       "Endless Harvest auto-banks everything — gather while AFK",
+      "Hotfoot auto-cooks fish, auto-smelts ore — zero-effort processing",
       "Avoid high-risk pacts until you're comfortable with combat mechanics",
-      "Focus on skilling and easy/medium tasks for steady point accumulation",
       "Kebos: Wintertodt + GOTR are low-effort, high-reward",
       "Kandarin: broad skilling (fishing, fletching, cooking) with easy task density",
       "Do herb runs and birdhouse runs between active play sessions",
@@ -142,20 +142,20 @@ const strategies = [
       "Kebos & Kourend is ideal for casual play — Wintertodt, GOTR, and Tithe Farm are semi-AFK skilling activities that also complete tasks. Kandarin offers the best fishing, fletching, and cooking spots with low-effort tasks. Kharidian Desert adds Pyramid Plunder and ToA (which scales down to very easy invocations).",
     earlyGame: [
       "Endless Harvest (T1): auto-bank + infinite nodes = zero-effort gathering",
-      "Woodsman (T2): auto-processes logs, zero-click Fletching XP",
+      "Hotfoot (T2): auto-cook fish + auto-smelt ore, 100% Agility/Cooking success",
       "Complete easy tasks naturally while skilling",
       "No pacts needed — play at your own pace",
     ],
     midGame: [
       "Start Wintertodt (Kebos) and Fishing Trawler (Kandarin) for AFK task points",
       "Conniving Clues (T4): boosted clue drops make treasure trails rewarding",
-      "Try low-invocation ToA runs (Desert) for accessible raid experience",
+      "Nature's Accord (T5): plants never die, 10x yield — low-effort herb runs",
       "Work through medium tasks in your regions at a relaxed pace",
     ],
     lateGame: [
       "Culling Spree (T6): pick comfortable Slayer tasks, skip annoying ones",
-      "Minion (T8): companion handles adds while you focus on the boss",
-      "Push into hard tasks — many are just 'reach X level' which Abundance/Harvest handle naturally",
+      "Minion (T8): companion handles adds and auto-loots while you focus on the boss",
+      "Push into hard tasks — many are just 'reach X level' which Harvest handles naturally",
       "Consider adding a pact if you want to push for higher trophy tiers",
     ],
   },
@@ -208,7 +208,7 @@ function buildPlannerUrl(strategy: (typeof strategies)[number]): string {
   const league = demonicPactsLeague;
   const allRelics = league.relicTiers.flatMap((t) => t.relics);
 
-  const matchedRelicIds = [strategy.relic]
+  const matchedRelicIds = Object.values(strategy.relics)
     .map(
       (name) =>
         allRelics.find((r) => r.name.toLowerCase() === name.toLowerCase())?.id,
@@ -360,18 +360,25 @@ export default function StrategyGuide() {
                     className="font-bold text-osrs-gold mb-3"
                     style={{ fontFamily: "var(--font-runescape)" }}
                   >
-                    T1 Relic Choice
+                    Relic Choices
                   </h3>
-                  <div className="flex items-center gap-2 text-sm">
-                    <span className="text-osrs-gold text-xs font-bold">
-                      T1
-                    </span>
-                    <span className="text-osrs-text">{strategy.relic}</span>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 text-sm">
+                      <span className="text-osrs-gold text-xs font-bold">T1</span>
+                      <span className="text-osrs-text">{strategy.relics.t1}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm">
+                      <span className="text-osrs-gold text-xs font-bold">T2</span>
+                      <span className="text-osrs-text">{strategy.relics.t2}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm">
+                      <span className="text-osrs-gold text-xs font-bold">T8</span>
+                      <span className="text-osrs-text">{strategy.relics.t8}</span>
+                    </div>
                   </div>
                   <p className="text-xs text-osrs-text-dim mt-2">
-                    T2 Woodsman, T3 Evil Eye, T4 Conniving Clues, T6 Culling
-                    Spree, T8 Minion are auto-selected (only one option per
-                    tier).
+                    T3 Evil Eye, T4 Conniving Clues, T5 Nature&apos;s Accord,
+                    T6 Culling Spree are the only option at their tier.
                   </p>
                 </Card>
 

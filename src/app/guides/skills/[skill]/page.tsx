@@ -5,7 +5,7 @@ const ALL_SKILLS = [
   "runecraft", "hitpoints", "crafting", "mining", "smithing",
   "fishing", "cooking", "firemaking", "woodcutting", "agility",
   "herblore", "thieving", "fletching", "slayer", "farming",
-  "construction", "hunter",
+  "construction", "hunter", "sailing",
 ];
 
 export function generateStaticParams() {

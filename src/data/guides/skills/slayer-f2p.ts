@@ -20,13 +20,6 @@ export const slayerF2pGuide: SkillTrainingGuide = {
       members: false,
     },
     {
-      name: "=Quests",
-      levelRange: [1, 99],
-      xpPerHour: null,
-      description: "{| class=\"wikitable lighttable sortable\" !rowspan=\"2\"|Quest !rowspan=\"12\"|Monster !rowspan=\"12\"|Assigned by |-",
-      members: false,
-    },
-    {
       name: "Combat levels",
       levelRange: [1, 99],
       xpPerHour: null,
@@ -114,7 +107,7 @@ export const slayerF2pGuide: SkillTrainingGuide = {
       name: "Slayer locations",
       levelRange: [1, 99],
       xpPerHour: null,
-      description: "While some Slayer monsters are found in one or multiple habitats, there are dungeons throughout Gielinor where many monsters a Slayer master can assign can be found. {| class=\"wikitable sortable\" !...",
+      description: "While some Slayer monsters are found in one or multiple habitats, there are dungeons throughout Gielinor where many monsters a Slayer master can assign can be found. |- | Slayer Tower  |Has various...",
       members: false,
     },
     {
@@ -135,7 +128,7 @@ export const slayerF2pGuide: SkillTrainingGuide = {
       name: "Location",
       levelRange: [90, 99],
       xpPerHour: null,
-      description: "Scrolls of redirection can be used to teleport to player-owned house portals other than the house's current location. {| class=\"wikitable sortable\" ! Level ! Location ! Advantages",
+      description: "Scrolls of redirection can be used to teleport to player-owned house portals other than the house's current location. |- |  | Rimmington |",
       members: false,
     },
     {
@@ -149,7 +142,7 @@ export const slayerF2pGuide: SkillTrainingGuide = {
       name: "Quest experience",
       levelRange: [18, 99],
       xpPerHour: null,
-      description: "{| class=\"wikitable sortable lighttable qc-active\" style=\"text-align:center;\" !Quest !Experiencereward  ! data-sort-type=\"number\" |Slayerrequirement !Other requirements",
+      description: "|- |Natural history quiz(miniquest)|| 1,000||-||- |- |Recipe for Disaster(Dwarf subquest)||1,000||-||- |-",
       members: false,
     },
     {

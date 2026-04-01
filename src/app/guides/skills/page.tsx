@@ -9,12 +9,12 @@ const ALL_SKILLS = [
   "Runecraft", "Hitpoints", "Crafting", "Mining", "Smithing",
   "Fishing", "Cooking", "Firemaking", "Woodcutting", "Agility",
   "Herblore", "Thieving", "Fletching", "Slayer", "Farming",
-  "Construction", "Hunter",
+  "Construction", "Hunter", "Sailing",
 ];
 
 const SKILL_CATEGORIES: Record<string, string[]> = {
   Combat: ["Attack", "Strength", "Defence", "Ranged", "Prayer", "Magic", "Hitpoints"],
-  Gathering: ["Mining", "Fishing", "Woodcutting", "Farming", "Hunter"],
+  Gathering: ["Mining", "Fishing", "Woodcutting", "Farming", "Hunter", "Sailing"],
   Artisan: ["Smithing", "Cooking", "Crafting", "Fletching", "Herblore", "Construction", "Firemaking", "Runecraft"],
   Support: ["Agility", "Thieving", "Slayer"],
 };
@@ -37,7 +37,7 @@ export default function SkillGuidesIndex() {
         Skill Training Guides
       </h1>
       <p className="text-osrs-text-dim mb-10">
-        Training methods for all 23 skills, sourced from the OSRS Wiki.
+        Training methods for all 24 skills, sourced from the OSRS Wiki.
         Each guide includes P2P and F2P methods with XP rates and level ranges.
       </p>
 

@@ -164,8 +164,8 @@ export default function HomePage() {
             href="/guides/skills"
             icon="📚"
             title="Skill Guides"
-            description="Training methods for all 23 skills with XP rates. P2P and F2P variants sourced from the OSRS Wiki."
-            badge="23 Skills"
+            description="Training methods for all 24 skills with XP rates. P2P and F2P variants sourced from the OSRS Wiki."
+            badge="24 Skills"
             badgeVariant="blue"
           />
           <FeatureCard

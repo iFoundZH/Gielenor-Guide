@@ -5,6 +5,7 @@ import { ragingEchoesLeague } from "@/data/raging-echoes";
 import { Card } from "@/components/ui/Card";
 import { RelicTierDisplay } from "@/components/league/RelicTierDisplay";
 import { MasteryPanel } from "@/components/league/MasteryPanel";
+import { RegionPicker } from "@/components/league/RegionPicker";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { encodeBuild, decodeBuild } from "@/lib/build-storage";
 import { calculateGielinorScore } from "@/lib/player-score";
@@ -15,6 +16,7 @@ import type { LeagueBuild } from "@/types/league";
 import Link from "next/link";
 
 const sections = [
+  { id: "regions", label: "Regions" },
   { id: "relics", label: "Relics" },
   { id: "masteries", label: "Masteries" },
   { id: "analysis", label: "Analysis" },
@@ -90,6 +92,17 @@ export default function RagingEchoesPlanner() {
       }
     });
   }, []);
+
+  const toggleRegion = useCallback((regionId: string) => {
+    setBuild((prev) => ({
+      ...prev,
+      regions: prev.regions.includes(regionId)
+        ? prev.regions.filter((id) => id !== regionId)
+        : prev.regions.length < league.maxRegions
+        ? [...prev.regions, regionId]
+        : prev.regions,
+    }));
+  }, [league.maxRegions]);
 
   const allRelics = useMemo(() => league.relicTiers.flatMap((t) => t.relics), [league.relicTiers]);
   const selectedRelics = useMemo(() => allRelics.filter((r) => build.relics.includes(r.id)), [build.relics, allRelics]);
@@ -183,6 +196,20 @@ export default function RagingEchoesPlanner() {
             {copied && <div className="mt-3 p-2 bg-osrs-green/10 border border-osrs-green/30 rounded-lg text-xs text-osrs-green text-center">Link copied to clipboard!</div>}
           </Card>
 
+          {/* Region Selection */}
+          <div id="regions" className="scroll-mt-24">
+            <h2 className="text-2xl font-bold text-osrs-gold mb-4" style={{ fontFamily: "var(--font-runescape)" }}>
+              Choose Your Regions
+            </h2>
+            <p className="text-sm text-osrs-text-dim mb-4">Unlocked at 90 / 200 / 400 completed tasks. Plan which 3 regions you&apos;ll pick.</p>
+            <RegionPicker
+              regions={league.regions}
+              maxRegions={league.maxRegions}
+              selectedRegions={build.regions}
+              onToggle={toggleRegion}
+            />
+          </div>
+
           {/* Relic Selection */}
           <div id="relics" className="scroll-mt-24">
             <h2 className="text-2xl font-bold text-osrs-gold mb-6" style={{ fontFamily: "var(--font-runescape)" }}>
@@ -242,6 +269,10 @@ export default function RagingEchoesPlanner() {
               <h3 className="text-lg font-bold text-osrs-gold mb-4" style={{ fontFamily: "var(--font-runescape)" }}>Build Summary</h3>
               <div className="space-y-3 mb-4">
                 <div className="flex justify-between text-sm">
+                  <span className="text-osrs-text-dim">Regions</span>
+                  <span className="text-osrs-text">{build.regions.length} / {league.maxRegions}</span>
+                </div>
+                <div className="flex justify-between text-sm">
                   <span className="text-osrs-text-dim">Relics</span>
                   <span className="text-osrs-text">{selectedRelics.length} / {relicTiersWithChoices}</span>
                 </div>
@@ -252,6 +283,20 @@ export default function RagingEchoesPlanner() {
               </div>
               <ProgressBar value={selectedRelics.length} max={relicTiersWithChoices} label="Relics Selected" color="bg-osrs-gold" size="sm" />
             </Card>
+
+            {build.regions.length > 0 && (
+              <Card>
+                <h4 className="text-sm font-bold text-osrs-text mb-3">Selected Regions</h4>
+                <div className="space-y-1">
+                  {build.regions.map((regionId) => {
+                    const region = league.regions.find((r) => r.id === regionId);
+                    return region ? (
+                      <div key={regionId} className="text-sm text-osrs-text">{region.name}</div>
+                    ) : null;
+                  })}
+                </div>
+              </Card>
+            )}
 
             {selectedRelics.length > 0 && (
               <Card>
@@ -276,6 +321,10 @@ export default function RagingEchoesPlanner() {
           <div className="bg-osrs-dark border-t border-osrs-border px-4 py-3 max-h-64 overflow-y-auto">
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
+                <span className="text-osrs-text-dim">Regions</span>
+                <span className="text-osrs-text">{build.regions.map((id) => league.regions.find((r) => r.id === id)?.name).filter(Boolean).join(", ") || "None"}</span>
+              </div>
+              <div className="flex justify-between">
                 <span className="text-osrs-text-dim">Relics</span>
                 <span className="text-osrs-text">{selectedRelics.map((r) => `T${r.tier} ${r.name}`).join(", ") || "None"}</span>
               </div>
@@ -292,6 +341,7 @@ export default function RagingEchoesPlanner() {
         >
           <div className="flex items-center gap-4 text-xs">
             <span className="text-osrs-gold font-bold">{gielinorScore.total} pts</span>
+            <span className="text-osrs-text-dim">R {build.regions.length}/{league.maxRegions}</span>
             <span className="text-osrs-text-dim">T {selectedRelics.length}/{relicTiersWithChoices}</span>
             <span className="text-osrs-text-dim">M {masteryPointsUsed}/{league.masteries?.maxPoints ?? 10}</span>
           </div>

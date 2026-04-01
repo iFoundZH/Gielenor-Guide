@@ -59,9 +59,11 @@ export function SnowflakeGuideClient({ type }: { type: string }) {
 
           <div className="space-y-2">
             {guide.sections.map((section, i) => (
-              <Card key={i}>
-                <SectionTree section={section} />
-              </Card>
+              <div key={i} id={`section-${i}`} className="scroll-mt-24">
+                <Card>
+                  <SectionTree section={section} />
+                </Card>
+              </div>
             ))}
           </div>
         </div>
@@ -73,7 +75,11 @@ export function SnowflakeGuideClient({ type }: { type: string }) {
                 <h3 className="text-sm font-bold text-osrs-text mb-3">Contents</h3>
                 <nav className="space-y-1">
                   {guide.sections.map((section, i) => (
-                    <div key={i} className="text-xs text-osrs-text-dim hover:text-osrs-gold cursor-pointer">
+                    <div
+                      key={i}
+                      className="text-xs text-osrs-text-dim hover:text-osrs-gold cursor-pointer"
+                      onClick={() => document.getElementById(`section-${i}`)?.scrollIntoView({ behavior: "smooth", block: "start" })}
+                    >
                       {section.title}
                     </div>
                   ))}

@@ -9,7 +9,7 @@ export const herbloreP2pGuide: SkillTrainingGuide = {
       name: "Quest experience rewards",
       levelRange: [3, 99],
       xpPerHour: null,
-      description: "{|class=\"wikitable sortable lighttable qc-active\" style=\"text-align:center;\" !Quest !Experiencereward !Herblore req. !Other requirements",
+      description: "|- |Druidic Ritual||250|| - || - |- |Jungle Potion||775|||| - |-",
       members: true,
     },
     {

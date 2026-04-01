@@ -3,6 +3,9 @@
  *
  * The OSRS Wiki uses specific location names ("Lumbridge Castle", "God Wars Dungeon")
  * that must map to our 14 canonical region IDs defined in osrs-regions.ts.
+ *
+ * DT2 boss regions follow Jagex league classifications (DP/RE wiki pages),
+ * which may differ from geographic location.
  */
 
 const LOCATION_KEYWORDS: [string, string][] = [
@@ -20,6 +23,11 @@ const LOCATION_KEYWORDS: [string, string][] = [
   ["abyss", "misthalin"],
   ["abyssal nexus", "misthalin"],
   ["misthalin", "misthalin"],
+  ["dorgesh-kaan", "misthalin"],
+  ["dorgesh kaan", "misthalin"],
+  ["paterdomus", "misthalin"],
+  ["exam centre", "misthalin"],
+  ["soul wars", "misthalin"],
 
   // Karamja
   ["karamja", "karamja"],
@@ -27,12 +35,14 @@ const LOCATION_KEYWORDS: [string, string][] = [
   ["tai bwo wannai", "karamja"],
   ["shilo village", "karamja"],
   ["tzhaar", "karamja"],
+  ["mor ul rek", "karamja"],
   ["musa point", "karamja"],
   ["crandor", "karamja"],
   ["fight cave", "karamja"],
   ["inferno", "karamja"],
   ["tzkal", "karamja"],
   ["tztok", "karamja"],
+  ["kharazi", "karamja"],
 
   // Asgarnia
   ["falador", "asgarnia"],
@@ -45,8 +55,10 @@ const LOCATION_KEYWORDS: [string, string][] = [
   ["white wolf mountain", "asgarnia"],
   ["god wars dungeon", "asgarnia"],
   ["warriors' guild", "asgarnia"],
+  ["warriors guild", "asgarnia"],
   ["death plateau", "asgarnia"],
   ["troll stronghold", "asgarnia"],
+  ["trollheim", "asgarnia"],
   ["asgarnia", "asgarnia"],
   ["mudskipper point", "asgarnia"],
   ["thurgo", "asgarnia"],
@@ -54,6 +66,11 @@ const LOCATION_KEYWORDS: [string, string][] = [
   ["monastery", "asgarnia"],
   ["cerberus' lair", "asgarnia"],
   ["key master", "asgarnia"],
+  ["camdozaal", "asgarnia"],
+  ["corsair cove", "asgarnia"],
+  ["corsair", "asgarnia"],
+  ["lassar", "asgarnia"],
+  ["whisperer", "asgarnia"],
 
   // Kandarin
   ["ardougne", "kandarin"],
@@ -78,6 +95,15 @@ const LOCATION_KEYWORDS: [string, string][] = [
   ["khazard", "kandarin"],
   ["smoke devil", "kandarin"],
   ["thermonuclear", "kandarin"],
+  ["piscatoris", "kandarin"],
+  ["feldip", "kandarin"],
+  ["castle wars", "kandarin"],
+  ["barbarian outpost", "kandarin"],
+  ["hemenster", "kandarin"],
+  ["eagles' peak", "kandarin"],
+  ["eagles peak", "kandarin"],
+  ["tower of life", "kandarin"],
+  ["nightmare zone", "kandarin"],
 
   // Fremennik
   ["rellekka", "fremennik"],
@@ -90,11 +116,16 @@ const LOCATION_KEYWORDS: [string, string][] = [
   ["weiss", "fremennik"],
   ["keldagrim", "fremennik"],
   ["miscellania", "fremennik"],
+  ["etceteria", "fremennik"],
   ["ungael", "fremennik"],
   ["vorkath", "fremennik"],
   ["ghorrock", "fremennik"],
   ["dagannoth", "fremennik"],
   ["jormungand", "fremennik"],
+  ["mountain camp", "fremennik"],
+  ["lithkren", "fremennik"],
+  ["muspah", "fremennik"],
+  ["duke sucellus", "fremennik"],
 
   // Morytania
   ["canifis", "morytania"],
@@ -112,12 +143,15 @@ const LOCATION_KEYWORDS: [string, string][] = [
   ["meiyerditch", "morytania"],
   ["mort myre", "morytania"],
   ["mort'ton", "morytania"],
-  ["nightmare zone", "morytania"],
   ["nightmare", "morytania"],
   ["phosani", "morytania"],
   ["grotesque guardians", "morytania"],
   ["sisterhood sanctuary", "morytania"],
   ["sisterhood", "morytania"],
+  ["hallowed sepulchre", "morytania"],
+  ["fenkenstrain", "morytania"],
+  ["mos le'harmless", "morytania"],
+  ["mos le harmless", "morytania"],
 
   // Desert
   ["al kharid", "desert"],
@@ -133,15 +167,18 @@ const LOCATION_KEYWORDS: [string, string][] = [
   ["menaphos", "desert"],
   ["jaldraocht", "desert"],
   ["agility pyramid", "desert"],
+  ["tempoross", "desert"],
+  ["ruins of unkah", "desert"],
   ["ruins of ullek", "desert"],
   ["tombs of amascut", "desert"],
   ["uzer", "desert"],
   ["dominion tower", "desert"],
-  ["lassar", "desert"],
-  ["stranglewood", "desert"],
-  ["ancient vault", "desert"],
-  ["whisperer", "desert"],
-  ["vardorvis", "desert"],
+  ["smoke dungeon", "desert"],
+  ["giants' foundry", "desert"],
+  ["giants foundry", "desert"],
+  ["necropolis", "desert"],
+  ["the scar", "desert"],
+  ["leviathan", "desert"],
 
   // Tirannwn
   ["prifddinas", "tirannwn"],
@@ -155,7 +192,9 @@ const LOCATION_KEYWORDS: [string, string][] = [
   ["zalcano", "tirannwn"],
   ["zul-andra", "tirannwn"],
   ["zulrah", "tirannwn"],
-  ["kraken cove", "tirannwn"],
+  ["poison waste", "tirannwn"],
+  ["kraken cove", "kandarin"],
+  ["kraken", "kandarin"],
 
   // Wilderness
   ["wilderness", "wilderness"],
@@ -179,6 +218,12 @@ const LOCATION_KEYWORDS: [string, string][] = [
   ["scorpia", "wilderness"],
   ["crazy archaeologist", "wilderness"],
   ["chaos elemental", "wilderness"],
+  ["web chasm", "wilderness"],
+  ["silk chasm", "wilderness"],
+  ["spindel", "wilderness"],
+  ["artio", "wilderness"],
+  ["calvar'ion", "wilderness"],
+  ["fountain of rune", "wilderness"],
 
   // Kebos
   ["farming guild", "kebos"],
@@ -189,6 +234,7 @@ const LOCATION_KEYWORDS: [string, string][] = [
   ["hydra", "kebos"],
   ["konar", "kebos"],
   ["molch", "kebos"],
+  ["hespori", "kebos"],
 
   // Kourend
   ["arceuus", "kourend"],
@@ -208,12 +254,16 @@ const LOCATION_KEYWORDS: [string, string][] = [
   ["beneath kourend", "kourend"],
   ["forthos", "kourend"],
   ["sarachnis", "kourend"],
-  ["duke sucellus", "kourend"],
+  ["skotizo", "kourend"],
+  ["chasm of fire", "kourend"],
+  ["yama", "kourend"],
+  ["woodcutting guild", "kourend"],
 
   // Fossil Island
   ["fossil island", "fossil-island"],
   ["volcanic mine", "fossil-island"],
   ["mushroom forest", "fossil-island"],
+  ["deranged archaeologist", "fossil-island"],
 
   // Varlamore
   ["varlamore", "varlamore"],
@@ -223,11 +273,20 @@ const LOCATION_KEYWORDS: [string, string][] = [
   ["colosseum", "varlamore"],
   ["tapoyauik", "varlamore"],
   ["ruins of tapoyauik", "varlamore"],
-  ["the scar", "varlamore"],
   ["ralos' rise", "varlamore"],
   ["hueycoatl", "varlamore"],
   ["mokhaiotl", "varlamore"],
   ["shellbane", "varlamore"],
+  ["perilous moon", "varlamore"],
+  ["blood moon", "varlamore"],
+  ["blue moon", "varlamore"],
+  ["eclipse moon", "varlamore"],
+  ["gemstone crab", "varlamore"],
+  ["tlati", "varlamore"],
+  ["neypotzli", "varlamore"],
+  ["aldarin", "varlamore"],
+  ["stranglewood", "varlamore"],
+  ["vardorvis", "varlamore"],
 
   // Zanaris / Other
   ["zanaris", "zanaris"],

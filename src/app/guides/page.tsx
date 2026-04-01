@@ -11,9 +11,9 @@ const guideCategories = [
     guides: [
       {
         title: "Skill Training",
-        description: "Training methods for all 23 skills with XP rates, level ranges, and P2P/F2P variants.",
+        description: "Training methods for all 24 skills with XP rates, level ranges, and P2P/F2P variants.",
         href: "/guides/skills",
-        badge: "23 Skills",
+        badge: "24 Skills",
         badgeVariant: "gold" as const,
       },
       {

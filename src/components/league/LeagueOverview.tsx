@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Tabs } from "@/components/ui/Tabs";
 import { RelicTierDisplay } from "@/components/league/RelicTierDisplay";
 import { PactCard } from "@/components/league/PactCard";
+import { MasteryPanel } from "@/components/league/MasteryPanel";
 import { RewardTierDisplay } from "@/components/league/RewardTierDisplay";
 import { RegionPicker } from "@/components/league/RegionPicker";
 import Link from "next/link";
@@ -27,7 +28,8 @@ export function LeagueOverview({ league, basePath, otherLeaguePath, otherLeagueN
     { id: "overview", label: "Overview" },
     ...(hasRegions ? [{ id: "regions", label: "Regions", count: league.regions.filter((r) => r.type !== "inaccessible").length }] : []),
     { id: "relics", label: "Relics", count: allRelics.length },
-    ...(league.pacts.length > 0 ? [{ id: "pacts", label: league.id === "demonic-pacts" ? "Pacts" : "Masteries", count: league.pacts.length }] : []),
+    ...(league.pacts.length > 0 ? [{ id: "pacts", label: "Pacts", count: league.pacts.length }] : []),
+    ...(league.masteries ? [{ id: "masteries", label: "Masteries" }] : []),
     { id: "rewards", label: "Rewards", count: league.rewardTiers.length },
     ...(hasMechanics ? [{ id: "mechanics", label: "Mechanics" }] : []),
   ];
@@ -94,7 +96,8 @@ export function LeagueOverview({ league, basePath, otherLeaguePath, otherLeagueN
                   <StatBox label="Relic Tiers" value={league.relicTiers.length.toString()} />
                   <StatBox label="Named Relics" value={allRelics.length.toString()} />
                   {hasRegions && <StatBox label="Choosable Regions" value={`${league.maxRegions} of ${league.regions.filter((r) => r.type === "choosable").length}`} />}
-                  <StatBox label="Pacts" value={league.pacts.length.toString()} />
+                  {league.pacts.length > 0 && <StatBox label="Pacts" value={league.pacts.length.toString()} />}
+                  {league.masteries && <StatBox label="Masteries" value={`${league.masteries.styles.length} styles`} />}
                   <StatBox label="Tasks" value={league.tasks.length.toString()} />
                   <StatBox label="XP Rate" value={`${league.baseXpMultiplier}x–${league.relicTiers.reduce((max, t) => { const xpEffect = t.passiveEffects.find((e) => e.includes("XP multiplier")); if (xpEffect) { const match = xpEffect.match(/(\d+)x/); if (match) return Math.max(max, parseInt(match[1])); } return max; }, league.baseXpMultiplier)}x`} />
                 </div>
@@ -154,6 +157,14 @@ export function LeagueOverview({ league, basePath, otherLeaguePath, otherLeagueN
                   <PactCard key={pact.id} pact={pact} />
                 ))}
               </div>
+            )}
+
+            {activeTab === "masteries" && league.masteries && (
+              <MasteryPanel
+                masteries={league.masteries}
+                selectedTiers={[]}
+                onToggleTier={() => {}}
+              />
             )}
 
             {activeTab === "rewards" && <RewardTierDisplay tiers={league.rewardTiers} />}
