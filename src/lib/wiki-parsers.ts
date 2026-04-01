@@ -122,6 +122,7 @@ export async function fetchBulkWikitext(pageTitles: string[]): Promise<Map<strin
       rvslots: "main",
       format: "json",
       formatversion: "2",
+      redirects: "1",
     });
 
     try {
@@ -140,18 +141,40 @@ export async function fetchBulkWikitext(pageTitles: string[]): Promise<Map<strin
         }
       }
 
+      // Build redirect map: target → [sources] (multiple pages can redirect to same target)
+      const redirectMap = new Map<string, string[]>();
+      if (data.query?.redirects) {
+        for (const r of data.query.redirects) {
+          const existing = redirectMap.get(r.to) ?? [];
+          existing.push(r.from);
+          redirectMap.set(r.to, existing);
+        }
+      }
+
       if (data.query?.pages) {
         for (const page of data.query.pages) {
           if (page.missing) continue;
           const content = page.revisions?.[0]?.slots?.main?.content;
           if (!content) continue;
 
-          // Use the original title (before normalization) if available
+          // Store under the final resolved title
+          results.set(page.title, content);
+
+          // Also store under the original title (before normalization)
           const originalTitle = normalizedMap.get(page.title) ?? page.title;
-          results.set(originalTitle, content);
-          // Also store under the normalized title for easy lookup
           if (originalTitle !== page.title) {
-            results.set(page.title, content);
+            results.set(originalTitle, content);
+          }
+
+          // Also store under all redirect source titles (before redirect)
+          const redirectSources = redirectMap.get(page.title) ?? [];
+          for (const source of redirectSources) {
+            results.set(source, content);
+            // And under the pre-normalization form of the redirect source
+            const preNormRedirect = normalizedMap.get(source);
+            if (preNormRedirect) {
+              results.set(preNormRedirect, content);
+            }
           }
         }
       }
@@ -333,7 +356,7 @@ export const VALID_SKILLS = new Set([
   "Runecraft", "Hitpoints", "Crafting", "Mining", "Smithing",
   "Fishing", "Cooking", "Firemaking", "Woodcutting", "Agility",
   "Herblore", "Thieving", "Fletching", "Slayer", "Farming",
-  "Construction", "Hunter",
+  "Construction", "Hunter", "Sailing",
 ]);
 
 export function isSkillName(s: string): boolean {

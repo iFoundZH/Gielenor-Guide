@@ -9,9 +9,12 @@ async function selectRelic(page: import("@playwright/test").Page, name: string) 
   await expect(card.locator("xpath=ancestor::div[contains(@class,'bg-osrs-panel')]")).toHaveClass(/ring-osrs-gold/, { timeout: 5000 });
 }
 
-// ─── Helper: select a mastery by name ───────────────────────────────────
+// ─── Helper: select a mastery by name (clicks tier 1 of the named style) ─
 async function selectMastery(page: import("@playwright/test").Page, name: string) {
-  await page.locator(`text=${name}`).first().evaluate(el => (el as HTMLElement).click());
+  // Find the mastery card containing the style name, then click its first tier button
+  const card = page.locator(`div.bg-osrs-panel:has(h4:has-text("${name}"))`);
+  const firstTier = card.locator("button").first();
+  await firstTier.evaluate(el => (el as HTMLElement).click());
   // Wait for React state update to propagate
   await page.waitForTimeout(600);
 }

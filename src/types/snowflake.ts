@@ -44,6 +44,10 @@ export interface OsrsQuest {
   combatRequired: boolean;
   questPoints: number;
   members: boolean;
+  length?: "very short" | "short" | "medium" | "long" | "very long";
+  xpRewards?: { skill: string; xp: number }[];
+  unlocks?: string[];
+  wikiUrl?: string;
 }
 
 export interface OsrsBoss {
@@ -53,6 +57,12 @@ export interface OsrsBoss {
   combatLevel: number | null;
   skillRequirements: { skill: string; level: number }[];
   questRequirements: string[];
+  hitpoints?: number | null;
+  attackStyles?: string[];
+  members?: boolean;
+  category?: ("raid" | "wilderness" | "slayer" | "gwd" | "dt2" | "skilling" | "other")[];
+  notableDrops?: string[];
+  wikiUrl?: string;
 }
 
 export interface ContentBlocker {
@@ -83,4 +93,45 @@ export interface RestrictionPreset {
   allowedRegions: string[];
   skillRestrictions: SkillRestriction[];
   customRules: string[];
+}
+
+export interface DiaryTask {
+  id: string;
+  description: string;
+  requirements: string[];
+}
+
+export interface DiaryTier {
+  tier: "easy" | "medium" | "hard" | "elite";
+  tasks: DiaryTask[];
+  rewards: string[];
+}
+
+export interface DiaryArea {
+  id: string;
+  name: string;
+  region: string;
+  tiers: DiaryTier[];
+  wikiUrl: string;
+}
+
+export interface CATask {
+  id: string;
+  name: string;
+  description: string;
+  monster: string;
+  tier: string;
+  points: number;
+}
+
+export interface CATier {
+  tier: string;
+  tasks: CATask[];
+  totalPoints: number;
+}
+
+export interface CombatAchievementData {
+  tiers: CATier[];
+  totalTasks: number;
+  totalPoints: number;
 }

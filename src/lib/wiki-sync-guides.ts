@@ -57,10 +57,10 @@ function parseTrainingMethods(wikitext: string, members: boolean): ParsedTrainin
 
   // Split by section headers (=== or ==)
   const sectionPattern = /^(={2,3})\s*(.+?)\s*\1/gm;
-  const sectionStarts: { index: number; title: string }[] = [];
+  const sectionStarts: { index: number; title: string; raw: string }[] = [];
   let m;
   while ((m = sectionPattern.exec(wikitext)) !== null) {
-    sectionStarts.push({ index: m.index, title: stripWikiMarkup(m[2]) });
+    sectionStarts.push({ index: m.index, title: stripWikiMarkup(m[2]), raw: m[2] });
   }
 
   for (let i = 0; i < sectionStarts.length; i++) {
@@ -69,13 +69,32 @@ function parseTrainingMethods(wikitext: string, members: boolean): ParsedTrainin
     const section = wikitext.slice(start, end);
     const title = sectionStarts[i].title;
 
-    // Try to extract level range from section title
-    const levelMatch = title.match(/[Ll]evels?\s+(\d+)\s*[-–to]+\s*(\d+)/);
+    // Try to extract level range from section title (handles "Levels 1-30", "Levels 1 to 30", "Level 50-70")
+    const levelMatch = title.match(/[Ll]evels?\s+(\d+)\s*[-–to/]+\s*(\d+)/);
     if (!levelMatch) continue;
 
     const levelLow = parseInt(levelMatch[1]);
     const levelHigh = parseInt(levelMatch[2]);
     if (isNaN(levelLow) || isNaN(levelHigh)) continue;
+
+    // Extract the method name from the title (strip the level range prefix)
+    const methodNameFromTitle = title.replace(/[Ll]evels?\s+\d+\s*[-–to/]+\s*\d+\s*[-–:,]*\s*/, "").trim();
+
+    // Extract XP/hr from section text — check bullets, paragraphs, and {{Formatnum}} wrappers
+    function extractXpRate(text: string): number | null {
+      // Pattern: "N xp/hr", "N experience per hour", "N xp per hour"
+      const patterns = [
+        /([\d,]+)\s*(?:xp|experience)\s*(?:per\s*hour|\/\s*h(?:our)?|ph)/i,
+        /\{\{Formatnum[:|](\d+)\}\}\s*(?:xp|experience)\s*(?:per\s*hour|\/\s*h(?:our)?|ph)/i,
+        /approximately\s+([\d,]+)\s*(?:xp|experience)/i,
+        /around\s+([\d,]+)\s*(?:xp|experience)\s*per\s*hour/i,
+      ];
+      for (const pat of patterns) {
+        const match = text.match(pat);
+        if (match) return parseInt(match[1].replace(/,/g, ""));
+      }
+      return null;
+    }
 
     // Extract methods from bullet points or the first paragraph
     const bullets = section.match(/^\*\s+.+$/gm);
@@ -83,8 +102,7 @@ function parseTrainingMethods(wikitext: string, members: boolean): ParsedTrainin
       for (const bullet of bullets.slice(0, 5)) {
         const text = stripWikiMarkup(bullet.replace(/^\*\s*/, ""));
         if (text.length < 5) continue;
-        const xpMatch = text.match(/([\d,]+)\s*(?:xp|experience)\s*(?:per\s*hour|\/\s*h(?:our)?|ph)/i);
-        const xpPerHour = xpMatch ? parseInt(xpMatch[1].replace(/,/g, "")) : null;
+        const xpPerHour = extractXpRate(text);
         const name = text.split(/[-–:.]/).at(0)?.trim() || text.slice(0, 60);
 
         methods.push({
@@ -97,12 +115,56 @@ function parseTrainingMethods(wikitext: string, members: boolean): ParsedTrainin
       }
     } else {
       // Use section title as a single method
-      const description = stripWikiMarkup(section.split("\n").filter((l) => l.trim() && !l.startsWith("=")).slice(0, 3).join(" "));
-      const xpMatch = description.match(/([\d,]+)\s*(?:xp|experience)\s*(?:per\s*hour|\/\s*h(?:our)?|ph)/i);
+      const sectionBody = section.split("\n").filter((l) => l.trim() && !l.startsWith("=")).slice(0, 5).join(" ");
+      const description = stripWikiMarkup(sectionBody);
+      const xpPerHour = extractXpRate(sectionBody);
       methods.push({
-        name: title.replace(/[Ll]evels?\s+\d+\s*[-–to]+\s*\d+\s*[-–:]*\s*/, "").trim() || title,
+        name: methodNameFromTitle || title,
         levelRange: [levelLow, levelHigh],
-        xpPerHour: xpMatch ? parseInt(xpMatch[1].replace(/,/g, "")) : null,
+        xpPerHour,
+        description: description.length > 200 ? description.slice(0, 197) + "..." : description,
+        members,
+      });
+    }
+  }
+
+  // Fallback: if no methods with level ranges found, extract methods from subsection headers
+  if (methods.length === 0) {
+    for (let i = 0; i < sectionStarts.length; i++) {
+      const start = sectionStarts[i].index;
+      const end = i + 1 < sectionStarts.length ? sectionStarts[i + 1].index : wikitext.length;
+      const section = wikitext.slice(start, end);
+      const title = sectionStarts[i].title;
+
+      // Skip meta/navigation sections
+      if (/^(see also|references|external links|navigation|notes|equipment|recommended|general|contents)$/i.test(title)) continue;
+      if (title.length < 3 || title.length > 80) continue;
+
+      // Try to extract a level from section body (e.g., "requires level 60" or {{SCP|Skill|60}})
+      const bodyLevelMatch = section.match(/(?:requires?\s+(?:level\s+)?|at\s+level\s+|level\s+)(\d+)/i);
+      const scpLevelMatch = section.match(/\{\{SCP\|[^|]+\|(\d+)/);
+      const level = bodyLevelMatch ? parseInt(bodyLevelMatch[1]) : (scpLevelMatch ? parseInt(scpLevelMatch[1]) : 1);
+
+      const sectionBody = section.split("\n").filter((l) => l.trim() && !l.startsWith("=")).slice(0, 5).join(" ");
+      const description = stripWikiMarkup(sectionBody);
+      if (description.length < 10) continue;
+
+      function extractXpRate(text: string): number | null {
+        const patterns = [
+          /([\d,]+)\s*(?:xp|experience)\s*(?:per\s*hour|\/\s*h(?:our)?|ph)/i,
+          /approximately\s+([\d,]+)\s*(?:xp|experience)/i,
+        ];
+        for (const pat of patterns) {
+          const match = text.match(pat);
+          if (match) return parseInt(match[1].replace(/,/g, ""));
+        }
+        return null;
+      }
+
+      methods.push({
+        name: title.length > 80 ? title.slice(0, 77) + "..." : title,
+        levelRange: [level, 99],
+        xpPerHour: extractXpRate(sectionBody),
         description: description.length > 200 ? description.slice(0, 197) + "..." : description,
         members,
       });
@@ -112,6 +174,26 @@ function parseTrainingMethods(wikitext: string, members: boolean): ParsedTrainin
   return methods;
 }
 
+// Skills that don't have their own Pay-to-play_X_training page, or where
+// that page redirects to a combined/generic training page.
+// Map skill → alternate page name(s) to try.
+const SKILL_PAGE_ALTERNATES: Record<string, string[]> = {
+  Attack: ["Pay-to-play_melee_training", "melee_training"],
+  Strength: ["Pay-to-play_melee_training", "melee_training"],
+  Defence: ["Pay-to-play_melee_training", "melee_training"],
+  Hitpoints: ["Hitpoints_training"],
+  Prayer: ["Prayer_training"],
+  Agility: ["Agility_training"],
+  Herblore: ["Herblore_training"],
+  Thieving: ["Thieving_training"],
+  Fletching: ["Fletching_training"],
+  Slayer: ["Slayer_training"],
+  Farming: ["Farming_training"],
+  Construction: ["Construction_training"],
+  Hunter: ["Hunter_training"],
+  Sailing: ["Sailing_training"],
+};
+
 async function syncSkillGuides(dryRun: boolean): Promise<void> {
   console.log("\n--- Syncing Skill Training Guides ---\n");
   const outputDir = path.join(GUIDES_DIR, "skills");
@@ -120,44 +202,54 @@ async function syncSkillGuides(dryRun: boolean): Promise<void> {
   const allGuides: ParsedSkillGuide[] = [];
 
   // Build all page names upfront for bulk fetch
-  const pageRequests: { skill: string; variant: "p2p" | "f2p"; pageName: string }[] = [];
+  const pageNames = new Set<string>();
   for (const skill of ALL_SKILLS) {
-    pageRequests.push({ skill, variant: "p2p", pageName: `Pay-to-play_${skill}_training` });
-    pageRequests.push({ skill, variant: "f2p", pageName: `Free-to-play_${skill}_training` });
-    // Include alternate page names for P2P fallback
-    pageRequests.push({ skill, variant: "p2p", pageName: `${skill}_training` });
+    pageNames.add(`Pay-to-play_${skill}_training`);
+    pageNames.add(`Free-to-play_${skill}_training`);
+    pageNames.add(`${skill}_training`);
+    // Add alternate pages for combined skills
+    const alts = SKILL_PAGE_ALTERNATES[skill];
+    if (alts) for (const alt of alts) pageNames.add(alt);
   }
 
-  const allPageNames = [...new Set(pageRequests.map((r) => r.pageName))];
+  const allPageNames = [...pageNames];
   console.log(`  Bulk fetching ${allPageNames.length} skill guide pages...`);
   const wikitextMap = await fetchBulkWikitext(allPageNames);
   console.log(`  Got wikitext for ${wikitextMap.size} pages`);
 
   for (const skill of ALL_SKILLS) {
     for (const variant of ["p2p", "f2p"] as const) {
-      const pageName = variant === "p2p"
+      const primaryName = variant === "p2p"
         ? `Pay-to-play_${skill}_training`
         : `Free-to-play_${skill}_training`;
 
-      let wikitext = wikitextMap.get(pageName) ?? null;
+      let wikitext = wikitextMap.get(primaryName) ?? null;
+      let usedPage = primaryName;
+
+      // Skip redirect pages (they start with #REDIRECT)
+      if (wikitext && /^#REDIRECT/i.test(wikitext.trim())) {
+        wikitext = null;
+      }
+
+      // Try alternate page names if primary doesn't exist or was a redirect
+      if (!wikitext) {
+        const alternates = [
+          ...(SKILL_PAGE_ALTERNATES[skill] ?? []),
+          `${skill}_training`,
+        ];
+        for (const alt of alternates) {
+          const candidate = wikitextMap.get(alt) ?? null;
+          if (candidate && !/^#REDIRECT/i.test(candidate.trim())) {
+            wikitext = candidate;
+            usedPage = alt;
+            break;
+          }
+        }
+      }
 
       if (!wikitext) {
         if (variant === "f2p") continue;
-        // Try alternate page name
-        const altName = `${skill}_training`;
-        wikitext = wikitextMap.get(altName) ?? null;
-        if (!wikitext) continue;
-
-        const methods = parseTrainingMethods(wikitext, true);
-        if (methods.length > 0) {
-          allGuides.push({
-            skill,
-            variant,
-            methods,
-            wikiUrl: `https://oldschool.runescape.wiki/w/${altName}`,
-          });
-          console.log(`    ${skill} (${variant}): ${methods.length} methods (alt page)`);
-        }
+        console.log(`    SKIP: ${skill} (${variant}) — no page found`);
         continue;
       }
 
@@ -168,9 +260,9 @@ async function syncSkillGuides(dryRun: boolean): Promise<void> {
         skill,
         variant,
         methods,
-        wikiUrl: `https://oldschool.runescape.wiki/w/${pageName}`,
+        wikiUrl: `https://oldschool.runescape.wiki/w/${usedPage}`,
       });
-      console.log(`    ${skill} (${variant}): ${methods.length} methods`);
+      console.log(`    ${skill} (${variant}): ${methods.length} methods${usedPage !== primaryName ? ` (${usedPage})` : ""}`);
     }
   }
 
@@ -253,9 +345,9 @@ interface ParsedGuideSection {
 
 const IRONMAN_PAGES: Record<string, string> = {
   standard: "Ironman_guide",
-  hardcore: "Hardcore_Ironman_guide",
+  hardcore: "Hardcore_ironman_guide",
   ultimate: "Ultimate_Ironman_Guide",
-  group: "Group_Ironman_Guide",
+  group: "Group_ironman_guide",
 };
 
 function parseGuideSections(wikitext: string): ParsedGuideSection[] {
@@ -472,69 +564,74 @@ async function syncQuestGuides(dryRun: boolean): Promise<void> {
 function parseQuestTable(wikitext: string): ParsedQuestEntry[] {
   const entries: ParsedQuestEntry[] = [];
 
-  // Find wikitable rows. The quest guide uses numbered rows in a wikitable.
-  // Format: | N || [[Quest Name]] || QP || cumulative QP || XP rewards || notes
-  const rowPattern = /^\|\s*(\d+)\s*\|\|?\s*\[\[([^\]|]+)(?:\|[^\]]+)?\]\]/gm;
-  let match;
-  while ((match = rowPattern.exec(wikitext)) !== null) {
-    const order = parseInt(match[1]);
-    const name = match[2].trim();
+  // The wiki uses |- data-rowid="QuestName" row delimiters with cells on separate lines:
+  //   |- data-rowid="Cook's Assistant"
+  //   |[[Cook's Assistant]]
+  //   |[[Cook's Assistant/Quick guide|QG]]
+  //   |{{Optimal quest|cooking=300}}
+  //   |{{Optimal quest/qp|1}}
+  //   |Notes text
+  //   |[[Location]]
+  const rows = wikitext.split(/\n\|-\s*(?:data-rowid|style)/);
 
-    // Get the rest of this row (until next row or end of table)
-    const rowStart = match.index;
-    const nextRow = wikitext.indexOf("\n|-", rowStart + 1);
-    const rowEnd = nextRow !== -1 ? nextRow : wikitext.length;
-    const rowText = wikitext.slice(rowStart, rowEnd);
+  let order = 0;
+  let cumulativeQP = 0;
 
-    // Extract QP from the row
-    const cells = rowText.split(/\|\|/);
-    let questPoints = 0;
-    let cumulativeQP = 0;
-    if (cells.length >= 3) {
-      questPoints = parseInt(stripWikiMarkup(cells[2])) || 0;
-    }
-    if (cells.length >= 4) {
-      cumulativeQP = parseInt(stripWikiMarkup(cells[3])) || 0;
-    }
+  for (const row of rows) {
+    // Extract quest name from first [[Quest Name]] link in the row
+    const nameMatch = row.match(/\|\s*(?:data-sort-value="[^"]*"\|)?\[\[([^\]|]+?)(?:\|[^\]]+)?\]\]/);
+    if (!nameMatch) continue;
+
+    const rawName = nameMatch[1].trim();
+    // Skip non-quest entries like "Stronghold of Security" unlock activities
+    // and the Quick Guide links (they appear as second cell)
+    if (rawName.endsWith("/Quick guide")) continue;
+
+    order++;
 
     // Extract XP rewards from {{Optimal quest|skill=xp}} templates
     const xpRewards: { skill: string; xp: number }[] = [];
     const xpPattern = /\{\{Optimal quest\|([^=}]+)=([^|}]+)/g;
     let xpMatch;
-    while ((xpMatch = xpPattern.exec(rowText)) !== null) {
+    while ((xpMatch = xpPattern.exec(row)) !== null) {
       const skill = xpMatch[1].trim();
-      const xp = parseInt(xpMatch[2].replace(/,/g, "").trim());
-      if (skill && !isNaN(xp)) xpRewards.push({ skill, xp });
+      const xp = parseInt(xpMatch[2].replace(/[,\s]/g, ""));
+      if (skill && !isNaN(xp) && xp > 0) xpRewards.push({ skill, xp });
     }
 
-    // Notes from last cell
-    const notes = cells.length >= 5 ? stripWikiMarkup(cells[cells.length - 1]).trim() : "";
+    // Extract quest points from {{Optimal quest/qp|N}}
+    let questPoints = 0;
+    const qpMatch = row.match(/\{\{Optimal quest\/qp\|(\d+)/);
+    if (qpMatch) questPoints = parseInt(qpMatch[1]);
+    cumulativeQP += questPoints;
+
+    // Extract notes: take cell text after the QP/XP template cells
+    // Split on cell boundaries (lines starting with |)
+    const cellLines = row.split(/\n\|/).filter((c) => c.trim());
+    // Notes are usually in the "Additional info" cell (cell index 5 of 7)
+    // Skip cells that contain templates, links to Quick Guide, or locations
+    let notes = "";
+    for (let i = 3; i < cellLines.length; i++) {
+      const cell = cellLines[i].trim();
+      if (/\{\{Optimal quest/.test(cell)) continue;
+      if (/\/Quick guide/.test(cell)) continue;
+      if (cell.startsWith("[[") && !cell.includes("]]")) continue;
+      // Skip cells that are just a location link
+      if (/^\[\[[^\]]+\]\]\s*$/.test(cell)) continue;
+      const cleaned = stripWikiMarkup(cell).trim();
+      if (cleaned.length > 5 && !notes) {
+        notes = cleaned.length > 300 ? cleaned.slice(0, 297) + "..." : cleaned;
+      }
+    }
 
     entries.push({
       order,
-      name,
+      name: rawName,
       questPoints,
-      cumulativeQP: cumulativeQP || entries.reduce((sum, e) => sum + e.questPoints, 0) + questPoints,
+      cumulativeQP,
       xpRewards,
-      notes: notes.length > 300 ? notes.slice(0, 297) + "..." : notes,
+      notes,
     });
-  }
-
-  // If the numbered approach didn't work, try a simpler bullet-list approach
-  if (entries.length === 0) {
-    const bulletPattern = /^\*\s*(?:#\s*)?(?:\d+\.?\s*)?\[\[([^\]|]+)(?:\|[^\]]+)?\]\]/gm;
-    let order = 0;
-    while ((match = bulletPattern.exec(wikitext)) !== null) {
-      order++;
-      entries.push({
-        order,
-        name: match[1].trim(),
-        questPoints: 0,
-        cumulativeQP: 0,
-        xpRewards: [],
-        notes: "",
-      });
-    }
   }
 
   return entries;
@@ -602,9 +699,9 @@ function parseDiaryTasks(wikitext: string, areaSlug: string): ParsedDiaryTier[] 
   const tiers: ParsedDiaryTier[] = [];
 
   for (const tierName of ["Easy", "Medium", "Hard", "Elite"]) {
-    // Find the section for this tier
+    // Find the section for this tier — stop at next tier, rewards, trivia, changes, see also, etc.
     const pattern = new RegExp(
-      `==\\s*${tierName}\\s*==\\s*([\\s\\S]*?)(?=\\n==\\s*(?:Easy|Medium|Hard|Elite|Reward|See also|References|Navigation)\\s*==|$)`,
+      `==\\s*${tierName}\\s*==\\s*([\\s\\S]*?)(?=\\n==\\s*(?:Easy|Medium|Hard|Elite|Reward|See also|References|Navigation|Trivia|Changes|Gallery)\\s*==|$)`,
       "i",
     );
     const match = wikitext.match(pattern);
@@ -614,28 +711,59 @@ function parseDiaryTasks(wikitext: string, areaSlug: string): ParsedDiaryTier[] 
     const tasks: ParsedDiaryTask[] = [];
     let taskIdx = 0;
 
-    // Parse bullet points as tasks
-    const lines = section.split("\n");
-    for (const line of lines) {
-      const trimmed = line.trim();
-      if (!/^\*\s+/.test(trimmed) || /^\*\*/.test(trimmed)) continue;
+    // The wiki uses wikitable format with |- row delimiters:
+    //   |-
+    //   |1. Task description text
+    //   |
+    //   *{{SCP|Skill|Level|link=y}}
+    // Split on |- to get individual rows
+    const tableRows = section.split(/\n\|-/);
+    for (const row of tableRows) {
+      // Skip header rows and empty rows
+      if (!row.trim() || /^[!\s]/.test(row.trim())) continue;
 
-      const rawTask = trimmed.replace(/^\*\s*/, "");
-      const description = stripWikiMarkup(rawTask).trim();
+      // Split row into cells on lines starting with |
+      const cells = row.split(/\n\|/).filter((c) => c.trim());
+      if (cells.length < 1) continue;
+
+      // First cell is the task description (e.g., "1. Have Wizard Cromperty...")
+      const rawTaskCell = cells[0];
+      // Extract description, stripping leading number prefix
+      const descRaw = rawTaskCell.replace(/^\s*\d+\.\s*/, "");
+      const description = stripWikiMarkup(descRaw).replace(/^\s*\d+\.\s*/, "").trim();
       if (!description || description.length < 5) continue;
+      // Skip if this looks like a table header
+      if (/^Task$|^Requirements?$/i.test(description)) continue;
 
       taskIdx++;
       const requirements: ParsedDiaryTask["requirements"] = [];
 
-      // Extract skill requirements from {{SCP|Skill|Level}} or level mentions
+      // Extract requirements from the second cell (if present)
+      const reqCell = cells.length >= 2 ? cells[1] : "";
+
+      // Parse {{SCP|Skill|Level}} patterns for skill requirements
       const scpPattern = /\{\{SCP\|([^|]+)\|(\d+)/g;
       let scpMatch;
-      while ((scpMatch = scpPattern.exec(rawTask)) !== null) {
+      while ((scpMatch = scpPattern.exec(reqCell)) !== null) {
+        const skill = scpMatch[1].trim();
+        const level = parseInt(scpMatch[2]);
+        if (skill && !isNaN(level) && level > 0) {
+          requirements.push({
+            type: "skill",
+            description: `${skill} level ${level}`,
+            skill,
+            level,
+          });
+        }
+      }
+
+      // Parse quest requirements from {{SCP|Quest}} Completion of [[QuestName]] patterns
+      const questReqPattern = /Completion of\s*\[\[([^\]|]+)/g;
+      let qrMatch;
+      while ((qrMatch = questReqPattern.exec(reqCell)) !== null) {
         requirements.push({
-          type: "skill",
-          description: `${scpMatch[1]} level ${scpMatch[2]}`,
-          skill: scpMatch[1],
-          level: parseInt(scpMatch[2]),
+          type: "quest",
+          description: `Completion of ${qrMatch[1].trim()}`,
         });
       }
 
@@ -646,9 +774,41 @@ function parseDiaryTasks(wikitext: string, areaSlug: string): ParsedDiaryTier[] 
       });
     }
 
-    // Parse rewards section
+    // Fallback: try bullet point format if wikitable didn't work
+    if (tasks.length === 0) {
+      const lines = section.split("\n");
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (!/^\*\s+/.test(trimmed) || /^\*\*/.test(trimmed)) continue;
+
+        const rawTask = trimmed.replace(/^\*\s*/, "");
+        const description = stripWikiMarkup(rawTask).trim();
+        if (!description || description.length < 5) continue;
+
+        taskIdx++;
+        const requirements: ParsedDiaryTask["requirements"] = [];
+        const scpPattern = /\{\{SCP\|([^|]+)\|(\d+)/g;
+        let scpMatch;
+        while ((scpMatch = scpPattern.exec(rawTask)) !== null) {
+          requirements.push({
+            type: "skill",
+            description: `${scpMatch[1]} level ${scpMatch[2]}`,
+            skill: scpMatch[1],
+            level: parseInt(scpMatch[2]),
+          });
+        }
+
+        tasks.push({
+          id: `diary-${areaSlug}-${tierName.toLowerCase()}-${taskIdx}`,
+          description,
+          requirements,
+        });
+      }
+    }
+
+    // Parse rewards section (may be == or ===)
     const rewardPattern = new RegExp(
-      `===?\\s*${tierName}\\s*(?:rewards?|diary)\\s*===?\\s*([\\s\\S]*?)(?=\\n===?|$)`,
+      `===?\\s*${tierName}\\s*(?:rewards?|diary)\\s*===?\\s*([\\s\\S]*?)(?=\\n===?\\s|$)`,
       "i",
     );
     const rewardMatch = wikitext.match(rewardPattern);
@@ -821,7 +981,7 @@ async function syncCombatAchievements(dryRun: boolean): Promise<void> {
 
     if (html) {
       // Parse HTML tables for combat achievement tasks
-      // Typical columns: Name | Description | Monster | Type
+      // Wiki columns: Monster | Name | Description | Type | Comp%
       const tablePattern = /<table[^>]*class="[^"]*wikitable[^"]*"[^>]*>([\s\S]*?)<\/table>/gi;
       let tableMatch;
       while ((tableMatch = tablePattern.exec(html)) !== null) {
@@ -833,10 +993,11 @@ async function syncCombatAchievements(dryRun: boolean): Promise<void> {
           while ((cellMatch = cellPattern.exec(row)) !== null) {
             cells.push(stripHtml(cellMatch[1]).trim());
           }
-          if (cells.length >= 2) {
-            const name = cells[0];
-            const description = cells[1];
-            const monster = cells.length >= 3 ? cells[2] : "";
+          if (cells.length >= 3) {
+            // Correct column mapping: Monster(0), Name(1), Description(2), Type(3)
+            const monster = cells[0];
+            const name = cells[1];
+            const description = cells[2];
             const type = cells.length >= 4 ? cells[3] : "";
             if (name && description) {
               tasks.push({

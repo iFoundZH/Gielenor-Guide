@@ -2,186 +2,202 @@ import type { IronmanGuide } from "@/types/guides";
 
 export const hardcoreIronmanGuide: IronmanGuide = {
   variant: "hardcore" as IronmanGuide["variant"],
-  wikiUrl: "https://oldschool.runescape.wiki/w/Hardcore_Ironman_guide",
+  wikiUrl: "https://oldschool.runescape.wiki/w/Hardcore_ironman_guide",
   sections: [
     {
       title: "Limitations",
       level: 2,
-      content: "Hardcore Ironman accounts share all restrictions with standard Ironman accounts:\n\n* Trading other players is disabled.\n* The Grand Exchange cannot be used to buy or sell items, with the exception of bonds (buy only).\n* Accept Aid is disabled.\n* Experience from player-versus-player encounters is not gained.\n* Drops from other players' kills cannot be picked up.\n* Assistance from other players to slay a monster is not allowed.\n\nIn addition to these restrictions, Hardcore Ironmen have only one life. A dangerous death will permanently revert the account to a standard Ironman, and the player's stats on the Hardcore Ironman Hiscores will be frozen at the moment of death. Safe deaths, such as those in many minigames and tutorial areas, do not count and will not remove Hardcore status.\n\nHardcore Ironman accounts are identified by a red skull icon next to their name. This icon is visible to all players and serves as a badge of the account's status. Once lost, Hardcore status cannot be regained.\n\nThe Hardcore Ironman Hiscores track total level and experience for all active Hardcore Ironmen. Dying removes the account from the active rankings, though frozen stats remain visible. Many players treat maintaining their Hiscores rank as a primary goal.\n\nHardcore Ironman mode must be activated by speaking to the Ironman tutor on Tutorial Island before being teleported to the mainland. Players should be absolutely certain of their choice, as it cannot be reversed once the account leaves Tutorial Island.",
-      subsections: [],
+      content: "Playing as an Ironman or Hardcore Ironman means you must be entirely self-sufficient.\n\nIronmen accounts have the following restrictions:\n\n* Trading other players is disabled.\n* Ironmen cannot use the Grand Exchange to buy or sell any item with the exception of bonds (which can be bought but not sold).\n* Ironmen cannot Accept Aid.\n* Ironmen cannot gain experience from player-versus-player encounters.\n* Ironmen cannot pick up drops from other players' kills.\n* Ironmen cannot receive help to slay a monster.\n* View the complete list of restrictions here.\n\nHardcore Ironmen follow these same restrictions, but with the added challenge of only having one life. A dangerous death will revert the account to regular Ironman status and the account's stats on the Hardcore Ironman Hiscores will be frozen. Safe deaths, such as those in many minigames, will not cause the loss of Hardcore status, unless you are a Hardcore Group Ironman.\n\nIronman modes must be activated by speaking to Ironman tutor on Tutorial Island before being teleported to the mainland.",
+      subsections: [
+      ],
     },
     {
-      title: "Safe vs Dangerous Deaths",
+      title: "Overview",
       level: 2,
-      content: "Understanding which deaths are safe and which are dangerous is the single most important knowledge a Hardcore Ironman can have. Getting this wrong means the end of the account's Hardcore status.\n\nAs a general rule, if you are unsure whether a death is safe, treat it as dangerous. Always research new content before attempting it on your Hardcore.",
+      content: "The game can be represented by three main unofficial phases: the early-game, mid-game, and late-game.\n\nThe early-game consists mainly of questing, training skills to ~60–70, and acquiring useful gear. Common milestones include:\n\n* Rune crossbow from crazy archaeologist\n* Broad bolts from broader fletching\n* Black dragonhide armour from hard clues\n* Fire cape from the TzHaar Fight Cave\n* Fighter torso from Barbarian Assault\n* Barrows gloves from Recipe for Disaster\n* Dragon defender from the Warriors' Guild\n* Iban's staff from Underground Pass\n* Imbued god cape from Mage Arena II\n* Berserker ring (i) from Dagannoth Rex\n* Zombie axe from Armoured zombies\n* Black mask (i) and Slayer helmet (i) from cave horrors\n\nThe typical Ironman mid-game is focused on obtaining gear upgrades for higher-level bossing and raids. Key upgrades include:\n\n* Barrows and Moons armour sets and weaponry\n* Elite Void Knight equipment from Pest Control\n* Deadeye, Mystic vigour, and the Twinflame staff from Royal Titans\n* Amulet of fury with 90 Crafting (85 with boost, along with 87 Magic to enchant it)\n* Tormented synapses (creating the Scorching bow, Emberlight, and the Purging staff) and Burning claws from Tormented Demons\n* Dragon boots from Spiritual mages\n* Abyssal whip from Abyssal demons\n* Trident of the seas from Cave kraken\n* Dragon warhammer from Lizardman shamans\n* Basilisk jaw from Basilisk Knights \n* Bow of Faerdhinen from The Corrupted Gauntlet\n* Saradomin brews with 81 Herblore\n\nOnce a player has achieved their mid-game upgrades, they are ready to start participating in diverse late-game content. Highlights include:\n\n* Zenyte jewellery from Demonic gorillas\n* Toxic blowpipe and Trident of the swamp from Zulrah\n* God Wars Dungeon bosses\n** K'ril Tsutsaroth for the Zamorakian spear and the Staff of the dead\n** General Graardor for Bandos armour and the Bandos godsword\n** Commander Zilyana for the Armadyl crossbow and the Saradomin godsword\n* Primordial boots from Cerberus\n* Occult ",
+      subsections: [
+      ],
+    },
+    {
+      title: "Early-game",
+      level: 2,
+      content: "",
       subsections: [
         {
-          title: "Safe deaths",
+          title: "Food and supplies",
           level: 3,
-          content: "The following deaths will not remove Hardcore Ironman status:\n\n* Most minigame deaths, including Pest Control, Barbarian Assault, Castle Wars, Soul Wars, Clan Wars (safe portal), Last Man Standing, Guardians of the Rift, and Trouble Brewing.\n* Nightmare Zone deaths (both practice and rumble modes).\n* Tutorial and instanced safe areas, such as Cook's Assistant cutscenes and certain quest instances explicitly marked as safe.\n* Deaths in the Emir's Arena (formerly Duel Arena).\n* Deaths during Wintertodt, Tempoross, and Volcanic Mine.\n* Deaths in the Gauntlet and Corrupted Gauntlet (these are safe deaths, though the content itself is very mechanically demanding).\n* Deaths in Tombs of Amascut (the raid itself is a safe death, but the path to the raid is not).\n* Deaths during Hallowed Sepulchre.\n* Deaths during the Mage Training Arena.\n* Deaths in player-owned houses (both your own and others').\n\nNote that safe death status can change with game updates. Always verify before attempting content for the first time.",
-          subsections: [],
+          content: "* Early food for tanking the Stronghold of Security can be obtained by purchasing jugs of wine for 1 coin each from Fortunato in Draynor Village. They heal 11 hitpoints each (also draining attack by 2).\n* Early food for questing can be obtained by stealing cakes from Bakery stalls in East Ardougne or Great Kourend. They heal 12 hitpoints each (4 hitpoints per bite).\n* Boots of lightness reduce weight by 4.535 kg while worn, and they can be found in the cellar of the Temple of Ikov. Players do not need to start the quest Temple of Ikov to obtain the boots. A light source is needed to navigate to the basement, and a slash weapon or knife is needed to cut the web blocking the spawn.\n* Wines like Ixcoztic white and Chichilihui rosé can be purchased from shops in Varlamore. These heal 16 hitpoints (and drain attack by 5 among other boosts and drains).\n*The Shrimp and Parrot in Brimhaven sells various cooked fish, such as lobsters, swordfish and most notably karambwan.\n*Karambwans are a useful food that can be obtained easily after Tai Bwo Wannai Trio.\n*Wintertodt, Tempoross, and Guardians of the Rift are activities with relatively low requirements and useful early game rewards. Many Ironmen choose to do these activities early on.",
+          subsections: [
+          ],
         },
         {
-          title: "Dangerous deaths",
+          title: "Transportation",
           level: 3,
-          content: "The following deaths are dangerous and will end Hardcore status:\n\n* All overworld deaths, including being killed by any monster or NPC in the open game world.\n* All Wilderness deaths, whether from monsters, other players, or environmental damage.\n* Deaths at the TzHaar Fight Cave (including during the Jad fight). Note: the Inferno is also a dangerous death.\n* Deaths at most bosses outside of raids, including God Wars Dungeon, Zulrah, Vorkath, Corporeal Beast, Cerberus, the Alchemical Hydra, and all Wilderness bosses.\n* Deaths at Theatre of Blood (this is a dangerous death, unlike Tombs of Amascut).\n* Deaths at Chambers of Xeric (dangerous death).\n* Deaths from poison or venom while in dangerous areas.\n* Deaths from disconnection in dangerous areas. The game does not distinguish between a disconnect death and a normal death.\n* Deaths at the Phantom Muspah, Nex, and the Desert Treasure II bosses.\n\nSome content has changed between safe and dangerous over the years. The OSRS Wiki maintains an up-to-date list of safe death locations. Always check the wiki page for any new boss or activity before attempting it.",
-          subsections: [],
+          content: "One of the earliest concerns of an Ironman account is transportation. A new Ironman account starts with very few teleports and, before training Agility, run energy will recharge very slowly. \n\nFor this reason, training Agility early on is beneficial. Every 10 Agility levels, the rate at which run energy regenerates increases, and levels 10, 20, and 30 can be reached relatively quickly. Higher Agility levels also allow access to time-saving shortcuts. Furthermore, Agility is a very independent skill to train - it doesn't require any supplies but food. Earning the graceful outfit will improve travel time on foot, though it typically takes until 60+ Agility to collect the 260 marks of grace required.\n\nMany items and methods allow transportation to specific destinations. Below are some noteworthy transportation methods that are accessible in the early game.\n\n*The Games necklace has low requirements and teleports the player to Wintertodt and other activities. \n*The Ring of dueling has low requirements and allows the player to quickly restore their stats and access a bank in the Ferox Enclave.\n*The Ardougne cloak 1 requires only the completion of the easy Ardougne Diary and provides unlimited teleports to the Ardougne Monastery. This offers quick access to an altar and is relatively close to a fairy ring, a bank, a spirit tree, and a ship that provides access to Brimhaven and Rimmington. \n*Charter ships are available from the start of the game, though they can be expensive. The price can be reduced by completing Cabin Fever and by wearing a ring of charos (a).\n*In the very early game players can buy a chronicle from Diango in Draynor village for 300 coins and fill it with charges for 150 coins each. A charge will teleport you to the Champions' Guild near Varrock.\n*The log canoe stations might be helpful before you can afford teleportation. Either way it can save you a lot of run energy going back and forth from Lumbridge to Varrock.\n*Other teleport methods with low-level ",
+          subsections: [
+            {
+              title: "Teleport spells",
+              level: 4,
+              content: "Minigame teleport is a useful, versatile spell in the early game, although it has a 20 minute cool down and various other restrictions. Right at the start of the game it can be used to teleport to the Burthorpe Games Room, Castle Wars, and the Ferox Enclave. More destinations are unlocked by completing quests and/or levelling skills.\n\nEach magic spellbook has a number of useful teleport spells, all of which require law runes. For early-game Ironman accounts, the best source of law runes is to purchase them from shops. However, at 240+ coins per law rune, they are somewhat expensive.\n\nPaying to move your house, then casting Teleport to house can allow the player to reach otherwise remote locations such as Pollnivneach or Brimhaven.",
+              subsections: [
+              ],
+            },
+          ],
         },
         {
-          title: "Disconnect deaths",
+          title: "Obtaining useful items",
           level: 3,
-          content: "Disconnection is one of the most common causes of Hardcore Ironman deaths. When you disconnect, your character remains in the game world for up to 60 seconds. If a monster kills you during that time, the death counts as dangerous.\n\nTo mitigate disconnect risk:\n\n* Use a stable, wired internet connection whenever possible.\n* Avoid doing dangerous PvM content during known server instability or DDoS attacks.\n* Keep your character in a safe area when not actively playing.\n* Consider logging out rather than idling in dangerous locations.\n* Use the official world status page to check server stability before bossing.",
-          subsections: [],
+          content: "Without the Grand Exchange, obtaining obscure or high-level items can be difficult. Below is a list of ways to obtain some useful items that would otherwise be a headache, including ways to \"cheat\" some high skill requirements.\n*Players who wish to fight Wintertodt as soon as possible can obtain logs for early Firemaking training on the roof of Lumbridge Castle. Hop worlds to pick up a full inventory of logs, then light them using a tinderbox.\n*A 4-dose Agility potion for Tai Bwo Wannai Trio can be obtained without 34 Herblore by giving an irit to Dr Jekyll.\n*A 1-dose superantipoison can be found near the entrance to the Observatory Dungeon. Hop worlds to pick up multiple doses.\n*Antipoisons can be purchased from Jiminua's Jungle Store in Karamja.\n*Jewellery for enchanting can be obtained without high Crafting levels by stealing from H.A.M. Store rooms or as rewards from Tempoross.\n*A stamina potion can be obtained without 77 Herblore by giving a torstol to Dr Jekyll.\n*Magic logs can be obtained without 75 Woodcutting by catching Nature implings or as drops from Calvar'ion.\n*An amulet of glory can be obtained without 80 Crafting and 68 Magic by catching Dragon implings.\n*A rune axe can be bought from the Woodcutting Guild at 60 Woodcutting, or obtained as a drop from lava dragons in the Wilderness or tree spirits in the Enchanted Valley.\n*A rune scimitar can be obtained by catching Ninja implings or as a drop from Zamorak warriors or Fire giants.\n*A mith grapple can be obtained without 59 Smithing and Fletching by killing Barbarian spirits in the Ancient Cavern.\n*A yew bow for Temple of Ikov (note: this can be skipped by bringing Darts or Knives. See the Quest page for more info) can be obtained by completing medium clue scrolls or hard clue scrolls or as a very rare drop from a young impling.",
+          subsections: [
+          ],
+        },
+        {
+          title: "Moneymaking",
+          level: 3,
+          content: "Since Ironmen cannot trade, making money can be difficult. For example, a regular account could kill Zulrah, receive a tanzanite fang and then sell it to the Grand Exchange for , but an Ironman would only get 66,000 coins from its High Alchemy value.\n\nAt very low levels, players can sell items to shops. The General Store in West Ardougne buys items at 55% of their value instead of 40%. Martin Thwait's Lost and Found pays the full High Alchemy value. Once the player has the money to buy the nature runes and cast High Level Alchemy themselves, it is recommended to alch items instead, as it generates more profit and it can be done in \"zero time\".  \n\nAnother common moneymaking technique for early game ironmen is to make use of the thieving skill. Blackjacking and stealing valuables are two common methods used to obtain early money, requiring 45 and 50 thieving respectively. Blackjacking is generally more profitable and rewards more experience but also requires much more attention. Stealing valuables, while slightly less efficient, requires significantly less attention while still boasting good profit, experience and some passive prayer experience in the form of blessed bone statuettes.\n\nIn the mid-late game, money is typically made by casting High Level Alchemy on valuable items. If seeking maxium efficiency, players should alch during other activities which can be done on the normal spellbook, do not require a full inventory and have some downtime to cast the spell. Such activities include farm runs, bird house runs, questing, training Agility, training Hunter, and melee combat.\n\nFor players who are struggling to reach 55 Magic for High Alchemy and/or who have difficulty with blackjacking, completing the Agility Pyramid provides  per artefact sold to Simon Templeton. While this course becomes available at 30 Agility, it is  recommended that players train Agility to at least 60 and complete the Graceful outfit before attempting it, as Agility level and player weight aff",
+          subsections: [
+          ],
+        },
+        {
+          title: "Early skill training",
+          level: 3,
+          content: "Completing quests is the most efficient way for Ironmen to level skills in the early-game. This saves time by avoiding very slow training methods. For example, instead of killing chickens with a bronze dagger, the player can complete Waterfall Quest and The Feud to be able to start training with an adamant scimitar before even touching a monster. Because many quest bosses can be easily safespotted, a player can make very quick early-game progress by completing quests.\n\nWhen skilling, Ironmen benefit from considering the full range of uses for the supplies and resources produced. For example, one popular Mining training method is to mine iron ore. For the highest rate of Mining experience per hour, some players drop the ore after mining it. However that ore can be smelted with coal in the Blast Furnace to produce steel bars and Smithing experience. The bars could then be smithed into many useful things, such as dart tips for Ranged training, nails for Construction, cannonballs for Slayer, or platebodies to be sold or alchemised. Because Ironmen can't simply purchase skilling supplies through trading, much skilling will follow a similar progression.",
+          subsections: [
+            {
+              title: "Multi-skill methods",
+              level: 4,
+              content: "",
+              subsections: [
+              ],
+            },
+            {
+              title: "=Wintertodt=",
+              level: 4,
+              content: "Subduing Wintertodt has very few requirements, and offers decent starting cash and skilling supplies for low-level Ironmen. While players will miss out on most of the better loot with low stats, the rewards benefit much more at lower levels. Getting at least level 60 Woodcutting (achieved at around level 88–90 Firemaking) is recommended for access to the Woodcutting Guild, where players can buy axes up to rune. This way, players do not have to waste time killing monsters for an axe upgrade from steel. Experience gained here scales with the player level in each corresponding skill. It is recommended to both unlock and raise skill levels such as Construction prior to spending an extended amount of time there, as this can dramatically increase total experience gained.",
+              subsections: [
+              ],
+            },
+            {
+              title: "= Barbarian Fishing =",
+              level: 4,
+              content: "In addition to Fishing experience, Barbarian Fishing gives small amounts of passive Agility and Strength experience. If done early, it allows players to bypass a significant amount of Agility and Melee training if done for a long period of time. However, this does take a long time and may become too boring for many players.\n\nTraining from 58 to 99 costs a few hundred thousand gold to buy all the necessary feathers for bait. This can be compensated by cutting the fish with a knife, which often provides fish offcuts that work as bait and nets a small amount of Cooking experience.\n\nPlayers will get around level 74 in Agility and Strength if training Fishing from level 58 to 99. However, if players do not wish to train Fishing for a long period of time, there are a few good stopping points:\n\n*Level 74 Fishing for level 50 Agility and Strength.\n**Level 50 Agility is required for the Rogues' Den minigame for the rogue equipment, and is also a reasonable level for doing Agility Pyramid.\n*Level 84 Fishing for level 60 Agility and Strength.\n**This allows access to the Seers' Village Rooftop Course, which is a significantly better option compared to the lower-level courses.\n*Level 91 Fishing for around level 67–68 Agility and Strength.\n**At level 91 Fishing, players can +5 boost for the Morytania Diary elite task requirement.\n*Level 94 Fishing for level 70 Agility and Strength.\n**Allows access to the Pollnivneach Rooftop Course.\n**Unlocks most of the useful shortcuts (such as the one to blue dragons in Taverley Dungeon).\n**Level 70 Strength unlocks the Warriors' Guild as soon as the player reaches level 60 Attack.\n\nAfter finishing Barbarian Fishing, it is recommended to train Agility on the Rooftop Courses and get the graceful outfit for questing. Having a high Agility level combined with the graceful outfit ends up saving a lot of time, as players have very limited access to run energy restoration.",
+              subsections: [
+              ],
+            },
+            {
+              title: "=Tempoross=",
+              level: 4,
+              content: "Tempoross is another fishing option beginning at Level 35. In many cases Tempoross is preferred to barbarian fishing due to the consistent rewards to include unenchanted jewellery, multiple types of fish scaling with your Fishing level, rune items, certain rares, planks, and uncut gems to include dragonstone which will come in handy later. Utilizing this method one can expect to also gain passive Cooking, Strength and Construction experience if cooking the harpoonfish, using bare-handed fishing and fixing totems and masts as they break.",
+              subsections: [
+              ],
+            },
+          ],
+        },
+        {
+          title: "Questing",
+          level: 3,
+          content: "For an efficient guide to Ironman questing, see the Optimal Quest Guide / Ironman.\n\nMany low- and mid-level quests award access to new areas, skilling methods, or items that are of great importance to Ironmen. Some of the most important unlocks are noted below.\n\n*Bone Voyage unlocks Fossil Island, which also unlocks bird house trapping for Hunter training, ultracompost for farm runs, and yields some tree seeds for Farming experience. Furthermore, Ammonite Crabs are an efficient low-level combat training method.\n* Lost City unlocks access to Zanaris, which also unlocks fairy rings (after Fairytale I - Growing Pains), the dragon dagger, Chaeldar the Slayer master, and the Cosmic Altar.\n*In Aid of the Myreque unlocks Temple Trekking, an effective source of multiple skilling resources. Temple Trekking is more efficient after finishing Darkness of Hallowvale.\n*Some quests give cheap God Wars Dungeon protection. Horror from the Deep gives access to all god books with the Book of War being one of the easiest for Bandos alongside the Ancient Mace from Another Slice of HAM. If you side with the Guardians of Armadyl during the Temple of Ikov quest then you receive the Armadyl pendant. Zamorak robes are always dropped by disciples of Iban during the Underground Pass quest. The disciples leave after you complete the quest so stock up while you can. Monks of Zamorak still have a 1/20 drop rate chance with a good spot near the altar north of Castle Wars near the red salamander hunting spot.",
+          subsections: [
+          ],
         },
       ],
     },
     {
-      title: "Early Game Strategy",
+      title: "Mid-game",
       level: 2,
-      content: "The early game for a Hardcore Ironman follows a similar path to standard Ironman, but with a strong emphasis on avoiding unnecessary risk. Every activity should be evaluated through the lens of \"can this kill me?\" before attempting it.\n\nThe overarching strategy is to build up your account's stats, gear, and supplies through safe or low-risk methods before engaging with any content that could result in a dangerous death.",
+      content: "There is no universal consensus on when an Ironman account transitions from early-game to mid-game — some players use milestones like completing Recipe for Disaster, while others focus on broader progression. In general, an account is considered mid-game once it has addressed basic concerns such as transportation, money-making, and gathering equipment and supplies for efficient combat training.",
       subsections: [
         {
-          title: "Wintertodt at low HP",
+          title: "Slayer training",
           level: 3,
-          content: "Wintertodt is one of the best early-game activities for Hardcore Ironmen. The damage taken from Wintertodt scales with the player's Hitpoints level, so starting at 10 HP means the cold and falling snow deal only 1 damage per hit. This makes the activity essentially risk-free at low levels.\n\nPlayers commonly train Firemaking to 85-99 at Wintertodt before doing anything else. This provides:\n\n* A large supply of starting cash from crate rewards.\n* Seeds, ores, herbs, and other skilling supplies.\n* Construction, Woodcutting, and Fletching experience.\n\nBringing cakes or wines as food is sufficient at 10 HP. The main risk is accidentally training Hitpoints before starting Wintertodt, so avoid all combat until you have finished your Wintertodt grind.",
-          subsections: [],
+          content: "In Ironman mode, the core of the mid-game stage of account progression is training Slayer. Slayer training provides a wealth of benefits to Ironmen, including combat experience, gold, skilling supplies, and equipment upgrades. Many critical weapon upgrades, such as the abyssal whip and trident of the seas, are accessed by levelling Slayer. See the Slayer guide for more information.\n\nThe highest Slayer level to unlock an equipment upgrade is 95, for the alchemical hydra, which drops components for the dragon hunter lance and ferocious gloves.",
+          subsections: [
+          ],
         },
         {
-          title: "Safe questing",
+          title: "Slayer skip/PvM rush",
           level: 3,
-          content: "Questing is essential for early progression, but many quest bosses can be dangerous if unprepared. Follow these principles:\n\n* Always look up quest boss fights before attempting them. Know what damage they deal and whether safespots exist.\n* Many quest bosses can be safespotted or flinched. Use these methods whenever available.\n* Bring more food than you think you need. Over-preparation is always better than death.\n* Iban's staff from Underground Pass is a common danger point. The quest has several areas with high-hitting enemies. Use protection prayers and bring plenty of food.\n* Monkey Madness I has a notoriously dangerous tunnel section. Many Hardcore Ironmen have died here. Use protection prayers, bring emergency teleports, and consider using stamina-restoring methods.\n* Desert Treasure I has several challenging fights. The ice diamond fight with Kamil is particularly dangerous due to the freezing mechanic and stat drain.",
-          subsections: [],
+          content: "Alternatively, players may opt to skip the mid game slayer grind in favour of a more PvM focused progression.",
+          subsections: [
+          ],
         },
-        {
-          title: "Safe combat training",
-          level: 3,
-          content: "For combat training, prioritize methods where death is nearly impossible:\n\n* Sand Crabs and Ammonite Crabs are excellent for safe AFK melee and ranged training. They deal very little damage and are in non-dangerous areas.\n* Crabs are preferred over Rock Crabs because the areas are generally less crowded and farther from any Wilderness access.\n* Use protection prayers when fighting anything that could deal significant damage.\n* Avoid multi-combat areas where you could be overwhelmed by multiple enemies.\n* Keep your Hitpoints high at all times. Never let yourself drop below half health without eating.\n* The Nightmare Zone is completely safe and provides excellent melee training once you have enough quest points to make it worthwhile.\n\nAvoid the Wilderness entirely in the early game. There is no content in the Wilderness worth risking your Hardcore status for at low levels.",
-          subsections: [],
-        },
-        {
-          title: "Early transportation safety",
-          level: 3,
-          content: "Transportation is important for all Ironmen, but Hardcore Ironmen should be especially careful about certain travel methods:\n\n* Avoid the Wilderness at all costs. Do not use shortcuts or paths that go through it.\n* The Abyss requires running through dangerous Wilderness territory. Use the slower but safer altar entrances for Runecraft training instead.\n* Be cautious with random events. While most are harmless, always pay attention to avoid being teleported somewhere unexpected.\n* Keep a teleport (such as an ectophial, house teleport tablet, or ring of dueling) in your inventory at all times when in dangerous areas.\n* Training Agility early is recommended for all Ironmen, and doubly so for Hardcores. Better run energy regeneration means less time spent walking through dangerous areas.",
-          subsections: [],
-        },
-      ],
-    },
-    {
-      title: "Risk Management",
-      level: 2,
-      content: "Risk management is the defining skill of a successful Hardcore Ironman. Every piece of content should be assessed for its danger level relative to the reward it offers. Many Hardcore Ironmen set personal rules about what content they will and will not attempt, and adjust those rules as their account grows stronger.",
-      subsections: [
-        {
-          title: "Content to avoid or delay",
-          level: 3,
-          content: "Some content is best avoided entirely or delayed until your account is significantly overgeared for it:\n\n* TzHaar Fight Cave (Jad): Dangerous death. Delay until you have a toxic blowpipe, 85+ Ranged, and ideally 70+ Prayer. Many Hardcores wait until they have a twisted bow. Practice on a main account first.\n* Theatre of Blood: Dangerous death. Extremely punishing mechanics. Most Hardcore Ironmen avoid this entirely or only attempt it very late in their account's life.\n* Inferno: Dangerous death. The hardest PvM challenge in the game. Only the most experienced Hardcores attempt this, and many still choose not to risk it.\n* Chambers of Xeric: Dangerous death. While the mechanics are more forgiving than Theatre of Blood, the risk of death in later rooms (particularly Olm) is significant.\n* All Wilderness content: PvP deaths are always possible and entirely outside your control. The dragon pickaxe from Wilderness bosses is not worth the risk for most Hardcores.\n* Zulrah: Dangerous death. The fight has a steep learning curve with multiple phase rotations. Delay until you have high stats and practice extensively on another account.\n* Vorkath: Dangerous death. The one-shot mechanic from the acid phase can kill inattentive players. Delay until comfortable with the mechanics.\n* Desert Treasure II bosses: All dangerous deaths with challenging mechanics.",
-          subsections: [],
-        },
-        {
-          title: "Defensive equipment priorities",
-          level: 3,
-          content: "Hardcore Ironmen should prioritize defensive equipment more than standard Ironmen:\n\n* Ring of life: This is the single most important item for a Hardcore Ironman. It automatically teleports you to your respawn point when your Hitpoints drop below 10% of your max. Always wear one when doing any remotely dangerous content. Note: the ring of life does not work in the Wilderness above level 30, does not work if the hit that would kill you takes you from above 10% to 0 in one hit, and does not work in certain instanced areas.\n* Phoenix necklace: Functions similarly to a ring of life but activates at 20% Hitpoints and heals instead of teleporting. Can be useful as an additional safety layer.\n* Keep emergency teleports in your inventory at all times. A royal seed pod (from Monkey Madness II) provides a one-click teleport to the Grand Tree. Ectophial is another good option.\n* Bring antipoison or anti-venom when fighting anything that poisons or envenoms. Dying to venom ticks while banking or walking is a real risk.\n* Always bring a stamina potion or energy restoration when doing long PvM trips to avoid being unable to run from danger.",
-          subsections: [],
-        },
-        {
-          title: "General safety habits",
-          level: 3,
-          content: "Develop these habits to protect your Hardcore status:\n\n* Always check the OSRS Wiki death mechanics section for any new content before attempting it.\n* Never attempt new or difficult PvM content when tired, distracted, or under the influence. Many Hardcore deaths happen late at night when the player's reaction time is impaired.\n* Keep your client updated and use recommended plugins (such as the RuneLite death indicator) that warn you about dangerous areas.\n* If you feel your heart rate rising during a boss fight, that is a sign you are attempting content beyond your comfort level. Consider teleporting out and coming back when better prepared.\n* Practice boss mechanics on a main account or alt before attempting them on your Hardcore. This includes learning attack rotations, prayer switches, and safe tiles.\n* Keep a bank tab with emergency supplies: teleport tablets, food, antipoisons, and restore potions. Restock this tab regularly.\n* Log out immediately if you notice server lag, stuttering, or world instability. Do not wait to see if it resolves.",
-          subsections: [],
-        },
-      ],
-    },
-    {
-      title: "Safe PvM Progression",
-      level: 2,
-      content: "PvM progression on a Hardcore Ironman should be approached methodically. Overgear every encounter, over-prepare supplies, and never attempt a boss for the first time without studying its mechanics thoroughly. The recommended progression below moves from lowest to highest risk.",
-      subsections: [
         {
           title: "Barrows",
           level: 3,
-          content: "Barrows is generally considered the safest mid-game boss content for Hardcore Ironmen. The brothers deal moderate damage and can be safespotted or prayer-flicked. The tunnels have low-level monsters that pose minimal threat.\n\nRecommended setup:\n\n* 43+ Prayer for protection prayers (strongly recommended).\n* Iban's blast or Slayer Dart for killing the melee brothers.\n* A ranged weapon for Ahrim.\n* A melee weapon for Karil.\n* Plenty of food (lobsters or better) and prayer potions.\n\nThe main risk is Dharok, who hits extremely hard at low Hitpoints. Always use Protect from Melee against him. Karil can also deal surprisingly high damage through prayer, so keep your Hitpoints topped up.\n\nComplete the hard Morytania Diary for 50% more runes from chests, making runs significantly more profitable.",
-          subsections: [],
+          content: "The Barrows minigame may be worthwhile to play in order to earn Barrows equipment. In particular, Dharok's set and Guthan's set are useful for combat training and some PvM activities. Karil's armour and Ahrim's robes have high offensive and defensive stats. Karil's crossbow offers higher damage per second than the rune crossbow or crystal bow, bridging the gap between those weapons and the toxic blowpipe.\n\nNote that it may take hundreds of Barrows completions to finish a single set, or obtain the specific desired pieces.\n\nAccess to Barrows Teleport will significantly increase the efficiency of Barrows runs. At 78 Magic, Barrows Teleport can be added to a portal chamber in the player-owned house while boosting with a red spicy stew.\n\nAdditionally, completion of the hard Morytania Diary is recommended to get 50% more runes from the Barrows chests, and for a teleport to Burgh de Rott, if Barrows Teleport hasn't been unlocked.\n\nFinally, completing the medium tier Combat Achievements significantly eases the difficulty of the minigame as equipping the rewarded Ghommal's hilt 2 prevents the Barrows prayer drain effects.",
+          subsections: [
+          ],
         },
         {
-          title: "Giant Mole",
+          title: "Moons of Peril",
           level: 3,
-          content: "Giant Mole is a straightforward boss with no complex mechanics. The main annoyance is the mole digging underground and relocating, requiring the player to chase it through the tunnels.\n\n* Complete the hard Falador Diary first. The Falador shield 3 shows the mole's location on the minimap, making kills dramatically faster.\n* The mole deals moderate damage but cannot one-shot a well-prepared player.\n* Bring a Dharok's set at low Hitpoints for fast kills, or use ranged/melee with a strength setup.\n* Always bring food and a teleport out. While the mole is not particularly dangerous, complacency kills Hardcores.\n\nGiant Mole drops mole claws and mole skins, which can be traded to Wyson the gardener for bird nests containing seeds.",
-          subsections: [],
+          content: "After completion of the Perilous Moons quest, players gain access to the Moons of Peril. Moon equipment, such as the blood moon armour is sought after as alternative strength equipment to Bandos armour, while the eclipse moon armour with the eclipse atlatl is a powerful ranged setup. Players do not have to bring their own supplies, as the encounter provides its own prayer and combat potions, and the Lunar Chest rewards helpful common loot such as herbs, seeds, and crafting supplies.\n\nIt is beneficial to acquire a tank set of Barrows armour, a good shield, a strong slash and crush weapon, such as a zombie axe, and Piety to assist with the bosses.",
+          subsections: [
+          ],
         },
         {
-          title: "Dagannoth Kings",
+          title: "Midgame Bossing",
           level: 3,
-          content: "Dagannoth Kings are accessible to mid-game Hardcores, but require careful preparation. The most common approach is to safespot Dagannoth Rex for the berserker ring.\n\n* Bring a full inventory of food and prayer potions for your first attempts.\n* The journey to the Kings' lair can be dangerous. Dagannoth in the tunnels hit hard in multi-combat. Use protection prayers and bring a pet rock and a rune thrownaxe (or other method) to bypass the door puzzle.\n* Safespot Rex by standing behind the rocks in the south-east part of the lair. Only Rex will aggro if you do this correctly.\n* Be aware that Supreme and Prime can wander into your safespot area. If this happens, pray accordingly and wait for them to wander away.\n* Ring of life is essential here. If something goes wrong, it can save your life.\n\nThe berserker ring (i) is one of the best melee upgrades in the game and worth the moderate risk for most Hardcores.",
-          subsections: [],
-        },
-        {
-          title: "Approaching Jad",
-          level: 3,
-          content: "The TzHaar Fight Cave is a dangerous death, making it one of the most nerve-wracking challenges for a Hardcore Ironman. The fire cape is an extremely powerful melee upgrade, but many Hardcores delay it for a very long time or skip it entirely.\n\nDo not attempt Jad until you have:\n\n* 85+ Ranged (preferably 90+).\n* A toxic blowpipe with adamant or better darts.\n* 70+ Prayer with an adequate supply of prayer potions or super restores.\n* 70+ Defence with tank gear (blessed d'hide or Karil's).\n* Multiple successful Jad kills on another account.\n\nDuring the fight:\n\n* Use the Italy Rock safespot to manage healers.\n* Keep your Hitpoints above 60 at all times during the Jad fight.\n* If you panic or lose track of the prayer switches, immediately teleport out. You can always try again.\n* Wear a ring of life as a last resort, though relying on it is not a reliable strategy against Jad's high max hits.\n\nSome Hardcores choose to log out between waves to take breaks and stay focused. This is a completely valid strategy.",
-          subsections: [],
-        },
-        {
-          title: "God Wars Dungeon",
-          level: 3,
-          content: "God Wars Dungeon bosses are dangerous deaths and should be approached with extreme caution. The bosses themselves are mechanically simple but hit very hard, and the bodyguards in each room add significant danger.\n\n* General Graardor (Bandos): The most accessible GWD boss for Hardcores. Can be done with a melee setup and protection prayers. The main risk is Graardor's ranged attack, which can hit through Protect from Melee. Keep Hitpoints high at all times.\n* Commander Zilyana (Saradomin): Very fast and deals consistent damage. Requires a specific kiting method to avoid taking too many hits. Not recommended until very comfortable with the mechanics.\n* K'ril Tsutsaroth (Zamorak): Hits hard through prayer and has a special attack that drains Prayer points. The Zamorakian spear and Staff of the dead are valuable drops. Only attempt with high combat stats and plenty of supplies.\n* Kree'arra (Armadyl): Requires high Ranged and careful management of the minions. The Armadyl crossbow is a significant upgrade but the fight is consistently dangerous.\n\nFor all GWD bosses, bring maximum food and prayer potions. Many Hardcores choose to do short trips (3-5 kills) rather than extended stays to minimize risk. Always have a teleport available.",
-          subsections: [],
+          content: "Scurrius offers an opportunity to practice high-level mechanics with a less punishing boss, boasting competitive combat xp rates as a reward.\n\nSarachnis can be tackled with a mid-game crush weapon such as Dragon mace, Leaf-bladed battleaxe or Zombie Axe.\n\nGiant Mole is time-consuming to kill before completing the Hard Falador Diary, but afterwards can be farmed consistently for nests.\n\nFor non-hardcore and non-ultimate irons willing to risk being PK'd, wilderness bossing is an option. Certain wilderness bosses like Crazy archaeologist and Calvar'ion have a low barrier to entry, even when bringing only three valuable items in case you are killed by PKers.\n\nThe journey to access Dagannoth Kings can be challenging for players attempting it for the first time. With some preparation however, mid-level players can reliably set up a safespot for Rex in order to obtain the Berserker ring for melee training.\n\nMidgame irons who have completed Beneath Cursed Sands can start attempting Tombs of Amascut at low invocation settings, especially when guided by more experienced players. Irons receive rewards normally from raids, unlike other group combat encounters.",
+          subsections: [
+          ],
         },
       ],
     },
     {
-      title: "Skilling and Quests",
+      title: "Approaching late-game",
       level: 2,
-      content: "Skilling and questing on a Hardcore Ironman follows the same general path as a standard Ironman, with extra caution applied to any activity that involves danger. The key principle is to always choose the safer option, even if it is slower or less efficient.",
+      content: "Approaching the late-game stage of account progression, irons can tackle the game's greatest challenges, including bossing and raids.",
       subsections: [
         {
-          title: "Safe skilling methods",
+          title: "Quest point cape",
           level: 3,
-          content: "When choosing training methods, prefer those that carry zero risk of death:\n\n* Agility: Rooftop courses are generally safe, as falling from an obstacle does not deal lethal damage. However, the Wilderness Agility Course should be avoided entirely. The Hallowed Sepulchre is a safe death and an excellent training option at higher levels.\n* Mining: Motherlode Mine, Shooting Stars, and standard ore rocks are all completely safe. Volcanic Mine is a safe death but requires some learning.\n* Fishing: Barbarian Fishing, Tempoross, and standard fishing spots are all safe.\n* Runecraft: Avoid the Abyss (requires running through the Wilderness). Use fairy rings, the Arceuus library, or Guardians of the Rift (safe death) instead.\n* Thieving: Blackjacking in Pollnivneach is safe (the thugs cannot actually kill you as they stop attacking at low HP). Artefact stealing in Port Piscarilius is also completely safe.\n* Woodcutting: All standard Woodcutting methods are safe. The Woodcutting Guild provides good resources with zero risk.\n* Hunter: Birdhouse runs, standard trap hunting, and Herbiboar are all completely safe.",
-          subsections: [],
+          content: "The quest point cape, earned by completing all quests, is desirable due to its unlimited teleport to the Legends' Guild and a fairy ring. Note that Desert Treasure II can pose a considerable challenge to players unaccustomed to bossing. However, The Forgotten Four are designed so that their early phases teach players what to expect in later phases, and detailed guides exist to walk players through the difficulty curve.",
+          subsections: [
+          ],
         },
         {
-          title: "Dangerous skilling to avoid",
+          title: "Bossing",
           level: 3,
-          content: "Some skilling methods carry unnecessary risk for Hardcore Ironmen:\n\n* Wilderness Agility Course: While offering good experience rates, the presence of PKers makes this unacceptably dangerous.\n* Abyss Runecrafting: Requires running through the Wilderness where PKers are common. The skulling mechanic also means you risk losing all equipment.\n* Lava dragons for Prayer: While profitable, the Wilderness location makes this extremely risky.\n* Dark crabs for Fishing: Located in the deep Wilderness. Not worth the risk.\n* Chaos Temple for Prayer: The 50% bone-saving effect is tempting but the Wilderness location is too dangerous.\n\nIn general, if a skilling method involves the Wilderness, avoid it. The small efficiency gain is never worth the risk of losing Hardcore status.",
-          subsections: [],
+          content: "Desert Treasure II will give players a solid foundation for endgame bossing mechanics. After completing this quest, players who have not done so may choose to unlock Boss slayer and pursue the medium and hard combat achievements. These will give the opportunity to learn the specifics of individual endgame bosses.\n\nPhantom Muspah can be lucrative and gates equipment upgrades in the form of the ancient sceptre and eventually the venator bow. After gaining access to anti-venom, Vorkath and Zulrah become much more accessible and provide considerable upgrades such as Ava's assembler and the toxic blowpipe.\n\nIrons can attempt God Wars Dungeon bosses for their useful unique drops, however soloing these bosses is more challenging.  Damage from General Graardor, Zilyana, and K'ril Tsutsaroth can be mitigated or avoided using advanced methods.",
+          subsections: [
+          ],
         },
         {
-          title: "Quest boss safety",
+          title: "The Gauntlet",
           level: 3,
-          content: "Many quest bosses can be safespotted or otherwise trivialized. Key quest boss tips for Hardcores:\n\n* Tree Gnome Village: The Khazard warlord can be safespotted behind the fence.\n* Vampire Slayer: Count Draynor is easy with garlic and a stake, but bring extra food if low level.\n* Dragon Slayer I: Elvarg can be safespotted against the wall. Bring an anti-dragon shield and plenty of food.\n* Underground Pass: The entire quest is dangerous. Bring emergency teleports, protection prayers, and extra food. The Iban fight can be done safely from the walkway.\n* Monkey Madness I: The Jungle Demon can be safespotted. The real danger is the tunnel section before the fight. Use Protect from Melee and bring plenty of food.\n* Desert Treasure I: Each of the four bosses has different mechanics. Kamil is the most dangerous due to constant freezing and stat drain. Bring super restore potions and a fire spell.\n* Dream Mentor: The Inadequacy hits hard. Bring the best food and potions available.\n* Song of the Elves: The Fragment of Seren fight has mechanics that must be learned. Practice the prayer switches and bring a full inventory of high-healing food.\n* A Night at the Theatre: This quest introduces Theatre of Blood mechanics, and the quest version is a safe death. Use this as a learning opportunity.",
-          subsections: [],
+          content: "For a detailed dive, see the strategy article.\n\nMany irons commit to mastering The Corrupted Gauntlet for end-game crystal equipment. For players who have never attempted it before, getting a single completion of the standard Gauntlet alone poses a steep learning curve, and its corrupted counterpart is even more punishing. Jumping into it blind is unlikely to succeed. However, attempting this challenge requires no resources, allowing players to get comfortable with different elements of the Gauntlet at no cost.\n\nFor the purposes of getting familiar with the challenge and its mechanics, players new to the Gauntlet can attempt to make stronger armour so as to adjust the difficulty of the fight. Wearing a full set of tier 2 or tier 3 armour lowers Hunllef's max hit considerably. The standard Gauntlet gives players a bit more time to prepare, making it more realistic to gather higher tier armour and weapons as well as more food and potions. If the current layout makes this difficult, players can leave and reset the challenge at zero cost.\n\nThe fight itself consists of multiple mechanics, namely the following: prayer switching, weapon switching, moving off the glowing floors, and dodging tornadoes. Popular guides and plugins exist to make learning considerably easier, such as calling the overhead prayers or visualizing the true tile when running. \n\nPlayers who have completed the standard Gauntlet a few times, but have yet to succeed at the corrupted version, may choose to complete the standard gauntlet with lower tier armour or within time constraints, as outlined in the combat achievements. Players may choose to pursue some of the elite or master-level achievements for the Crystalline Hunllef in order to ramp up the challenge.\n\nWhile extremely punishing, the Corrupted Gauntlet is a much more efficient way to obtain crystal equipment. Nonetheless, the standard Gauntlet can serve as a free training ground as well as a source of alchable drops and crystal shards.",
+          subsections: [
+          ],
+        },
+        {
+          title: "Raids",
+          level: 3,
+          content: "Players can group up with other raiders on dedicated worlds, chat-channels, or searching online. Tombs of Amascut serves as the most accessible raid due to its modifiable difficulty settings. Chambers of Xeric scales with the highest level player in the raid, but the mechanics have a manageable difficulty curve with similarly levelled players and proper communication. Once they've dipped their toes in the water, players can consider the challenging but rewarding Theatre of Blood.",
+          subsections: [
+          ],
+        },
+        {
+          title: "Maxing",
+          level: 3,
+          content: "If desired, this is also the time to earn the max cape by levelling all skills to 99 or Achievement diary cape.",
+          subsections: [
+          ],
         },
       ],
     },
     {
-      title: "Status Preservation Tips",
+      title: "Managing Miscellania",
       level: 2,
-      content: "Keeping your Hardcore status alive requires constant vigilance and a set of habits that go beyond normal gameplay. The following tips represent the accumulated wisdom of the Hardcore Ironman community.",
+      content: "After completion of Throne of Miscellania, Managing Miscellania is an excellent way to passively get various resources for skill training, including food. However, players will need a relatively large amount of capital before investing into the kingdom, so it is recommended that one have a safe amount of coins and/or a consistent money-making method.\n\nPlayers usually opt for either herbs or hardwood log production, generally teak logs for mythical cape racks or mixed hardwood as an option as it's more productive than switching between both hardwood options manually. Mahogany logs can be a good option if you find yourself with an excess of coins for construction training. You can also use mahogany logs from kingdom for birdhouse runs, if you do not have better logs from other sources. \n\nMake sure that the maximum amount is withdrawn every day by having at least 500,000 coins or 750,000 coins after Royal Trouble in the coffers each day for maximum amount of rewards collectible.\n\nThe maximum amount withdrawn from the coffers each day is 75,000 coins after completion of Royal Trouble, making upkeep past the initial investment relatively easy for even low level Ironmen.",
       subsections: [
-        {
-          title: "Essential equipment and supplies",
-          level: 3,
-          content: "Always carry or have quick access to the following:\n\n* Ring of life: Wear this whenever doing any content with a risk of death. The only time to remove it is when the ring slot is absolutely critical for DPS (such as a berserker ring at a boss you are very comfortable with). Even then, consider keeping the ring of life on.\n* Emergency teleports: Keep a one-click teleport in your inventory at all times. The royal seed pod (from Monkey Madness II) is the best option as it works up to level 30 Wilderness and requires no runes. Ectophial, house teleport tablets, and teleport to house spell are also good options.\n* Antipoison and anti-venom: Carry these whenever fighting monsters that poison or envenom. Dying to poison ticks after leaving a fight is a real and common cause of Hardcore deaths.\n* Antidote++ is recommended for extended trips, as it provides longer-lasting poison immunity than standard antipoison.\n* Food: Always carry at least a few pieces of food, even when doing activities you consider safe. Unexpected damage can come from random aggressive monsters or environmental hazards.\n* Prayer potions or super restores: Essential for maintaining protection prayers during dangerous combat.",
-          subsections: [],
-        },
-        {
-          title: "Behavioural habits",
-          level: 3,
-          content: "Adopt these practices to minimize risk:\n\n* Never play while tired or distracted. More Hardcore Ironmen die to lapses in attention than to genuinely difficult content. If you catch yourself yawning during a boss fight, teleport out and go to sleep.\n* Learn boss mechanics on a main account first. Never attempt a new boss blind on your Hardcore. Watch video guides, read the wiki, and get multiple kills on another account before trying it.\n* Avoid PvP worlds entirely. There is no reason for a Hardcore Ironman to be on a PvP world, and accidentally logging into one can be fatal.\n* Do not attempt risky content during known server issues. Check social media and community forums for reports of server instability or DDoS attacks before starting a boss trip.\n* Set personal risk thresholds and stick to them. Decide in advance what content you are willing to attempt and at what stats. Do not let peer pressure or impatience push you into attempting content you are not ready for.\n* Take breaks during extended PvM sessions. Fatigue degrades reaction time and decision-making.\n* Use the logout button liberally. If anything feels wrong, such as unexpected damage, lag, or unfamiliar mechanics, log out immediately. You can always log back in and reassess.",
-          subsections: [],
-        },
-        {
-          title: "World and connection safety",
-          level: 3,
-          content: "Your internet connection and world choice can be the difference between keeping and losing Hardcore status:\n\n* Use a wired connection rather than Wi-Fi when doing dangerous content. Wi-Fi is more susceptible to brief disconnections that can be fatal.\n* Choose worlds with low ping and stable connections. The world switcher shows your ping to each world.\n* Avoid high-population worlds for bossing, as they are more likely to experience lag or instability.\n* If you experience any lag spike during combat, teleport out immediately. Do not wait to see if it was a one-time occurrence.\n* Consider using the official OSRS server status page to check for known issues before logging in for a PvM session.\n* Keep your operating system and client updated to minimize client-side crashes.\n* Close unnecessary background applications that could cause your game to freeze or stutter.",
-          subsections: [],
-        },
-        {
-          title: "Common causes of death",
-          level: 3,
-          content: "Being aware of how other Hardcore Ironmen have died can help you avoid the same fate. The most common causes of Hardcore death include:\n\n* Disconnection during combat: The number one killer of Hardcores. Mitigate with a stable connection and ring of life.\n* Jad prayer switches: Many Hardcores die during their first Jad attempt. Practice extensively on another account.\n* Poison and venom ticks: Dying to residual poison after leaving a dangerous area. Always cure poison before teleporting.\n* Wilderness PKers: Any time spent in the Wilderness is a risk. Avoid it.\n* Overconfidence at familiar bosses: Complacency after hundreds of successful kills leads to sloppy play. Stay focused.\n* New content with unknown death mechanics: Always check whether deaths are safe or dangerous before attempting new content.\n* Multi-combat piling: Being attacked by multiple monsters simultaneously in multi-combat zones. Be aware of your surroundings.\n* Falling asleep or going AFK: This sounds obvious, but many Hardcores have died because they fell asleep at the keyboard or walked away from the computer in a dangerous area.\n\nLearn from these examples and develop habits that protect against each one. The goal is to make your Hardcore Ironman account as resilient as possible against both game mechanics and human error.",
-          subsections: [],
-        },
+      ],
+    },
+    {
+      title: "Skill training",
+      level: 2,
+      content: "{| class=\"wikitable align-center-1\"\n|+\n! colspan=\"2\" |Skill\n|-\n|\n|Agility\n|-\n|\n|Construction\n|-\n|\n|Cooking\n|-\n|\n|Crafting\n|-\n|\n|Farming\n|-\n|\n|Firemaking\n|-\n|\n|Fishing\n|-\n|\n|Fletching\n|-\n|\n|Herblore\n|-\n|\n|Hunter\n|-\n|\n|Magic\n|-\n|\n|Melee\n|-\n|\n|Mining\n|-\n|\n|Prayer\n|-\n|\n|Ranged\n|-\n|\n|Runecraft\n|-\n|\n|Sailing\n|-\n|\n|Smithing\n|-\n|\n|Slayer\n|-\n|\n|Thieving\n|-\n|\n|Woodcutting\n|}\n\nCategory:Ironman Mode\nCategory:Training guides",
+      subsections: [
       ],
     },
   ],

@@ -75,5 +75,12 @@ export const fishingF2pGuide: SkillTrainingGuide = {
       description: "More total experience and clicks, less walking and coins: Cook the fish after caught.",
       members: false,
     },
+    {
+      name: "/33–99 – Ruins of Camdozaal",
+      levelRange: [7, 20],
+      xpPerHour: null,
+      description: "After the completion of Below Ice Mountain, players can fish in the Ruins of Camdozaal. This is generally slower to train Fishing than fishing for trout and salmon (even when dropping Camdozaal fis...",
+      members: false,
+    },
   ],
 };

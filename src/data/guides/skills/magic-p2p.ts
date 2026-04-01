@@ -36,7 +36,7 @@ export const magicP2pGuide: SkillTrainingGuide = {
     {
       name: "Low Level Alchemy",
       levelRange: [21, 55],
-      xpPerHour: null,
+      xpPerHour: 60000,
       description: "At level 21, cast Low Level Alchemy (also known as \"low alching\") to convert items into coins. The spell can be cast every 3 ticks, and each cast gives 31 experience. This method can be done while ...",
       members: true,
     },

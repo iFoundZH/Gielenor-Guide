@@ -23,7 +23,7 @@ export const fishingP2pGuide: SkillTrainingGuide = {
       name: "Drift net fishing",
       levelRange: [47, 99],
       xpPerHour: null,
-      description: "{{Equipment |align = right",
+      description: "",
       members: true,
     },
     {
@@ -86,7 +86,7 @@ export const fishingP2pGuide: SkillTrainingGuide = {
       name: "Karambwan",
       levelRange: [65, 99],
       xpPerHour: null,
-      description: "{{Inventory |align=right",
+      description: "",
       members: true,
     },
     {

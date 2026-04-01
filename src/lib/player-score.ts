@@ -88,7 +88,8 @@ export function calculateGielinorScore(
   const allRelics = league.relicTiers.flatMap((t) => t.relics);
   const selectedRelics = allRelics.filter((r) => build.relics.includes(r.id));
   const selectedPacts = league.pacts.filter((p) => build.pacts.includes(p.id));
-  const buildScore = calculateBuildSynergy(selectedRelics, selectedPacts);
+  const hasMasteries = build.pacts.some((id) => id.startsWith("re-mastery-"));
+  const buildScore = calculateBuildSynergy(selectedRelics, selectedPacts, hasMasteries);
 
   // Risk Score (0-500): bonus for dangerous pact combinations
   const riskScore = calculateRiskScore(selectedPacts);
@@ -108,7 +109,7 @@ export function calculateGielinorScore(
   };
 }
 
-function calculateBuildSynergy(relics: Relic[], pacts: Pact[]): number {
+function calculateBuildSynergy(relics: Relic[], pacts: Pact[], hasMasteries = false): number {
   let score = 0;
 
   // Base score for having relics selected
@@ -116,6 +117,7 @@ function calculateBuildSynergy(relics: Relic[], pacts: Pact[]): number {
 
   const relicIds = new Set(relics.map((r) => r.id));
   const pactIds = new Set(pacts.map((p) => p.id));
+  const hasCombatPower = pacts.some((p) => p.category === "combat") || hasMasteries;
 
   // Demonic Pacts synergies
   // Endless Harvest + Woodsman: gathering auto-banks + instant fletching/doubled hunter
@@ -139,9 +141,9 @@ function calculateBuildSynergy(relics: Relic[], pacts: Pact[]): number {
   // Animal Wrangler + Slayer Master: enhanced hunting + always on task
   if (relicIds.has("re-t1-3") && relicIds.has("re-t5-3")) score += 60;
   // Specialist (cheap spec) + any combat mastery
-  if (relicIds.has("re-t8-1") && pacts.some((p) => p.category === "combat")) score += 70;
+  if (relicIds.has("re-t8-1") && hasCombatPower) score += 70;
   // Guardian + any combat mastery
-  if (relicIds.has("re-t8-2") && pacts.some((p) => p.category === "combat")) score += 70;
+  if (relicIds.has("re-t8-2") && hasCombatPower) score += 70;
   // Clue Compass + Treasure Arbiter: clue teleports + 10x drops + max rewards
   if (relicIds.has("re-t3-1") && relicIds.has("re-t5-1")) score += 70;
   // Dodgy Deals + Golden God: thieving empire + free alchemy

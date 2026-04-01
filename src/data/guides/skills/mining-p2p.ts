@@ -29,7 +29,7 @@ export const miningP2pGuide: SkillTrainingGuide = {
     {
       name: "Granite",
       levelRange: [45, 99],
-      xpPerHour: null,
+      xpPerHour: 134000,
       description: "3-tick mining granite (commonly referred to as \"3t4g\", 3-tick 4 granite) at the Bandit Camp Quarry or Cape Conch mine offers the fastest Mining experience from level 45 onwards. 3-tick mining is do...",
       members: true,
     },
@@ -44,7 +44,7 @@ export const miningP2pGuide: SkillTrainingGuide = {
       name: "Gem rocks",
       levelRange: [40, 99],
       xpPerHour: null,
-      description: "]] Mining gem rocks is a profitable alternative that offers comparable experience rates to granite when using tick manipulation. Gem rocks are also the fastest method on average to obtain the rock ...",
+      description: "Mining gem rocks is a profitable alternative that offers comparable experience rates to granite when using tick manipulation. Gem rocks are also the fastest method on average to obtain the rock gol...",
       members: true,
     },
     {
@@ -85,14 +85,14 @@ export const miningP2pGuide: SkillTrainingGuide = {
     {
       name: "Blast Mine",
       levelRange: [75, 99],
-      xpPerHour: null,
+      xpPerHour: 76000,
       description: "The Blast Mine minigame is a profitable alternative that offers fast experience. At level 75, players are able to obtain runite which makes the bulk of the profit gained. While it is possible to pa...",
       members: true,
     },
     {
       name: "Infernal Shale",
       levelRange: [78, 99],
-      xpPerHour: null,
+      xpPerHour: 80000,
       description: "Infernal shale can be mined in the Chasm of Fire with level 78 Mining. It is crushed into crushed infernal shale with a hammer and a chisel, which is used to create Oathplate armour. A Kingdom Divi...",
       members: true,
     },

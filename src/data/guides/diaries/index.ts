@@ -6,8 +6,11 @@ import { faladorDiary } from "./falador";
 import { fremennikDiary } from "./fremennik";
 import { kandarinDiary } from "./kandarin";
 import { karamjaDiary } from "./karamja";
+import { kourend_kebosDiary } from "./kourend-kebos";
 import { lumbridge_draynorDiary } from "./lumbridge-draynor";
+import { morytaniaDiary } from "./morytania";
 import { varrockDiary } from "./varrock";
+import { western_provincesDiary } from "./western-provinces";
 import { wildernessDiary } from "./wilderness";
 
 export const achievementDiaries: AchievementDiaryArea[] = [
@@ -17,8 +20,11 @@ export const achievementDiaries: AchievementDiaryArea[] = [
   fremennikDiary,
   kandarinDiary,
   karamjaDiary,
+  kourend_kebosDiary,
   lumbridge_draynorDiary,
+  morytaniaDiary,
   varrockDiary,
+  western_provincesDiary,
   wildernessDiary,
 ];
 

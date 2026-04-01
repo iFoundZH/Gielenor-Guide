@@ -31,6 +31,8 @@ const LOCATION_KEYWORDS: [string, string][] = [
   ["crandor", "karamja"],
   ["fight cave", "karamja"],
   ["inferno", "karamja"],
+  ["tzkal", "karamja"],
+  ["tztok", "karamja"],
 
   // Asgarnia
   ["falador", "asgarnia"],
@@ -74,6 +76,8 @@ const LOCATION_KEYWORDS: [string, string][] = [
   ["observatory", "kandarin"],
   ["underground pass", "kandarin"],
   ["khazard", "kandarin"],
+  ["smoke devil", "kandarin"],
+  ["thermonuclear", "kandarin"],
 
   // Fremennik
   ["rellekka", "fremennik"],
@@ -86,6 +90,11 @@ const LOCATION_KEYWORDS: [string, string][] = [
   ["weiss", "fremennik"],
   ["keldagrim", "fremennik"],
   ["miscellania", "fremennik"],
+  ["ungael", "fremennik"],
+  ["vorkath", "fremennik"],
+  ["ghorrock", "fremennik"],
+  ["dagannoth", "fremennik"],
+  ["jormungand", "fremennik"],
 
   // Morytania
   ["canifis", "morytania"],
@@ -104,8 +113,11 @@ const LOCATION_KEYWORDS: [string, string][] = [
   ["mort myre", "morytania"],
   ["mort'ton", "morytania"],
   ["nightmare zone", "morytania"],
+  ["nightmare", "morytania"],
+  ["phosani", "morytania"],
   ["grotesque guardians", "morytania"],
   ["sisterhood sanctuary", "morytania"],
+  ["sisterhood", "morytania"],
 
   // Desert
   ["al kharid", "desert"],
@@ -125,6 +137,11 @@ const LOCATION_KEYWORDS: [string, string][] = [
   ["tombs of amascut", "desert"],
   ["uzer", "desert"],
   ["dominion tower", "desert"],
+  ["lassar", "desert"],
+  ["stranglewood", "desert"],
+  ["ancient vault", "desert"],
+  ["whisperer", "desert"],
+  ["vardorvis", "desert"],
 
   // Tirannwn
   ["prifddinas", "tirannwn"],
@@ -136,10 +153,14 @@ const LOCATION_KEYWORDS: [string, string][] = [
   ["arandar", "tirannwn"],
   ["gauntlet", "tirannwn"],
   ["zalcano", "tirannwn"],
+  ["zul-andra", "tirannwn"],
+  ["zulrah", "tirannwn"],
+  ["kraken cove", "tirannwn"],
 
   // Wilderness
   ["wilderness", "wilderness"],
   ["revenant cave", "wilderness"],
+  ["revenant", "wilderness"],
   ["mage arena", "wilderness"],
   ["chaos temple", "wilderness"],
   ["ferox enclave", "wilderness"],
@@ -150,6 +171,14 @@ const LOCATION_KEYWORDS: [string, string][] = [
   ["rogues' castle", "wilderness"],
   ["chaos altar", "wilderness"],
   ["scorpion pit", "wilderness"],
+  ["callisto", "wilderness"],
+  ["venenatis", "wilderness"],
+  ["vet'ion", "wilderness"],
+  ["king black dragon", "wilderness"],
+  ["chaos fanatic", "wilderness"],
+  ["scorpia", "wilderness"],
+  ["crazy archaeologist", "wilderness"],
+  ["chaos elemental", "wilderness"],
 
   // Kebos
   ["farming guild", "kebos"],
@@ -172,9 +201,14 @@ const LOCATION_KEYWORDS: [string, string][] = [
   ["chambers of xeric", "kourend"],
   ["wintertodt", "kourend"],
   ["catacombs of kourend", "kourend"],
-  ["fortis colosseum", "kourend"],
+  ["catacomb", "kourend"],
+  ["fortis colosseum", "varlamore"],
   ["great kourend", "kourend"],
   ["mount quidamortem", "kourend"],
+  ["beneath kourend", "kourend"],
+  ["forthos", "kourend"],
+  ["sarachnis", "kourend"],
+  ["duke sucellus", "kourend"],
 
   // Fossil Island
   ["fossil island", "fossil-island"],
@@ -191,6 +225,9 @@ const LOCATION_KEYWORDS: [string, string][] = [
   ["ruins of tapoyauik", "varlamore"],
   ["the scar", "varlamore"],
   ["ralos' rise", "varlamore"],
+  ["hueycoatl", "varlamore"],
+  ["mokhaiotl", "varlamore"],
+  ["shellbane", "varlamore"],
 
   // Zanaris / Other
   ["zanaris", "zanaris"],

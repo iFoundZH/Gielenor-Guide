@@ -27,6 +27,13 @@ export const craftingP2pGuide: SkillTrainingGuide = {
       members: true,
     },
     {
+      name: "99: D'hide bodies",
+      levelRange: [63, 77],
+      xpPerHour: null,
+      description: "Crafting d'hide bodies becomes the fastest viable training method from level 77 onwards. Players can begin crafting green d'hide bodies at level 63, or blue d'hide bodies at level 71 as an alternat...",
+      members: true,
+    },
+    {
       name: "/99: Molten glass",
       levelRange: [1, 83],
       xpPerHour: null,

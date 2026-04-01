@@ -29,7 +29,7 @@ export const woodcuttingP2pGuide: SkillTrainingGuide = {
     {
       name: "Teak trees",
       levelRange: [35, 99],
-      xpPerHour: null,
+      xpPerHour: 255000,
       description: "Cutting teak trees offers the fastest Woodcutting experience in the game when using tick manipulation. If the player is not using any sort of tick manipulation, cutting teak trees offers the fastes...",
       members: true,
     },
@@ -80,6 +80,13 @@ export const woodcuttingP2pGuide: SkillTrainingGuide = {
       levelRange: [80, 99],
       xpPerHour: 90000,
       description: "With 72 Sailing players can cut Ironwood trees on Sunbleak island gaining around 70,000–90,000 experience per hour with a dragon axe. This increases beyond 100,000 experience per hour with a crysta...",
+      members: true,
+    },
+    {
+      name: "/90–99: Redwood trees",
+      levelRange: [88, 89],
+      xpPerHour: 60000,
+      description: "Cutting redwood trees in the Woodcutting Guild requires very little attention and offers decent experience. Players can bank the logs in the nearby bank chest. It is faster to simply drop the logs ...",
       members: true,
     },
     {

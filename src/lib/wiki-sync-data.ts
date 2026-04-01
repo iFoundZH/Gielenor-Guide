@@ -46,6 +46,10 @@ interface ParsedQuest {
   combatRequired: boolean;
   questPoints: number;
   members: boolean;
+  length?: string;
+  xpRewards?: { skill: string; xp: number }[];
+  unlocks?: string[];
+  wikiUrl: string;
 }
 
 interface ParsedBoss {
@@ -55,6 +59,12 @@ interface ParsedBoss {
   combatLevel: number | null;
   skillRequirements: { skill: string; level: number }[];
   questRequirements: string[];
+  hitpoints: number | null;
+  attackStyles: string[];
+  members: boolean;
+  category: string[];
+  notableDrops: string[];
+  wikiUrl: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -70,6 +80,16 @@ const QUEST_PAGE_EXCLUDES = [
   /\/Rewards$/i,
   /\(miniquest\)/i,
   /Recipe for Disaster\/.+/i, // RFD sub-quests (the main page is kept)
+  /^Quests$/i,               // Main category page
+  /^Quests\//i,              // All sub-pages (Quests/List, Quests/Novice, etc.)
+  /^Quest Difficulties$/i,
+  /^Quest experience rewards/i,
+  /^Quest item rewards$/i,
+  /^Quest items\//i,         // Quest items/Achievement Diary, etc.
+  /^Quest point hood$/i,
+  /^Quest points$/i,
+  /^Miniquests$/i,           // Category page (individual miniquests still included)
+  /^Optimal quest guide/i,
 ];
 
 const QUEST_DIFFICULTY_MAP: Record<string, string> = {
@@ -133,6 +153,11 @@ function parseQuestFromWikitext(name: string, wikitext: string, knownQuestNames:
   const infoboxQuest = findTemplate(wikitext, "infobox quest");
   const questDetails = findTemplate(wikitext, "quest details");
   const questRewards = findTemplate(wikitext, "quest rewards");
+
+  // Skip pages that don't look like actual quests (no quest templates at all)
+  if (!infoboxQuest && !questDetails && !questRewards) {
+    return null;
+  }
 
   let difficulty = "intermediate";
   let members = true;
@@ -212,6 +237,61 @@ function parseQuestFromWikitext(name: string, wikitext: string, knownQuestNames:
   // Determine region from start location
   const region = startLocation ? mapLocationToRegion(startLocation) : "misthalin";
 
+  // Extract quest length from Quest details template (|len = Short)
+  let length: string | undefined;
+  if (questDetails) {
+    const rawLen = extractInfoboxParam(questDetails, "len");
+    if (rawLen) {
+      const stripped = stripWikiMarkup(rawLen).toLowerCase().trim();
+      const validLengths = ["very short", "short", "medium", "long", "very long"];
+      if (validLengths.includes(stripped)) {
+        length = stripped;
+      }
+    }
+  }
+
+  // Extract XP rewards from Quest rewards template — {{SCP|Skill|XP}} patterns
+  const xpRewards: { skill: string; xp: number }[] = [];
+  if (questRewards) {
+    const xpPattern = /\{\{(?:SCP|Skill clickpic|Skill)\|([^|}\n]+)\|([^|}\n]+)/gi;
+    let xpMatch;
+    while ((xpMatch = xpPattern.exec(questRewards)) !== null) {
+      const skill = xpMatch[1].trim();
+      const rawXp = xpMatch[2].replace(/[,\s]/g, "");
+      const xp = parseInt(rawXp);
+      if (skill && !isNaN(xp) && xp > 0 && isSkillLike(skill)) {
+        xpRewards.push({ skill, xp });
+      }
+    }
+    // Also check for plain "X experience" patterns like "1,000 Attack experience"
+    const plainXpPattern = /([\d,]+)\s+(\w+)\s+(?:experience|xp)\b/gi;
+    let plainMatch;
+    while ((plainMatch = plainXpPattern.exec(questRewards)) !== null) {
+      const xp = parseInt(plainMatch[1].replace(/,/g, ""));
+      const skill = plainMatch[2].trim();
+      if (!isNaN(xp) && xp > 0 && isSkillLike(skill) && !xpRewards.some((r) => r.skill === skill)) {
+        xpRewards.push({ skill, xp });
+      }
+    }
+  }
+
+  // Extract unlocks from rewards section — lines with "Access to", "Ability to", "unlock"
+  const unlocks: string[] = [];
+  const rewardsSection = wikitext.match(/==\s*Rewards?\s*==([\s\S]*?)(?=\n==(?!=)|$)/i);
+  if (rewardsSection) {
+    const rewardLines = rewardsSection[1].split("\n");
+    for (const line of rewardLines) {
+      if (/(?:access to|ability to|unlock|can now|allows|permission)/i.test(line)) {
+        const cleaned = stripWikiMarkup(line).replace(/^\*\s*/, "").trim();
+        if (cleaned.length > 5 && cleaned.length < 200) {
+          unlocks.push(cleaned);
+        }
+      }
+    }
+  }
+
+  const wikiUrl = `https://oldschool.runescape.wiki/w/${encodeURIComponent(name.replace(/ /g, "_"))}`;
+
   return {
     id: slugify(name),
     name,
@@ -222,6 +302,10 @@ function parseQuestFromWikitext(name: string, wikitext: string, knownQuestNames:
     combatRequired,
     questPoints,
     members,
+    length: length as ParsedQuest["length"],
+    xpRewards: xpRewards.length > 0 ? xpRewards : undefined,
+    unlocks: unlocks.length > 0 ? unlocks : undefined,
+    wikiUrl,
   };
 }
 
@@ -306,8 +390,8 @@ async function syncQuests(dryRun: boolean, merge: boolean): Promise<void> {
   if (dryRun) {
     console.log(`  [DRY RUN] Would write ${finalQuests.length} quests to ${outputPath}`);
     console.log(`  Sample quests:`);
-    for (const q of finalQuests.slice(0, 5)) {
-      console.log(`    - ${q.name} (${q.difficulty}, ${q.region}, ${q.questPoints} QP, ${q.skillRequirements.length} skill reqs)`);
+    for (const quest of finalQuests.slice(0, 5)) {
+      console.log(`    - ${quest.name} (${quest.difficulty}, ${quest.region}, ${quest.questPoints} QP, ${quest.skillRequirements.length} skill reqs, ${quest.length ?? "no length"}, ${quest.xpRewards?.length ?? 0} xp rewards)`);
     }
   } else {
     fs.writeFileSync(outputPath, code);
@@ -345,7 +429,19 @@ function generateQuestsFile(quests: ParsedQuest[]): string {
       ? `[${quest.questRequirements.map(q).join(", ")}]`
       : "[]";
 
-    lines.push(`  { id: ${q(quest.id)}, name: ${q(quest.name)}, difficulty: ${q(quest.difficulty)} as OsrsQuest["difficulty"], region: ${q(quest.region)}, skillRequirements: ${skillReqs}, questRequirements: ${questReqs}, combatRequired: ${quest.combatRequired}, questPoints: ${quest.questPoints}, members: ${quest.members} },`);
+    const optionalFields: string[] = [];
+    if (quest.length) optionalFields.push(`length: ${q(quest.length)} as OsrsQuest["length"]`);
+    if (quest.xpRewards && quest.xpRewards.length > 0) {
+      optionalFields.push(`xpRewards: [${quest.xpRewards.map((r) => `{ skill: ${q(r.skill)}, xp: ${r.xp} }`).join(", ")}]`);
+    }
+    if (quest.unlocks && quest.unlocks.length > 0) {
+      optionalFields.push(`unlocks: [${quest.unlocks.map(q).join(", ")}]`);
+    }
+    optionalFields.push(`wikiUrl: ${q(quest.wikiUrl)}`);
+
+    const optStr = optionalFields.length > 0 ? `, ${optionalFields.join(", ")}` : "";
+
+    lines.push(`  { id: ${q(quest.id)}, name: ${q(quest.name)}, difficulty: ${q(quest.difficulty)} as OsrsQuest["difficulty"], region: ${q(quest.region)}, skillRequirements: ${skillReqs}, questRequirements: ${questReqs}, combatRequired: ${quest.combatRequired}, questPoints: ${quest.questPoints}, members: ${quest.members}${optStr} },`);
   }
 
   lines.push(`];`);
@@ -446,6 +542,42 @@ async function fetchBossListFromWiki(): Promise<{ name: string; page: string; lo
   return bosses;
 }
 
+/** Classify boss into categories based on name, location, and wiki content */
+function classifyBossCategory(name: string, location: string, wikitext: string): string[] {
+  const cats: string[] = [];
+  const lower = name.toLowerCase();
+  const locLower = location.toLowerCase();
+  const textLower = wikitext.toLowerCase();
+
+  // Raids
+  if (/chambers of xeric|great olm/i.test(lower) || /tombs of amascut|wardens/i.test(lower) || /theatre of blood|verzik/i.test(lower)) {
+    cats.push("raid");
+  }
+  // GWD
+  if (/god wars|godwars/.test(locLower) || /general graardor|commander zilyana|kree.arra|k.ril tsutsaroth|nex\b/i.test(lower)) {
+    cats.push("gwd");
+  }
+  // DT2
+  if (/duke sucellus|the leviathan|the whisperer|vardorvis/i.test(lower)) {
+    cats.push("dt2");
+  }
+  // Wilderness
+  if (/wilderness/i.test(locLower) || /callisto|artio|venenatis|spindel|vet.ion|calvar.ion|chaos elemental|chaos fanatic|crazy archaeologist|scorpia|king black dragon/i.test(lower)) {
+    cats.push("wilderness");
+  }
+  // Slayer
+  if (/slayer/i.test(textLower.slice(0, 2000)) || /cerberus|abyssal sire|alchemical hydra|kraken|thermonuclear|grotesque guardians|araxxor/i.test(lower)) {
+    cats.push("slayer");
+  }
+  // Skilling
+  if (/zalcano|tempoross|wintertodt|phantom muspah/i.test(lower)) {
+    cats.push("skilling");
+  }
+
+  if (cats.length === 0) cats.push("other");
+  return cats;
+}
+
 function parseBossFromWikitext(
   bossInfo: { name: string; location: string; combatLevel: number | null },
   wikitext: string,
@@ -454,6 +586,9 @@ function parseBossFromWikitext(
 
   let combatLevel = bossInfo.combatLevel;
   let location = bossInfo.location;
+  let hitpoints: number | null = null;
+  let members = true;
+  const attackStyles: string[] = [];
 
   if (infobox) {
     // Override combat level from infobox if we didn't get one
@@ -469,6 +604,28 @@ function parseBossFromWikitext(
     if (!location) {
       const rawLoc = extractInfoboxParam(infobox, "location");
       if (rawLoc) location = stripWikiMarkup(rawLoc);
+    }
+
+    // Hitpoints
+    const rawHp = extractInfoboxParam(infobox, "hitpoints");
+    if (rawHp) {
+      const num = parseInt(stripWikiMarkup(rawHp).replace(/[,\s]/g, ""));
+      if (!isNaN(num) && num > 0) hitpoints = num;
+    }
+
+    // Attack styles
+    const rawAttStyle = extractInfoboxParam(infobox, "attack style");
+    if (rawAttStyle) {
+      const stripped = stripWikiMarkup(rawAttStyle);
+      const styles = stripped.split(/[,\n]/).map((s) => s.trim()).filter((s) => s.length > 0 && s.length < 30);
+      attackStyles.push(...styles);
+    }
+
+    // Members
+    const rawMembers = extractInfoboxParam(infobox, "members");
+    if (rawMembers) {
+      const stripped = stripWikiMarkup(rawMembers).toLowerCase();
+      members = !stripped.includes("no") && !stripped.includes("free");
     }
   }
 
@@ -504,10 +661,8 @@ function parseBossFromWikitext(
   }
 
   // Quest requirements: look for [[Quest Name]] links that explicitly mention quest completion
-  // Boss pages rarely have formal quest prerequisite sections, so we look for specific patterns
   const questRequirements: string[] = [];
   if (reqSection) {
-    // Look for completion/quest-specific patterns like "completion of [[Quest]]" or "[[Quest]] quest"
     const questRefPattern = /(?:complet\w+\s+(?:of\s+)?|(?:start|finish|done)\s+)\[\[([^\]|]+?)(?:\|[^\]]+)?\]\]/gi;
     let m;
     while ((m = questRefPattern.exec(reqSection[1])) !== null) {
@@ -518,7 +673,24 @@ function parseBossFromWikitext(
     }
   }
 
+  // Notable drops: parse {{DropsLine|Name=...}} templates, limit to 10
+  const notableDrops: string[] = [];
+  const dropsLinePattern = /\{\{DropsLine[^}]*\|Name\s*=\s*([^|}]+)/gi;
+  let dropMatch;
+  const dropsSeen = new Set<string>();
+  while ((dropMatch = dropsLinePattern.exec(wikitext)) !== null && notableDrops.length < 10) {
+    const dropName = stripWikiMarkup(dropMatch[1]).trim();
+    const dropLower = dropName.toLowerCase();
+    // Skip common junk drops
+    if (dropName.length > 1 && !dropsSeen.has(dropLower) && !/^(bones|coins|ashes|nothing|big bones|babydragon bones)$/i.test(dropName)) {
+      dropsSeen.add(dropLower);
+      notableDrops.push(dropName);
+    }
+  }
+
   const region = location ? mapLocationToRegion(location) : "misthalin";
+  const category = classifyBossCategory(bossInfo.name, location, wikitext);
+  const wikiUrl = `https://oldschool.runescape.wiki/w/${encodeURIComponent(bossInfo.name.replace(/ /g, "_"))}`;
 
   return {
     id: slugify(bossInfo.name),
@@ -527,6 +699,12 @@ function parseBossFromWikitext(
     combatLevel,
     skillRequirements,
     questRequirements,
+    hitpoints,
+    attackStyles,
+    members,
+    category,
+    notableDrops,
+    wikiUrl,
   };
 }
 
@@ -558,6 +736,7 @@ async function syncBosses(dryRun: boolean, merge: boolean): Promise<void> {
       if (boss) bosses.push(boss);
     } else {
       // Still create an entry from the table data
+      const wikiUrl = `https://oldschool.runescape.wiki/w/${encodeURIComponent(bossInfo.name.replace(/ /g, "_"))}`;
       bosses.push({
         id: slugify(bossInfo.name),
         name: bossInfo.name,
@@ -565,6 +744,12 @@ async function syncBosses(dryRun: boolean, merge: boolean): Promise<void> {
         combatLevel: bossInfo.combatLevel,
         skillRequirements: [],
         questRequirements: [],
+        hitpoints: null,
+        attackStyles: [],
+        members: true,
+        category: classifyBossCategory(bossInfo.name, bossInfo.location, ""),
+        notableDrops: [],
+        wikiUrl,
       });
     }
   }
@@ -596,7 +781,7 @@ async function syncBosses(dryRun: boolean, merge: boolean): Promise<void> {
     console.log(`  [DRY RUN] Would write ${finalBosses.length} bosses to ${outputPath}`);
     console.log(`  Sample bosses:`);
     for (const b of finalBosses.slice(0, 5)) {
-      console.log(`    - ${b.name} (${b.region}, CB ${b.combatLevel ?? "N/A"}, ${b.skillRequirements.length} skill reqs)`);
+      console.log(`    - ${b.name} (${b.region}, CB ${b.combatLevel ?? "N/A"}, HP ${b.hitpoints ?? "N/A"}, ${b.category.join("/")}, ${b.notableDrops.length} drops)`);
     }
   } else {
     fs.writeFileSync(outputPath, code);
@@ -628,8 +813,15 @@ function generateBossesFile(bosses: ParsedBoss[]): string {
     const questReqs = boss.questRequirements.length > 0
       ? `[${boss.questRequirements.map(q).join(", ")}]`
       : "[]";
+    const atkStyles = boss.attackStyles.length > 0
+      ? `[${boss.attackStyles.map(q).join(", ")}]`
+      : "[]";
+    const cats = `[${boss.category.map(q).join(", ")}]`;
+    const drops = boss.notableDrops.length > 0
+      ? `[${boss.notableDrops.map(q).join(", ")}]`
+      : "[]";
 
-    lines.push(`  { id: ${q(boss.id)}, name: ${q(boss.name)}, region: ${q(boss.region)}, combatLevel: ${boss.combatLevel ?? "null"}, skillRequirements: ${skillReqs}, questRequirements: ${questReqs} },`);
+    lines.push(`  { id: ${q(boss.id)}, name: ${q(boss.name)}, region: ${q(boss.region)}, combatLevel: ${boss.combatLevel ?? "null"}, skillRequirements: ${skillReqs}, questRequirements: ${questReqs}, hitpoints: ${boss.hitpoints ?? "null"}, attackStyles: ${atkStyles}, members: ${boss.members}, category: ${cats}, notableDrops: ${drops}, wikiUrl: ${q(boss.wikiUrl)} },`);
   }
 
   lines.push(`];`);

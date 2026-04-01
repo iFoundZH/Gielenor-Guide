@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { ragingEchoesLeague } from "@/data/raging-echoes";
 import { Card } from "@/components/ui/Card";
 import { RelicTierDisplay } from "@/components/league/RelicTierDisplay";
-import { PactCard } from "@/components/league/PactCard";
+import { MasteryPanel } from "@/components/league/MasteryPanel";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { encodeBuild, decodeBuild } from "@/lib/build-storage";
 import { calculateGielinorScore } from "@/lib/player-score";
@@ -70,13 +70,25 @@ export default function RagingEchoesPlanner() {
     });
   }, [league.relicTiers]);
 
-  const togglePact = useCallback((pactId: string) => {
-    setBuild((prev) => ({
-      ...prev,
-      pacts: prev.pacts.includes(pactId)
-        ? prev.pacts.filter((id) => id !== pactId)
-        : [...prev.pacts, pactId],
-    }));
+  const toggleMasteryTier = useCallback((tierId: string) => {
+    setBuild((prev) => {
+      if (prev.pacts.includes(tierId)) {
+        // Deselecting: also remove all higher tiers for this style
+        const parts = tierId.split("-");
+        const tierNum = parseInt(parts.pop()!);
+        const stylePrefix = parts.join("-");
+        return {
+          ...prev,
+          pacts: prev.pacts.filter((id) => {
+            if (!id.startsWith(stylePrefix + "-")) return true;
+            const t = parseInt(id.split("-").pop()!);
+            return t < tierNum;
+          }),
+        };
+      } else {
+        return { ...prev, pacts: [...prev.pacts, tierId] };
+      }
+    });
   }, []);
 
   const allRelics = useMemo(() => league.relicTiers.flatMap((t) => t.relics), [league.relicTiers]);
@@ -84,6 +96,8 @@ export default function RagingEchoesPlanner() {
   const gielinorScore = useMemo(() => calculateGielinorScore(build, league), [build, league]);
   const buildAnalysis = useMemo(() => analyzeBuild(build, league), [build, league]);
   const relicTiersWithChoices = league.relicTiers.filter((t) => t.relics.length > 0).length;
+
+  const masteryPointsUsed = build.pacts.filter((id) => id.startsWith("re-mastery-")).length;
 
   const handleShare = async () => {
     const encoded = encodeBuild(build);
@@ -187,16 +201,16 @@ export default function RagingEchoesPlanner() {
           </div>
 
           {/* Combat Masteries */}
-          {league.pacts.length > 0 && (
+          {league.masteries && (
             <div id="masteries" className="scroll-mt-24">
               <h2 className="text-2xl font-bold text-osrs-gold mb-6" style={{ fontFamily: "var(--font-runescape)" }}>
                 Combat Masteries
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {league.pacts.map((pact) => (
-                  <PactCard key={pact.id} pact={pact} selected={build.pacts.includes(pact.id)} onToggle={togglePact} />
-                ))}
-              </div>
+              <MasteryPanel
+                masteries={league.masteries}
+                selectedTiers={build.pacts}
+                onToggleTier={toggleMasteryTier}
+              />
             </div>
           )}
 
@@ -232,8 +246,8 @@ export default function RagingEchoesPlanner() {
                   <span className="text-osrs-text">{selectedRelics.length} / {relicTiersWithChoices}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-osrs-text-dim">Masteries</span>
-                  <span className="text-osrs-text">{build.pacts.length}</span>
+                  <span className="text-osrs-text-dim">Mastery Points</span>
+                  <span className="text-osrs-text">{masteryPointsUsed} / {league.masteries?.maxPoints ?? 10}</span>
                 </div>
               </div>
               <ProgressBar value={selectedRelics.length} max={relicTiersWithChoices} label="Relics Selected" color="bg-osrs-gold" size="sm" />
@@ -266,8 +280,8 @@ export default function RagingEchoesPlanner() {
                 <span className="text-osrs-text">{selectedRelics.map((r) => `T${r.tier} ${r.name}`).join(", ") || "None"}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-osrs-text-dim">Masteries</span>
-                <span className="text-osrs-text">{build.pacts.length}</span>
+                <span className="text-osrs-text-dim">Mastery Points</span>
+                <span className="text-osrs-text">{masteryPointsUsed} / {league.masteries?.maxPoints ?? 10}</span>
               </div>
             </div>
           </div>
@@ -279,7 +293,7 @@ export default function RagingEchoesPlanner() {
           <div className="flex items-center gap-4 text-xs">
             <span className="text-osrs-gold font-bold">{gielinorScore.total} pts</span>
             <span className="text-osrs-text-dim">T {selectedRelics.length}/{relicTiersWithChoices}</span>
-            <span className="text-osrs-text-dim">M {build.pacts.length}</span>
+            <span className="text-osrs-text-dim">M {masteryPointsUsed}/{league.masteries?.maxPoints ?? 10}</span>
           </div>
           <span className="text-osrs-text-dim text-xs">{mobileExpanded ? "▼" : "▲"}</span>
         </button>

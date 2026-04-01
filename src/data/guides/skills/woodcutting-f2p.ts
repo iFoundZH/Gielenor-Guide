@@ -48,6 +48,13 @@ export const woodcuttingF2pGuide: SkillTrainingGuide = {
       members: false,
     },
     {
+      name: "99: Willow trees",
+      levelRange: [30, 60],
+      xpPerHour: null,
+      description: "At level 30, players can cut willow trees, which grant 67.5 experience per log. If dropping logs, oak trees are higher experience rates until level 60, however because willow logs are closer to the...",
+      members: false,
+    },
+    {
       name: "Maple trees",
       levelRange: [45, 99],
       xpPerHour: 36000,

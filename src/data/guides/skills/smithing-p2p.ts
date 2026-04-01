@@ -37,7 +37,7 @@ export const smithingP2pGuide: SkillTrainingGuide = {
       name: "Giants' Foundry",
       levelRange: [15, 99],
       xpPerHour: null,
-      description: "{{Equipment | align = right",
+      description: "",
       members: true,
     },
     {
@@ -66,6 +66,13 @@ export const smithingP2pGuide: SkillTrainingGuide = {
       levelRange: [48, 99],
       xpPerHour: null,
       description: "Smithing armour at an anvil is only recommended for account builds that cannot get goldsmith gauntlets. Depending on the Grand Exchange prices, adamant platebodies can be a viable alternative to sm...",
+      members: true,
+    },
+    {
+      name: "99+: Smithing 3-bar rune items",
+      levelRange: [95, 98],
+      xpPerHour: null,
+      description: "Smithing rune platelegs, plateskirts, or 2h swords at an anvil offers decent experience, and it is also profitable. Players will need to have level 99 to be able to make these items, but Kovac's gr...",
       members: true,
     },
   ],

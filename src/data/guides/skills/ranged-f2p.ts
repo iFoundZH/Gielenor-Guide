@@ -9,7 +9,7 @@ export const rangedF2pGuide: SkillTrainingGuide = {
       name: "maximum hit chart (collapsed)",
       levelRange: [1, 99],
       xpPerHour: null,
-      description: "{| class=\"wikitable mw-collapsible mw-collapsed\" style=\"text-align:center;\" ! ! colspan=\"5\" |Arrow Type",
+      description: "{| class=\"wikitable mw-collapsible mw-collapsed\" style=\"text-align:center;\" ! ! colspan=\"5\" |Arrow Type ! |-",
       members: false,
     },
   ],

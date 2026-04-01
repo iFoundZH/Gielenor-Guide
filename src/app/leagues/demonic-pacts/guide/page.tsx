@@ -3,7 +3,9 @@
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Tabs } from "@/components/ui/Tabs";
+import { EfficiencyGuideSection } from "@/components/league/EfficiencyGuideSection";
 import { demonicPactsLeague } from "@/data/demonic-pacts";
+import { demonicPactsRank1Guide } from "@/data/guides/efficiency";
 import { encodeBuild } from "@/lib/build-storage";
 import Link from "next/link";
 import type { LeagueBuild } from "@/types/league";
@@ -247,10 +249,13 @@ function buildPlannerUrl(strategy: (typeof strategies)[number]): string {
 }
 
 export default function StrategyGuide() {
-  const tabs = strategies.map((s) => ({
-    id: s.id,
-    label: s.name,
-  }));
+  const tabs = [
+    { id: "rank1", label: "Rank 1 Guide" },
+    ...strategies.map((s) => ({
+      id: s.id,
+      label: s.name,
+    })),
+  ];
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10">
@@ -303,6 +308,10 @@ export default function StrategyGuide() {
 
       <Tabs tabs={tabs}>
         {(activeTab) => {
+          if (activeTab === "rank1") {
+            return <EfficiencyGuideSection guide={demonicPactsRank1Guide} />;
+          }
+
           const strategy = strategies.find((s) => s.id === activeTab);
           if (!strategy) return null;
 

@@ -3,7 +3,9 @@
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Tabs } from "@/components/ui/Tabs";
+import { EfficiencyGuideSection } from "@/components/league/EfficiencyGuideSection";
 import { ragingEchoesLeague } from "@/data/raging-echoes";
+import { ragingEchoesRank1Guide } from "@/data/guides/efficiency";
 import { encodeBuild } from "@/lib/build-storage";
 import Link from "next/link";
 import type { LeagueBuild } from "@/types/league";
@@ -235,10 +237,11 @@ function buildPlannerUrl(strategy: (typeof strategies)[number]): string {
   const matchedMasteryIds = strategy.masteries
     .map(
       (name) =>
-        league.pacts.find((p) => p.name.toLowerCase() === name.toLowerCase())
+        league.masteries?.styles.find((s) => s.name.toLowerCase() === name.toLowerCase())
           ?.id,
     )
-    .filter((id): id is string => !!id);
+    .filter((id): id is string => !!id)
+    .flatMap((id) => [`${id}-1`]);
 
   const matchedRegionIds = strategy.regions
     .map(
@@ -266,7 +269,10 @@ function buildPlannerUrl(strategy: (typeof strategies)[number]): string {
 }
 
 export default function RagingEchoesGuide() {
-  const tabs = strategies.map((s) => ({ id: s.id, label: s.name }));
+  const tabs = [
+    { id: "rank1", label: "Rank 1 Guide" },
+    ...strategies.map((s) => ({ id: s.id, label: s.name })),
+  ];
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10">
@@ -347,6 +353,10 @@ export default function RagingEchoesGuide() {
 
       <Tabs tabs={tabs}>
         {(activeTab) => {
+          if (activeTab === "rank1") {
+            return <EfficiencyGuideSection guide={ragingEchoesRank1Guide} />;
+          }
+
           const strategy = strategies.find((s) => s.id === activeTab);
           if (!strategy) return null;
 

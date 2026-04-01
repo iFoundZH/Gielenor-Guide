@@ -23,7 +23,7 @@ export const rangedP2pGuide: SkillTrainingGuide = {
       name: "Chinning maniacal monkeys",
       levelRange: [45, 99],
       xpPerHour: null,
-      description: "For more information, see Maniacal monkey/Strategies. {{Equipment",
+      description: "For more information, see Maniacal monkey/Strategies.",
       members: true,
     },
     {
@@ -48,9 +48,23 @@ export const rangedP2pGuide: SkillTrainingGuide = {
       members: true,
     },
     {
+      name: "99: Nightmare Zone",
+      levelRange: [70, 80],
+      xpPerHour: null,
+      description: "For more information, see Nightmare Zone/Strategies. Using the normal customisable rumble setup in Nightmare Zone allows for 20 minutes of AFK Ranged training. After 20 minutes, the player will sto...",
+      members: true,
+    },
+    {
+      name: "99: Training Ranged with Slayer",
+      levelRange: [75, 80],
+      xpPerHour: null,
+      description: "Using the toxic blowpipe or the venator bow for Slayer training is not considered efficient to do, however it is an option for players who do not value gaining Melee or Magic experience and want so...",
+      members: true,
+    },
+    {
       name: "Monkeys with Venator bow",
       levelRange: [80, 99],
-      xpPerHour: null,
+      xpPerHour: 270000,
       description: "As a cheaper (albeit slower) alternative to Chinning, the Venator bow can be used with Amethyst arrows to kill either Skeleton monkeys or Maniacal monkeys to get experience rates between 140,000 an...",
       members: true,
     },

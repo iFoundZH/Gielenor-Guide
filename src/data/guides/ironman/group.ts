@@ -2,223 +2,202 @@ import type { IronmanGuide } from "@/types/guides";
 
 export const groupIronmanGuide: IronmanGuide = {
   variant: "group" as IronmanGuide["variant"],
-  wikiUrl: "https://oldschool.runescape.wiki/w/Group_Ironman/Strategies",
+  wikiUrl: "https://oldschool.runescape.wiki/w/Group_ironman_guide",
   sections: [
     {
-      title: "Group Ironman Overview",
+      title: "Limitations",
       level: 2,
-      content: "Group Ironman (GIM) is an Ironman mode where teams of 2 to 5 players share a group storage chest and can trade freely between each other. Like standard Ironmen, GIM accounts cannot use the Grand Exchange (except to buy bonds) and cannot trade with players outside the group.\n\nGroup Ironman teams are formed during Tutorial Island. The group leader creates the group and other players join before leaving the island. Once formed, the group is permanent, though members can leave or be kicked (with consequences to group prestige).\n\nGroups can optionally be Hardcore Group Ironman (HCGIM). In HCGIM mode, the group shares a limited pool of lives. When a member dies a dangerous death, one life is consumed. When all lives are depleted, the entire group loses Hardcore status and becomes a regular GIM team. HCGIM groups start with the same number of lives as group members. Additional lives can be earned by completing the Theatre of Blood.\n\nKey GIM features:\n\n* Shared group storage chest accessible at banks.\n* Free trading between group members for any tradeable item.\n* Group prestige rating that tracks whether the team has remained intact since creation.\n* Separate GIM hiscores that rank groups by total level and other metrics.\n* Group members can assist each other in combat, unlike regular Ironmen.\n* GIM accounts can pick up drops from other group members' kills.\n* The Ironman chat-channel connects you with other Ironmen for advice.",
+      content: "Playing as an Ironman or Hardcore Ironman means you must be entirely self-sufficient.\n\nIronmen accounts have the following restrictions:\n\n* Trading other players is disabled.\n* Ironmen cannot use the Grand Exchange to buy or sell any item with the exception of bonds (which can be bought but not sold).\n* Ironmen cannot Accept Aid.\n* Ironmen cannot gain experience from player-versus-player encounters.\n* Ironmen cannot pick up drops from other players' kills.\n* Ironmen cannot receive help to slay a monster.\n* View the complete list of restrictions here.\n\nHardcore Ironmen follow these same restrictions, but with the added challenge of only having one life. A dangerous death will revert the account to regular Ironman status and the account's stats on the Hardcore Ironman Hiscores will be frozen. Safe deaths, such as those in many minigames, will not cause the loss of Hardcore status, unless you are a Hardcore Group Ironman.\n\nIronman modes must be activated by speaking to Ironman tutor on Tutorial Island before being teleported to the mainland.",
       subsections: [
       ],
     },
     {
-      title: "Team Composition & Roles",
+      title: "Overview",
       level: 2,
-      content: "One of the biggest advantages of Group Ironman is the ability to divide labour across team members. Rather than every player grinding every skill and every boss, teams can specialize so that each member focuses on what they enjoy or what the team needs most. Effective role division dramatically accelerates group progression compared to solo Ironman play.",
+      content: "The game can be represented by three main unofficial phases: the early-game, mid-game, and late-game.\n\nThe early-game consists mainly of questing, training skills to ~60–70, and acquiring useful gear. Common milestones include:\n\n* Rune crossbow from crazy archaeologist\n* Broad bolts from broader fletching\n* Black dragonhide armour from hard clues\n* Fire cape from the TzHaar Fight Cave\n* Fighter torso from Barbarian Assault\n* Barrows gloves from Recipe for Disaster\n* Dragon defender from the Warriors' Guild\n* Iban's staff from Underground Pass\n* Imbued god cape from Mage Arena II\n* Berserker ring (i) from Dagannoth Rex\n* Zombie axe from Armoured zombies\n* Black mask (i) and Slayer helmet (i) from cave horrors\n\nThe typical Ironman mid-game is focused on obtaining gear upgrades for higher-level bossing and raids. Key upgrades include:\n\n* Barrows and Moons armour sets and weaponry\n* Elite Void Knight equipment from Pest Control\n* Deadeye, Mystic vigour, and the Twinflame staff from Royal Titans\n* Amulet of fury with 90 Crafting (85 with boost, along with 87 Magic to enchant it)\n* Tormented synapses (creating the Scorching bow, Emberlight, and the Purging staff) and Burning claws from Tormented Demons\n* Dragon boots from Spiritual mages\n* Abyssal whip from Abyssal demons\n* Trident of the seas from Cave kraken\n* Dragon warhammer from Lizardman shamans\n* Basilisk jaw from Basilisk Knights \n* Bow of Faerdhinen from The Corrupted Gauntlet\n* Saradomin brews with 81 Herblore\n\nOnce a player has achieved their mid-game upgrades, they are ready to start participating in diverse late-game content. Highlights include:\n\n* Zenyte jewellery from Demonic gorillas\n* Toxic blowpipe and Trident of the swamp from Zulrah\n* God Wars Dungeon bosses\n** K'ril Tsutsaroth for the Zamorakian spear and the Staff of the dead\n** General Graardor for Bandos armour and the Bandos godsword\n** Commander Zilyana for the Armadyl crossbow and the Saradomin godsword\n* Primordial boots from Cerberus\n* Occult ",
       subsections: [
-        {
-          title: "Skill specialization",
-          level: 3,
-          content: "Certain skills produce items that benefit the entire team but require significant time investment to level. Assigning these to specific members avoids redundant grinding.\n\n* Herblore: One member focuses on gathering herbs and secondary ingredients to make potions for the whole group. This is one of the most impactful specializations because potions are consumed constantly.\n* Crafting: A dedicated crafter can produce jewellery, dragonhide armour, and glass items for the group. Reaching 89 Crafting for a fury amulet benefits the whole team once it can be passed around.\n* Smithing: One player handles Blast Furnace runs to produce bars and smith dart tips, cannonballs, and platebodies for alching.\n* Construction: A single player building a maxed player-owned house with ornate pool, fairy ring, spirit tree, and jewellery box saves the rest of the team from training Construction at all. Other members can use the house via the \"house party\" system.\n* Farming: While herb runs benefit from multiple members doing them, tree runs and high-level farming can be concentrated to one player.\n\nNot every skill needs to be specialized. Combat skills, Slayer, Prayer, Agility, and similar personal-progression skills should be trained by every member independently.",
-          subsections: [
-          ],
-        },
-        {
-          title: "Combat roles",
-          level: 3,
-          content: "Dividing combat roles helps the team gear up faster and tackle group PvM content more effectively.\n\n* Main tank / melee specialist: Prioritizes melee gear upgrades (Bandos, Abyssal whip, Dragon warhammer). Takes aggro in group bossing.\n* Ranged DPS: Focuses on ranging gear (Armadyl, Toxic blowpipe, Twisted bow). Often assigned Zulrah and Vorkath for unique drops.\n* Mage / support: Prioritizes magic gear and acts as the group's spellcaster for freezes, vengeance support, and thralls in raids.\n\nIn practice, all members will train all combat styles to some degree. The roles primarily determine who gets priority on gear drops rather than who trains what.",
-          subsections: [
-          ],
-        },
-        {
-          title: "Gatherer vs artisan",
-          level: 3,
-          content: "A simple two-role framework that works well for smaller groups:\n\n* Gatherers focus on Mining, Woodcutting, Fishing, Farming, and Hunter to supply raw materials.\n* Artisans focus on Smithing, Crafting, Fletching, Herblore, Cooking, and Construction to process those materials into useful items.\n\nThis avoids the common GIM pitfall where everyone mines their own ore and smelts their own bars independently, which is no more efficient than solo Ironman play. The goal is to leverage the group so that each hour played by any member benefits the whole team.",
-          subsections: [
-          ],
-        },
-        {
-          title: "Boss grind responsibilities",
-          level: 3,
-          content: "Assign specific boss grinds to members based on their combat specialization and the drops the team needs:\n\n* Assign one player to grind Zulrah for the Toxic blowpipe and Trident of the swamp, then pass them to the team.\n* Have the melee specialist farm Cerberus for Primordial crystals, since they will already have high Slayer.\n* Split God Wars Dungeon assignments: one member focuses Bandos, another Sara/Arma. Tanking roles can be divided based on defensive stats.\n* For bosses with multiple useful uniques (like Dagannoth Kings), have the whole group go together since GIM members can assist in combat.\n* Wilderness bosses are risky, so assign them to the member most comfortable with the PvP threat.\n\nThe key principle is that once a member gets a unique drop, it can be traded to whoever on the team benefits most from it.",
-          subsections: [
-          ],
-        },
       ],
     },
     {
-      title: "Shared Storage & Trading",
+      title: "Early-game",
       level: 2,
-      content: "The group storage chest is the centrepiece of GIM logistics. Understanding its mechanics and using it effectively is critical to efficient group play.",
+      content: "",
       subsections: [
         {
-          title: "Group storage chest",
+          title: "Food and supplies",
           level: 3,
-          content: "The group storage chest is accessible at any bank and functions as a shared bank space that all group members can deposit into and withdraw from.\n\n* The chest starts with 80 slots and can be expanded by completing content milestones as a group.\n* Items stored in group storage are visible to all members and can be withdrawn by anyone.\n* The chest cannot hold untradeable items.\n* Stackable items (runes, arrows, coins) still occupy one slot per type regardless of quantity.\n\nBecause space is limited, teams should establish rules about what goes in the chest. Common conventions include:\n\n* Potions and food for group bossing.\n* High-value gear that rotates between members (such as a Bandos chestplate being shared until a second one is obtained).\n* Raw materials that an artisan specialist needs to process.\n* Quest items that multiple members need in sequence.\n\nAvoid cluttering group storage with junk. Each member has their own personal bank for items that are only relevant to them.",
+          content: "* Early food for tanking the Stronghold of Security can be obtained by purchasing jugs of wine for 1 coin each from Fortunato in Draynor Village. They heal 11 hitpoints each (also draining attack by 2).\n* Early food for questing can be obtained by stealing cakes from Bakery stalls in East Ardougne or Great Kourend. They heal 12 hitpoints each (4 hitpoints per bite).\n* Boots of lightness reduce weight by 4.535 kg while worn, and they can be found in the cellar of the Temple of Ikov. Players do not need to start the quest Temple of Ikov to obtain the boots. A light source is needed to navigate to the basement, and a slash weapon or knife is needed to cut the web blocking the spawn.\n* Wines like Ixcoztic white and Chichilihui rosé can be purchased from shops in Varlamore. These heal 16 hitpoints (and drain attack by 5 among other boosts and drains).\n*The Shrimp and Parrot in Brimhaven sells various cooked fish, such as lobsters, swordfish and most notably karambwan.\n*Karambwans are a useful food that can be obtained easily after Tai Bwo Wannai Trio.\n*Wintertodt, Tempoross, and Guardians of the Rift are activities with relatively low requirements and useful early game rewards. Many Ironmen choose to do these activities early on.",
           subsections: [
           ],
         },
         {
-          title: "Trading between members",
+          title: "Transportation",
           level: 3,
-          content: "GIM members can trade any tradeable item directly with each other, just like regular accounts trade. This is often faster than using group storage for quick transfers.\n\n* Trading is only available when both members are online and in the same location.\n* You can trade noted items and stackable items normally.\n* There are no trade limits or cooldowns between group members.\n* Items received from other group members do not affect your collection log.\n\nTrading is the primary mechanism for passing gear upgrades, supplies, and quest items between members. Coordinate trades at a common meeting point such as a bank or the group's player-owned house.",
-          subsections: [
-          ],
-        },
-        {
-          title: "Grand Exchange restrictions",
-          level: 3,
-          content: "GIM accounts cannot buy or sell items on the Grand Exchange, with the exception of bonds. This means every item the group uses must be obtained through skilling, combat drops, shops, or minigames.\n\nThis restriction is what makes skill specialization so valuable. On a regular Ironman, every player must be self-sufficient. On a GIM team, only the group as a whole needs to be self-sufficient. If one member can make potions and another can smith dart tips, neither needs to train the other's skill.",
-          subsections: [
-          ],
-        },
-      ],
-    },
-    {
-      title: "Early Game Strategy",
-      level: 2,
-      content: "The early game for a GIM team is significantly faster than solo Ironman because members can coordinate quests, share supplies, and avoid duplicating effort. The goal is to get the whole team through early milestones as quickly as possible.",
-      subsections: [
-        {
-          title: "Coordinated questing",
-          level: 3,
-          content: "Not every member needs to complete every quest immediately. Prioritize quests based on what they unlock and who benefits most:\n\n* Have one member rush Fairy Tale I and start Fairy Tale II for fairy ring access. Other members can use the fairy ring in the group house.\n* One member should prioritize Animal Magnetism for Ava's devices, then supply the group with them.\n* Assign Waterfall Quest and The Feud to the melee specialist first so they can begin training with an adamant scimitar and share one later.\n* The member focusing Herblore should complete Druidic Ritual, Jungle Potion, and Recruitment Drive early.\n* Assign Recipe for Disaster subquests across multiple members so that each person only completes a portion, then the whole team converges to finish the final boss fight once all subquests are done.\n\nQuests that provide one-time rewards (like experience lamps) should be completed by the member who benefits most from skipping slow early training in that skill.",
+          content: "One of the earliest concerns of an Ironman account is transportation. A new Ironman account starts with very few teleports and, before training Agility, run energy will recharge very slowly. \n\nFor this reason, training Agility early on is beneficial. Every 10 Agility levels, the rate at which run energy regenerates increases, and levels 10, 20, and 30 can be reached relatively quickly. Higher Agility levels also allow access to time-saving shortcuts. Furthermore, Agility is a very independent skill to train - it doesn't require any supplies but food. Earning the graceful outfit will improve travel time on foot, though it typically takes until 60+ Agility to collect the 260 marks of grace required.\n\nMany items and methods allow transportation to specific destinations. Below are some noteworthy transportation methods that are accessible in the early game.\n\n*The Games necklace has low requirements and teleports the player to Wintertodt and other activities. \n*The Ring of dueling has low requirements and allows the player to quickly restore their stats and access a bank in the Ferox Enclave.\n*The Ardougne cloak 1 requires only the completion of the easy Ardougne Diary and provides unlimited teleports to the Ardougne Monastery. This offers quick access to an altar and is relatively close to a fairy ring, a bank, a spirit tree, and a ship that provides access to Brimhaven and Rimmington. \n*Charter ships are available from the start of the game, though they can be expensive. The price can be reduced by completing Cabin Fever and by wearing a ring of charos (a).\n*In the very early game players can buy a chronicle from Diango in Draynor village for 300 coins and fill it with charges for 150 coins each. A charge will teleport you to the Champions' Guild near Varrock.\n*The log canoe stations might be helpful before you can afford teleportation. Either way it can save you a lot of run energy going back and forth from Lumbridge to Varrock.\n*Other teleport methods with low-level ",
           subsections: [
             {
-              title: "Barrows Gloves as a team",
+              title: "Teleport spells",
               level: 4,
-              content: "Recipe for Disaster is a critical milestone for every Ironman. As a GIM team, the path to Barrows Gloves can be accelerated:\n\n* Split the subquest requirements across members. For example, one member trains Cooking while another handles the Fishing requirements.\n* Share food, potions, and gear for the boss fights. A member who has already completed a subquest can supply the next member with the exact items needed.\n* The desert subquest (Freeing Pirate Pete) requires 53 Cooking and 53 Fishing. Have the member who specializes in those skills help gather the supplies.\n* Pool quest reward experience lamps to push specific members past skill thresholds needed for subquests.\n\nThe goal is for the entire team to have Barrows Gloves as early as possible, since they are best-in-slot for all combat styles at that stage of the game.",
+              content: "Minigame teleport is a useful, versatile spell in the early game, although it has a 20 minute cool down and various other restrictions. Right at the start of the game it can be used to teleport to the Burthorpe Games Room, Castle Wars, and the Ferox Enclave. More destinations are unlocked by completing quests and/or levelling skills.\n\nEach magic spellbook has a number of useful teleport spells, all of which require law runes. For early-game Ironman accounts, the best source of law runes is to purchase them from shops. However, at 240+ coins per law rune, they are somewhat expensive.\n\nPaying to move your house, then casting Teleport to house can allow the player to reach otherwise remote locations such as Pollnivneach or Brimhaven.",
               subsections: [
               ],
             },
           ],
         },
         {
-          title: "Splitting early skilling activities",
+          title: "Obtaining useful items",
           level: 3,
-          content: "The three big early-game skilling activities (Wintertodt, Tempoross, and Guardians of the Rift) should be divided among members rather than having everyone grind all three.\n\n* Wintertodt: Assign one member to grind this early for Firemaking levels and supply crates. The crates provide seeds, ores, gems, herbs, and logs that can be distributed to the team. Having low hitpoints makes Wintertodt easier, so the assigned member should go before doing combat training.\n* Tempoross: Assign a second member to Tempoross for Fishing experience and supply rewards (raw fish, planks, uncut gems, unenchanted jewellery). These rewards benefit the whole group.\n* Guardians of the Rift: A third member can focus on Runecraft here for rune supplies and the Raiments of the Eye outfit. Runes are always in demand for the whole team.\n\nBy splitting these activities, the group gets all the benefits in roughly one-third of the total time compared to every member doing all three.",
+          content: "Without the Grand Exchange, obtaining obscure or high-level items can be difficult. Below is a list of ways to obtain some useful items that would otherwise be a headache, including ways to \"cheat\" some high skill requirements.\n*Players who wish to fight Wintertodt as soon as possible can obtain logs for early Firemaking training on the roof of Lumbridge Castle. Hop worlds to pick up a full inventory of logs, then light them using a tinderbox.\n*A 4-dose Agility potion for Tai Bwo Wannai Trio can be obtained without 34 Herblore by giving an irit to Dr Jekyll.\n*A 1-dose superantipoison can be found near the entrance to the Observatory Dungeon. Hop worlds to pick up multiple doses.\n*Antipoisons can be purchased from Jiminua's Jungle Store in Karamja.\n*Jewellery for enchanting can be obtained without high Crafting levels by stealing from H.A.M. Store rooms or as rewards from Tempoross.\n*A stamina potion can be obtained without 77 Herblore by giving a torstol to Dr Jekyll.\n*Magic logs can be obtained without 75 Woodcutting by catching Nature implings or as drops from Calvar'ion.\n*An amulet of glory can be obtained without 80 Crafting and 68 Magic by catching Dragon implings.\n*A rune axe can be bought from the Woodcutting Guild at 60 Woodcutting, or obtained as a drop from lava dragons in the Wilderness or tree spirits in the Enchanted Valley.\n*A rune scimitar can be obtained by catching Ninja implings or as a drop from Zamorak warriors or Fire giants.\n*A mith grapple can be obtained without 59 Smithing and Fletching by killing Barbarian spirits in the Ancient Cavern.\n*A yew bow for Temple of Ikov (note: this can be skipped by bringing Darts or Knives. See the Quest page for more info) can be obtained by completing medium clue scrolls or hard clue scrolls or as a very rare drop from a young impling.",
           subsections: [
           ],
         },
         {
-          title: "Early supply sharing",
+          title: "Moneymaking",
           level: 3,
-          content: "In the earliest hours of a GIM team, sharing basic supplies makes a big difference:\n\n* The first member to access a cake stall should steal enough cakes for the whole team's early questing food.\n* Share teleport jewellery (games necklaces, rings of dueling) so members without Magic levels can still get around.\n* Pool coins from early moneymaking methods so one member can buy runes, feathers, or other shop supplies in bulk.\n* The first member to obtain a rune axe or rune pickaxe can pass their old steel/mithril tools to others who are still on bronze.\n* Share grimy herbs with the designated Herblore specialist rather than cleaning and making potions individually.\n\nEstablish a group storage convention early. For example, herbs go in the chest; food and teleport items are traded directly.",
-          subsections: [
-          ],
-        },
-      ],
-    },
-    {
-      title: "Mid Game Coordination",
-      level: 2,
-      content: "Once the team has completed early quests, built up basic gear, and started training Slayer, the mid-game focus shifts to coordinated bossing and efficient resource sharing. This is where the GIM advantage over solo Ironman becomes most pronounced.",
-      subsections: [
-        {
-          title: "Group bossing advantages",
-          level: 3,
-          content: "GIM teams can fight bosses together, which is a massive advantage over solo Ironman play:\n\n* Group members can damage the same monster, meaning bosses die faster and supplies are used more efficiently per kill.\n* Tank-and-DPS strategies work well. One member in defensive gear takes aggro while others deal damage safely.\n* Bosses that are difficult or dangerous to solo (like Commander Zilyana or General Graardor) become much more accessible as a duo or trio.\n* All GIM members in the fight are eligible for the drop, which goes to whoever dealt the most damage. The recipient can then trade the item to the member who needs it most.\n\nGroup bossing also lets less experienced members learn boss mechanics in a safer environment, since they have teammates to carry them through early attempts.",
+          content: "Since Ironmen cannot trade, making money can be difficult. For example, a regular account could kill Zulrah, receive a tanzanite fang and then sell it to the Grand Exchange for , but an Ironman would only get 66,000 coins from its High Alchemy value.\n\nAt very low levels, players can sell items to shops. The General Store in West Ardougne buys items at 55% of their value instead of 40%. Martin Thwait's Lost and Found pays the full High Alchemy value. Once the player has the money to buy the nature runes and cast High Level Alchemy themselves, it is recommended to alch items instead, as it generates more profit and it can be done in \"zero time\".  \n\nAnother common moneymaking technique for early game ironmen is to make use of the thieving skill. Blackjacking and stealing valuables are two common methods used to obtain early money, requiring 45 and 50 thieving respectively. Blackjacking is generally more profitable and rewards more experience but also requires much more attention. Stealing valuables, while slightly less efficient, requires significantly less attention while still boasting good profit, experience and some passive prayer experience in the form of blessed bone statuettes.\n\nIn the mid-late game, money is typically made by casting High Level Alchemy on valuable items. If seeking maxium efficiency, players should alch during other activities which can be done on the normal spellbook, do not require a full inventory and have some downtime to cast the spell. Such activities include farm runs, bird house runs, questing, training Agility, training Hunter, and melee combat.\n\nFor players who are struggling to reach 55 Magic for High Alchemy and/or who have difficulty with blackjacking, completing the Agility Pyramid provides  per artefact sold to Simon Templeton. While this course becomes available at 30 Agility, it is  recommended that players train Agility to at least 60 and complete the Graceful outfit before attempting it, as Agility level and player weight aff",
           subsections: [
           ],
         },
         {
-          title: "Efficient drop distribution",
+          title: "Early skill training",
           level: 3,
-          content: "When a valuable drop is received, decide who gets it based on team need rather than individual desire:\n\n* The first Abyssal whip should go to the melee specialist or the member doing the most Slayer.\n* The first Trident of the seas goes to the mage specialist.\n* Barrows equipment should be distributed based on who is doing what content. Guthan's set goes to whoever is doing the most AFK melee training. Karil's goes to whoever needs the ranged upgrade most.\n* Zenyte shards from Demonic gorillas should be crafted into the most impactful jewellery first: a Tormented bracelet for the mage or an Anguish for the ranger, depending on team priorities.\n* Dragon warhammer should go to whoever is doing the most bossing, as it is used for special attack specs across all combat styles.\n\nKeep a running list of who needs what so that drops are allocated efficiently rather than hoarded by individuals.",
-          subsections: [
-          ],
-        },
-        {
-          title: "Coordinated diary completion",
-          level: 3,
-          content: "Achievement diaries provide powerful rewards, but not every member needs to complete every diary. Prioritize based on what rewards the team needs:\n\n* Morytania hard diary (50% more Barrows runes) should be completed by whoever is farming Barrows.\n* Kandarin hard diary (10% more marks of grace on Seers' course) benefits the member training Agility the most.\n* Falador hard diary (Mole locator) should be done by whoever is assigned to farm Giant Mole for bird nests.\n* Varrock medium/hard diary (battlestaff purchases) should be done by at least one member for consistent daily profit.\n* Western Provinces elite diary (unlimited Zulrah teleports) is essential for whoever is grinding Zulrah.\n\nSome diary rewards benefit the whole team indirectly. For example, the member with the Varrock diary can buy and alch daily battlestaves, then share the gold or buy supplies for the group.",
-          subsections: [
-          ],
-        },
-      ],
-    },
-    {
-      title: "Raids & Late Game",
-      level: 2,
-      content: "GIM teams have a natural advantage in raids because they have a built-in team with established roles and communication. Raids are among the most rewarding content in the game, and GIM groups can tackle them more efficiently than solo Ironmen who must find pickup groups.",
-      subsections: [
-        {
-          title: "Chambers of Xeric",
-          level: 3,
-          content: "Chambers of Xeric (CoX) scales to group size, and a coordinated GIM team can complete it efficiently:\n\n* Assign roles before entering: who scouts, who preps potions, who tanks Olm's melee hand.\n* A team of 3 or more GIM members can perform the standard \"4:1\" Olm method more easily than a solo player.\n* Share overload and prayer enhance potions within the raid. The Herblore specialist should be responsible for prepping supplies during the raid.\n* Uniques like the Dragon hunter crossbow, Dragon claws, and Ancestral robes should be distributed based on team need (see below).\n\nCoX is the most accessible raid for mid-level teams. Groups can start with entry-mode to learn mechanics before pushing for regular completions.",
+          content: "Completing quests is the most efficient way for Ironmen to level skills in the early-game. This saves time by avoiding very slow training methods. For example, instead of killing chickens with a bronze dagger, the player can complete Waterfall Quest and The Feud to be able to start training with an adamant scimitar before even touching a monster. Because many quest bosses can be easily safespotted, a player can make very quick early-game progress by completing quests.\n\nWhen skilling, Ironmen benefit from considering the full range of uses for the supplies and resources produced. For example, one popular Mining training method is to mine iron ore. For the highest rate of Mining experience per hour, some players drop the ore after mining it. However that ore can be smelted with coal in the Blast Furnace to produce steel bars and Smithing experience. The bars could then be smithed into many useful things, such as dart tips for Ranged training, nails for Construction, cannonballs for Slayer, or platebodies to be sold or alchemised. Because Ironmen can't simply purchase skilling supplies through trading, much skilling will follow a similar progression.",
           subsections: [
             {
-              title: "CoX unique distribution",
+              title: "Multi-skill methods",
               level: 4,
-              content: "When a unique drop hits the team, distribute based on long-term value:\n\n* Twisted bow goes to the ranged specialist first. This is the single biggest upgrade in the game and should be used by whoever is doing the most bossing.\n* Dragon hunter crossbow goes to whoever is farming Vorkath or dragons. If no one is, hold it in group storage.\n* Ancestral robes go to the mage specialist.\n* Dragon claws go to whoever is doing PvM content where the special attack is most useful (Chambers of Xeric itself, Theatre of Blood).\n* Dexterous prayer scroll and Arcane prayer scroll should be used by whichever member benefits most from Rigour or Augury immediately.\n\nOnce the first recipient has moved on to better gear or the team has obtained duplicates, items rotate to the next member who needs them.",
+              content: "",
+              subsections: [
+              ],
+            },
+            {
+              title: "=Wintertodt=",
+              level: 4,
+              content: "Subduing Wintertodt has very few requirements, and offers decent starting cash and skilling supplies for low-level Ironmen. While players will miss out on most of the better loot with low stats, the rewards benefit much more at lower levels. Getting at least level 60 Woodcutting (achieved at around level 88–90 Firemaking) is recommended for access to the Woodcutting Guild, where players can buy axes up to rune. This way, players do not have to waste time killing monsters for an axe upgrade from steel. Experience gained here scales with the player level in each corresponding skill. It is recommended to both unlock and raise skill levels such as Construction prior to spending an extended amount of time there, as this can dramatically increase total experience gained.",
+              subsections: [
+              ],
+            },
+            {
+              title: "= Barbarian Fishing =",
+              level: 4,
+              content: "In addition to Fishing experience, Barbarian Fishing gives small amounts of passive Agility and Strength experience. If done early, it allows players to bypass a significant amount of Agility and Melee training if done for a long period of time. However, this does take a long time and may become too boring for many players.\n\nTraining from 58 to 99 costs a few hundred thousand gold to buy all the necessary feathers for bait. This can be compensated by cutting the fish with a knife, which often provides fish offcuts that work as bait and nets a small amount of Cooking experience.\n\nPlayers will get around level 74 in Agility and Strength if training Fishing from level 58 to 99. However, if players do not wish to train Fishing for a long period of time, there are a few good stopping points:\n\n*Level 74 Fishing for level 50 Agility and Strength.\n**Level 50 Agility is required for the Rogues' Den minigame for the rogue equipment, and is also a reasonable level for doing Agility Pyramid.\n*Level 84 Fishing for level 60 Agility and Strength.\n**This allows access to the Seers' Village Rooftop Course, which is a significantly better option compared to the lower-level courses.\n*Level 91 Fishing for around level 67–68 Agility and Strength.\n**At level 91 Fishing, players can +5 boost for the Morytania Diary elite task requirement.\n*Level 94 Fishing for level 70 Agility and Strength.\n**Allows access to the Pollnivneach Rooftop Course.\n**Unlocks most of the useful shortcuts (such as the one to blue dragons in Taverley Dungeon).\n**Level 70 Strength unlocks the Warriors' Guild as soon as the player reaches level 60 Attack.\n\nAfter finishing Barbarian Fishing, it is recommended to train Agility on the Rooftop Courses and get the graceful outfit for questing. Having a high Agility level combined with the graceful outfit ends up saving a lot of time, as players have very limited access to run energy restoration.",
+              subsections: [
+              ],
+            },
+            {
+              title: "=Tempoross=",
+              level: 4,
+              content: "Tempoross is another fishing option beginning at Level 35. In many cases Tempoross is preferred to barbarian fishing due to the consistent rewards to include unenchanted jewellery, multiple types of fish scaling with your Fishing level, rune items, certain rares, planks, and uncut gems to include dragonstone which will come in handy later. Utilizing this method one can expect to also gain passive Cooking, Strength and Construction experience if cooking the harpoonfish, using bare-handed fishing and fixing totems and masts as they break.",
               subsections: [
               ],
             },
           ],
         },
         {
-          title: "Theatre of Blood",
+          title: "Questing",
           level: 3,
-          content: "Theatre of Blood (ToB) is significantly easier as a team than solo and is well-suited to GIM groups:\n\n* A standard team of 4-5 GIM members matches the intended group size for ToB.\n* Assign roles for each room: who is the mage at Nylocas, who is the tank at Verzik, who handles Maiden's blood spawns.\n* ToB requires higher gear levels than CoX. The team should be equipped with at least Barrows-tier gear, Whip/Trident, and Toxic blowpipe before attempting.\n* The Scythe of Vitur should go to whoever does the most melee PvM, as it is the best melee weapon in the game but expensive to charge.\n* Justiciar armour pieces go to the designated tank.\n* Avernic defender hilt goes to the melee specialist.\n\nToB has a steep learning curve. Use story mode to learn mechanics before attempting regular completions. Having a consistent GIM team that learns together is far more effective than joining random groups.",
-          subsections: [
-          ],
-        },
-        {
-          title: "Tombs of Amascut",
-          level: 3,
-          content: "Tombs of Amascut (ToA) is the most flexible raid and arguably the best starting point for GIM groups new to raiding:\n\n* Invocation levels can be adjusted freely, allowing the team to start at 0 invocations and gradually increase difficulty.\n* Supplies are provided within the raid at lower invocation levels, reducing the need for outside preparation.\n* Team sizes of 1-8 are supported, so the whole GIM group can participate regardless of size.\n* Fang of Osmumten (melee weapon) should go to whoever is doing the most bossing. It is effective nearly everywhere.\n* Lightbearer ring is universally useful and should go to whoever is doing the most special-attack-heavy content.\n* Masori armour goes to the ranged specialist.\n* Tumeken's shadow goes to the mage specialist and is transformative for magic-based PvM.\n\nToA is the most rewarding raid at higher invocation levels (300+), but the team should master lower levels first. The modular difficulty system makes it excellent for gradual progression.",
-          subsections: [
-          ],
-        },
-        {
-          title: "Gear rotation strategy",
-          level: 3,
-          content: "In the late game, GIM teams should implement a gear rotation strategy rather than having one member hoard all the best items:\n\n* Track who is actively using which piece of gear. If the Twisted bow holder is not currently doing ranged PvM, pass it to someone who is.\n* Maintain a shared spreadsheet or list of who has what major item.\n* When a duplicate unique is obtained, the original holder keeps one and the duplicate goes to the next member in the rotation.\n* Set target completions for each member. For example, one member uses the Twisted bow for 500 Zulrah kills, then passes it to the next member.\n* Items that are universally useful (Dragon warhammer, Bandos godsword) should be stored in group storage when not actively in use, so any member can grab them for a bossing trip.\n\nThe end goal is for every member to eventually have their own set of end-game gear, but in the interim, sharing one copy efficiently across the team accelerates overall progression.",
+          content: "For an efficient guide to Ironman questing, see the Optimal Quest Guide / Ironman.\n\nMany low- and mid-level quests award access to new areas, skilling methods, or items that are of great importance to Ironmen. Some of the most important unlocks are noted below.\n\n*Bone Voyage unlocks Fossil Island, which also unlocks bird house trapping for Hunter training, ultracompost for farm runs, and yields some tree seeds for Farming experience. Furthermore, Ammonite Crabs are an efficient low-level combat training method.\n* Lost City unlocks access to Zanaris, which also unlocks fairy rings (after Fairytale I - Growing Pains), the dragon dagger, Chaeldar the Slayer master, and the Cosmic Altar.\n*In Aid of the Myreque unlocks Temple Trekking, an effective source of multiple skilling resources. Temple Trekking is more efficient after finishing Darkness of Hallowvale.\n*Some quests give cheap God Wars Dungeon protection. Horror from the Deep gives access to all god books with the Book of War being one of the easiest for Bandos alongside the Ancient Mace from Another Slice of HAM. If you side with the Guardians of Armadyl during the Temple of Ikov quest then you receive the Armadyl pendant. Zamorak robes are always dropped by disciples of Iban during the Underground Pass quest. The disciples leave after you complete the quest so stock up while you can. Monks of Zamorak still have a 1/20 drop rate chance with a good spot near the altar north of Castle Wars near the red salamander hunting spot.",
           subsections: [
           ],
         },
       ],
     },
     {
-      title: "Group Management",
+      title: "Mid-game",
       level: 2,
-      content: "The social and organizational aspects of running a GIM team are just as important as the in-game strategy. Many GIM teams fall apart not because of the game's difficulty but because of coordination failures, inactive members, or misaligned goals.",
+      content: "There is no universal consensus on when an Ironman account transitions from early-game to mid-game — some players use milestones like completing Recipe for Disaster, while others focus on broader progression. In general, an account is considered mid-game once it has addressed basic concerns such as transportation, money-making, and gathering equipment and supplies for efficient combat training.",
       subsections: [
         {
-          title: "Handling inactive members",
+          title: "Slayer training",
           level: 3,
-          content: "Player inactivity is the most common reason GIM teams struggle. When a member stops playing:\n\n* Redistribute their assigned roles and responsibilities to active members.\n* Retrieve any shared gear they are holding via trade if they log in, or wait for them to return.\n* If a member is permanently inactive, the group leader can kick them from the group. However, this has consequences for group prestige.\n* Consider recruiting a replacement member. New members can join an existing GIM group, but the group loses its prestige rating.\n* Plan for potential inactivity from the start by avoiding over-reliance on a single member for critical supplies.\n\nThe best defence against inactivity is choosing teammates you know well and who have compatible play schedules and commitment levels.",
+          content: "In Ironman mode, the core of the mid-game stage of account progression is training Slayer. Slayer training provides a wealth of benefits to Ironmen, including combat experience, gold, skilling supplies, and equipment upgrades. Many critical weapon upgrades, such as the abyssal whip and trident of the seas, are accessed by levelling Slayer. See the Slayer guide for more information.\n\nThe highest Slayer level to unlock an equipment upgrade is 95, for the alchemical hydra, which drops components for the dragon hunter lance and ferocious gloves.",
           subsections: [
           ],
         },
         {
-          title: "Leaving and joining groups",
+          title: "Slayer skip/PvM rush",
           level: 3,
-          content: "GIM group membership changes are possible but come with significant penalties:\n\n* Leaving a group: A member who leaves a GIM group becomes a regular Ironman (not a standard account). They keep all their items and stats but lose access to group storage and can no longer trade with former teammates.\n* Joining an existing group: New members can be invited to fill empty slots. However, adding a new member causes the group to lose its prestige status permanently.\n* Prestige: A GIM group has prestige if all original members remain. Prestige is displayed on the hiscores and is a mark of team integrity. Once lost, prestige cannot be regained.\n* Hardcore status: If a HCGIM member leaves, the group does not gain back the life slot. The remaining lives stay the same.\n* Cooldowns: There is a 7-day cooldown after a member leaves before a new member can be invited.\n\nBecause of the prestige system, teams should think carefully before making roster changes. Losing prestige is permanent and some players consider it a meaningful loss.",
+          content: "Alternatively, players may opt to skip the mid game slayer grind in favour of a more PvM focused progression.",
           subsections: [
           ],
         },
         {
-          title: "Communication and planning",
+          title: "Barrows",
           level: 3,
-          content: "Effective communication is critical for GIM teams:\n\n* Use Discord or a similar voice/text platform for coordinating outside the game. In-game chat is insufficient for planning.\n* Maintain a shared document (spreadsheet, shared note, or Discord channel) tracking each member's current goals, gear, and assigned responsibilities.\n* Schedule regular group bossing sessions so that all members can participate in raids and boss trips.\n* Use the in-game group chat for quick coordination during play sessions.\n* Set short-term and long-term goals as a team. For example: \"This week we all get Barrows Gloves\" or \"This month we start learning CoX.\"\n\nClear communication prevents the most common GIM frustrations: duplicated effort, gear disputes, and feeling like the team is not progressing.",
+          content: "The Barrows minigame may be worthwhile to play in order to earn Barrows equipment. In particular, Dharok's set and Guthan's set are useful for combat training and some PvM activities. Karil's armour and Ahrim's robes have high offensive and defensive stats. Karil's crossbow offers higher damage per second than the rune crossbow or crystal bow, bridging the gap between those weapons and the toxic blowpipe.\n\nNote that it may take hundreds of Barrows completions to finish a single set, or obtain the specific desired pieces.\n\nAccess to Barrows Teleport will significantly increase the efficiency of Barrows runs. At 78 Magic, Barrows Teleport can be added to a portal chamber in the player-owned house while boosting with a red spicy stew.\n\nAdditionally, completion of the hard Morytania Diary is recommended to get 50% more runes from the Barrows chests, and for a teleport to Burgh de Rott, if Barrows Teleport hasn't been unlocked.\n\nFinally, completing the medium tier Combat Achievements significantly eases the difficulty of the minigame as equipping the rewarded Ghommal's hilt 2 prevents the Barrows prayer drain effects.",
           subsections: [
           ],
         },
         {
-          title: "Different play schedules",
+          title: "Moons of Peril",
           level: 3,
-          content: "GIM teams rarely have all members online at the same time, especially if members are in different time zones or have different real-life commitments. Strategies to handle this:\n\n* Assign solo-friendly tasks to members who play at off-hours. Skilling, Slayer, and solo bossing can all be done independently.\n* Reserve group content (raids, group bossing, gear distribution) for times when most members are online.\n* Use group storage as an asynchronous trading mechanism. A gatherer can deposit materials during their session, and the artisan can process them during theirs.\n* Avoid gating team progress on any single member's availability. If the Herblore specialist is unavailable, others should be able to progress independently.\n* Keep a log of what was deposited into group storage and by whom, so members who play at different times stay informed.\n\nThe group storage chest and the ability to trade items make GIM uniquely suited to asynchronous play. Take advantage of this rather than insisting everyone plays at the same time.",
+          content: "After completion of the Perilous Moons quest, players gain access to the Moons of Peril. Moon equipment, such as the blood moon armour is sought after as alternative strength equipment to Bandos armour, while the eclipse moon armour with the eclipse atlatl is a powerful ranged setup. Players do not have to bring their own supplies, as the encounter provides its own prayer and combat potions, and the Lunar Chest rewards helpful common loot such as herbs, seeds, and crafting supplies.\n\nIt is beneficial to acquire a tank set of Barrows armour, a good shield, a strong slash and crush weapon, such as a zombie axe, and Piety to assist with the bosses.",
           subsections: [
           ],
         },
         {
-          title: "Setting group goals",
+          title: "Midgame Bossing",
           level: 3,
-          content: "Teams that set and track goals together tend to stay motivated longer:\n\n* Break progression into phases: early game (questing, base 50 stats), mid game (Slayer, Barrows, diaries), late game (raids, boss logs).\n* Set both individual milestones (\"Everyone gets a Fire Cape\") and team milestones (\"First CoX completion\").\n* Celebrate group achievements. Getting the team's first Twisted bow or completing a boss collection log together keeps morale high.\n* Be flexible. If a member discovers they enjoy a different aspect of the game, adjust roles and goals accordingly.\n* Revisit goals periodically. What seemed important early on may be less relevant as the team progresses.\n\nThe most successful GIM teams are those where members genuinely enjoy playing together and view the group's success as their own. The shared journey is the point.",
+          content: "Scurrius offers an opportunity to practice high-level mechanics with a less punishing boss, boasting competitive combat xp rates as a reward.\n\nSarachnis can be tackled with a mid-game crush weapon such as Dragon mace, Leaf-bladed battleaxe or Zombie Axe.\n\nGiant Mole is time-consuming to kill before completing the Hard Falador Diary, but afterwards can be farmed consistently for nests.\n\nFor non-hardcore and non-ultimate irons willing to risk being PK'd, wilderness bossing is an option. Certain wilderness bosses like Crazy archaeologist and Calvar'ion have a low barrier to entry, even when bringing only three valuable items in case you are killed by PKers.\n\nThe journey to access Dagannoth Kings can be challenging for players attempting it for the first time. With some preparation however, mid-level players can reliably set up a safespot for Rex in order to obtain the Berserker ring for melee training.\n\nMidgame irons who have completed Beneath Cursed Sands can start attempting Tombs of Amascut at low invocation settings, especially when guided by more experienced players. Irons receive rewards normally from raids, unlike other group combat encounters.",
           subsections: [
           ],
         },
+      ],
+    },
+    {
+      title: "Approaching late-game",
+      level: 2,
+      content: "Approaching the late-game stage of account progression, irons can tackle the game's greatest challenges, including bossing and raids.",
+      subsections: [
+        {
+          title: "Quest point cape",
+          level: 3,
+          content: "The quest point cape, earned by completing all quests, is desirable due to its unlimited teleport to the Legends' Guild and a fairy ring. Note that Desert Treasure II can pose a considerable challenge to players unaccustomed to bossing. However, The Forgotten Four are designed so that their early phases teach players what to expect in later phases, and detailed guides exist to walk players through the difficulty curve.",
+          subsections: [
+          ],
+        },
+        {
+          title: "Bossing",
+          level: 3,
+          content: "Desert Treasure II will give players a solid foundation for endgame bossing mechanics. After completing this quest, players who have not done so may choose to unlock Boss slayer and pursue the medium and hard combat achievements. These will give the opportunity to learn the specifics of individual endgame bosses.\n\nPhantom Muspah can be lucrative and gates equipment upgrades in the form of the ancient sceptre and eventually the venator bow. After gaining access to anti-venom, Vorkath and Zulrah become much more accessible and provide considerable upgrades such as Ava's assembler and the toxic blowpipe.\n\nIrons can attempt God Wars Dungeon bosses for their useful unique drops, however soloing these bosses is more challenging.  Damage from General Graardor, Zilyana, and K'ril Tsutsaroth can be mitigated or avoided using advanced methods.",
+          subsections: [
+          ],
+        },
+        {
+          title: "The Gauntlet",
+          level: 3,
+          content: "For a detailed dive, see the strategy article.\n\nMany irons commit to mastering The Corrupted Gauntlet for end-game crystal equipment. For players who have never attempted it before, getting a single completion of the standard Gauntlet alone poses a steep learning curve, and its corrupted counterpart is even more punishing. Jumping into it blind is unlikely to succeed. However, attempting this challenge requires no resources, allowing players to get comfortable with different elements of the Gauntlet at no cost.\n\nFor the purposes of getting familiar with the challenge and its mechanics, players new to the Gauntlet can attempt to make stronger armour so as to adjust the difficulty of the fight. Wearing a full set of tier 2 or tier 3 armour lowers Hunllef's max hit considerably. The standard Gauntlet gives players a bit more time to prepare, making it more realistic to gather higher tier armour and weapons as well as more food and potions. If the current layout makes this difficult, players can leave and reset the challenge at zero cost.\n\nThe fight itself consists of multiple mechanics, namely the following: prayer switching, weapon switching, moving off the glowing floors, and dodging tornadoes. Popular guides and plugins exist to make learning considerably easier, such as calling the overhead prayers or visualizing the true tile when running. \n\nPlayers who have completed the standard Gauntlet a few times, but have yet to succeed at the corrupted version, may choose to complete the standard gauntlet with lower tier armour or within time constraints, as outlined in the combat achievements. Players may choose to pursue some of the elite or master-level achievements for the Crystalline Hunllef in order to ramp up the challenge.\n\nWhile extremely punishing, the Corrupted Gauntlet is a much more efficient way to obtain crystal equipment. Nonetheless, the standard Gauntlet can serve as a free training ground as well as a source of alchable drops and crystal shards.",
+          subsections: [
+          ],
+        },
+        {
+          title: "Raids",
+          level: 3,
+          content: "Players can group up with other raiders on dedicated worlds, chat-channels, or searching online. Tombs of Amascut serves as the most accessible raid due to its modifiable difficulty settings. Chambers of Xeric scales with the highest level player in the raid, but the mechanics have a manageable difficulty curve with similarly levelled players and proper communication. Once they've dipped their toes in the water, players can consider the challenging but rewarding Theatre of Blood.",
+          subsections: [
+          ],
+        },
+        {
+          title: "Maxing",
+          level: 3,
+          content: "If desired, this is also the time to earn the max cape by levelling all skills to 99 or Achievement diary cape.",
+          subsections: [
+          ],
+        },
+      ],
+    },
+    {
+      title: "Managing Miscellania",
+      level: 2,
+      content: "After completion of Throne of Miscellania, Managing Miscellania is an excellent way to passively get various resources for skill training, including food. However, players will need a relatively large amount of capital before investing into the kingdom, so it is recommended that one have a safe amount of coins and/or a consistent money-making method.\n\nPlayers usually opt for either herbs or hardwood log production, generally teak logs for mythical cape racks or mixed hardwood as an option as it's more productive than switching between both hardwood options manually. Mahogany logs can be a good option if you find yourself with an excess of coins for construction training. You can also use mahogany logs from kingdom for birdhouse runs, if you do not have better logs from other sources. \n\nMake sure that the maximum amount is withdrawn every day by having at least 500,000 coins or 750,000 coins after Royal Trouble in the coffers each day for maximum amount of rewards collectible.\n\nThe maximum amount withdrawn from the coffers each day is 75,000 coins after completion of Royal Trouble, making upkeep past the initial investment relatively easy for even low level Ironmen.",
+      subsections: [
+      ],
+    },
+    {
+      title: "Skill training",
+      level: 2,
+      content: "{| class=\"wikitable align-center-1\"\n|+\n! colspan=\"2\" |Skill\n|-\n|\n|Agility\n|-\n|\n|Construction\n|-\n|\n|Cooking\n|-\n|\n|Crafting\n|-\n|\n|Farming\n|-\n|\n|Firemaking\n|-\n|\n|Fishing\n|-\n|\n|Fletching\n|-\n|\n|Herblore\n|-\n|\n|Hunter\n|-\n|\n|Magic\n|-\n|\n|Melee\n|-\n|\n|Mining\n|-\n|\n|Prayer\n|-\n|\n|Ranged\n|-\n|\n|Runecraft\n|-\n|\n|Sailing\n|-\n|\n|Smithing\n|-\n|\n|Slayer\n|-\n|\n|Thieving\n|-\n|\n|Woodcutting\n|}\n\nCategory:Ironman Mode\nCategory:Training guides",
+      subsections: [
       ],
     },
   ],

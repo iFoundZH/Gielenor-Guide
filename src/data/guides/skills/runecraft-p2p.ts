@@ -16,7 +16,7 @@ export const runecraftP2pGuide: SkillTrainingGuide = {
       name: "Making talisman tiaras",
       levelRange: [1, 50],
       xpPerHour: null,
-      description: "{{Equipment |align = right |buttons = No",
+      description: "",
       members: true,
     },
     {
@@ -30,7 +30,7 @@ export const runecraftP2pGuide: SkillTrainingGuide = {
       name: "Guardians of the Rift",
       levelRange: [27, 99],
       xpPerHour: null,
-      description: "{{Inventory|align = right |Giant pouch |Large pouch |Chisel |Rune pouch",
+      description: "",
       members: true,
     },
     {
@@ -107,7 +107,7 @@ export const runecraftP2pGuide: SkillTrainingGuide = {
       name: "Double astral runes",
       levelRange: [82, 99],
       xpPerHour: null,
-      description: "{{Equipment |align = right |head = Hat of the eye",
+      description: "",
       members: true,
     },
     {
@@ -163,7 +163,7 @@ export const runecraftP2pGuide: SkillTrainingGuide = {
       name: "Wrath runes",
       levelRange: [95, 99],
       xpPerHour: null,
-      description: "{{Equipment |align = right |head = Hat of the eye",
+      description: "",
       members: true,
     },
   ],

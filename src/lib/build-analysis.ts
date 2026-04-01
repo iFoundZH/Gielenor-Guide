@@ -209,17 +209,23 @@ export function analyzeBuild(build: LeagueBuild, league: LeagueData): BuildAnaly
   const allRelics = league.relicTiers.flatMap((t) => t.relics);
   const selectedRelics = allRelics.filter((r) => build.relics.includes(r.id));
   const selectedPacts = league.pacts.filter((p) => build.pacts.includes(p.id));
+  const masteryStyleCount = new Set(
+    build.pacts
+      .filter((id) => id.startsWith("re-mastery-"))
+      .map((id) => { const parts = id.split("-"); parts.pop(); return parts.join("-"); })
+  ).size;
+  const hasMasteries = masteryStyleCount > 0;
 
   return {
     missedContent: analyzeMissedContent(build, league, accessibleRegionIds),
-    buildBalance: analyzeBuildBalance(selectedRelics, selectedPacts),
-    synergies: findActiveSynergies(selectedRelics, selectedPacts),
-    missedSynergies: findMissedSynergies(selectedRelics, selectedPacts, allRelics, league.pacts),
+    buildBalance: analyzeBuildBalance(selectedRelics, selectedPacts, hasMasteries),
+    synergies: findActiveSynergies(selectedRelics, selectedPacts, hasMasteries),
+    missedSynergies: findMissedSynergies(selectedRelics, selectedPacts, allRelics, league.pacts, hasMasteries),
     multiplierTimeline: getMultiplierTimeline(league),
     taskAccess: analyzeTaskAccessibility(build, league, accessibleRegionIds),
-    warnings: generateWarnings(build, league, selectedRelics, selectedPacts, accessibleRegionIds),
+    warnings: generateWarnings(build, league, selectedRelics, selectedPacts, accessibleRegionIds, hasMasteries),
     pactTradeoffs: analyzePactTradeoffs(selectedPacts),
-    archetype: classifyArchetype(selectedRelics, selectedPacts, build),
+    archetype: classifyArchetype(selectedRelics, selectedPacts, build, hasMasteries, masteryStyleCount),
     bossAccess: analyzeBossAccess(accessibleRegionIds),
   };
 }
@@ -259,7 +265,7 @@ function analyzeMissedContent(
 
 // ─── Build Balance ──────────────────────────────────────────────────────
 
-function analyzeBuildBalance(relics: Relic[], pacts: Pact[]): BuildBalance {
+function analyzeBuildBalance(relics: Relic[], pacts: Pact[], hasMasteries = false): BuildBalance {
   const scores = { combat: 0, gathering: 0, production: 0, utility: 0, slayer: 0 };
 
   for (const relic of relics) {
@@ -278,6 +284,7 @@ function analyzeBuildBalance(relics: Relic[], pacts: Pact[]): BuildBalance {
   for (const pact of pacts) {
     if (pact.category === "combat") scores.combat += 20;
   }
+  if (hasMasteries) scores.combat += 20;
 
   // Normalize to 0-100
   const maxVal = Math.max(scores.combat, scores.gathering, scores.production, scores.utility, scores.slayer, 1);
@@ -317,10 +324,11 @@ function analyzeBuildBalance(relics: Relic[], pacts: Pact[]): BuildBalance {
 
 // ─── Synergies ──────────────────────────────────────────────────────────
 
-function findActiveSynergies(relics: Relic[], pacts: Pact[]): Synergy[] {
+function findActiveSynergies(relics: Relic[], pacts: Pact[], hasMasteries = false): Synergy[] {
   const synergies: Synergy[] = [];
   const relicIds = new Set(relics.map((r) => r.id));
   const pactIds = new Set(pacts.map((p) => p.id));
+  const hasCombatPower = pacts.some((p) => p.category === "combat") || hasMasteries;
 
   // DP synergies
   if (relicIds.has("relic-t1-1") && relicIds.has("relic-t2-1")) {
@@ -413,20 +421,20 @@ function findActiveSynergies(relics: Relic[], pacts: Pact[]): Synergy[] {
       components: ["Animal Wrangler", "Slayer Master"],
     });
   }
-  if (relicIds.has("re-t8-1") && pacts.some((p) => p.category === "combat")) {
+  if (relicIds.has("re-t8-1") && hasCombatPower) {
     synergies.push({
       name: "Special Attack Engine",
       description: "Specialist's 20% spec cost + energy on kills/misses pairs with combat mastery damage boosts. Infinite special attacks with increasing power.",
       strength: "strong",
-      components: ["Specialist", ...pacts.filter((p) => p.category === "combat").map((p) => p.name)],
+      components: ["Specialist", "Combat Mastery"],
     });
   }
-  if (relicIds.has("re-t8-2") && pacts.some((p) => p.category === "combat")) {
+  if (relicIds.has("re-t8-2") && hasCombatPower) {
     synergies.push({
       name: "Guardian Force",
       description: "Guardian thrall fights alongside you with adaptive combat style + AoE. Combat mastery stacks boost both your and the Guardian's effectiveness.",
       strength: "strong",
-      components: ["Guardian", ...pacts.filter((p) => p.category === "combat").map((p) => p.name)],
+      components: ["Guardian", "Combat Mastery"],
     });
   }
   if (relicIds.has("re-t8-3") && relicIds.has("re-t8-1")) {
@@ -481,10 +489,12 @@ function findMissedSynergies(
   selectedPacts: Pact[],
   allRelics: Relic[],
   allPacts: Pact[],
+  hasMasteries = false,
 ): Synergy[] {
   const missed: Synergy[] = [];
   const relicIds = new Set(selectedRelics.map((r) => r.id));
   const pactIds = new Set(selectedPacts.map((p) => p.id));
+  const hasCombatPower = selectedPacts.some((p) => p.category === "combat") || hasMasteries;
 
   // DP missed synergies
   if (relicIds.has("relic-t1-1") && !relicIds.has("relic-t2-1")) {
@@ -537,7 +547,7 @@ function findMissedSynergies(
       components: ["Clue Compass", "Treasure Arbiter (not selected)"],
     });
   }
-  if (relicIds.has("re-t8-1") && !selectedPacts.some((p) => p.category === "combat")) {
+  if (relicIds.has("re-t8-1") && !hasCombatPower) {
     missed.push({
       name: "Special Attack Engine",
       description: "Specialist gives cheap spec attacks with energy on kills. Add a combat mastery to amplify your damage per hit.",
@@ -631,6 +641,7 @@ function generateWarnings(
   relics: Relic[],
   pacts: Pact[],
   accessible: Set<string>,
+  hasMasteries = false,
 ): Warning[] {
   const warnings: Warning[] = [];
   const pactIds = new Set(pacts.map((p) => p.id));
@@ -701,7 +712,7 @@ function generateWarnings(
   }
 
   // Endgame boss tips
-  if (accessible.has("karamja") && pacts.some((p) => p.category === "combat")) {
+  if (accessible.has("karamja") && (pacts.some((p) => p.category === "combat") || hasMasteries)) {
     warnings.push({
       severity: "tip",
       message: "Karamja + combat pacts = Inferno access. This is the highest-prestige task in the league.",
@@ -728,7 +739,13 @@ function generateWarnings(
       message: "Reloaded lets you pick a second relic from a previous tier. Choose the tier that synergizes best with your other selections.",
     });
   }
-  if (pacts.filter((p) => p.id.startsWith("re-mastery-")).length >= 2) {
+  // Count distinct mastery styles from build.pacts (tier IDs like "re-mastery-melee-1")
+  const masteryStyles = new Set(
+    build.pacts
+      .filter((id) => id.startsWith("re-mastery-"))
+      .map((id) => { const parts = id.split("-"); parts.pop(); return parts.join("-"); })
+  );
+  if (masteryStyles.size >= 2) {
     warnings.push({
       severity: "tip",
       message: "Multiple masteries active. You only have 10 mastery points total — spreading across styles means fewer high-tier unlocks per style.",
@@ -743,7 +760,7 @@ function generateWarnings(
       message: "Specialist + Grimoire: cheap spec attacks + all prayers and spells unlocked. You can use any special attack with any prayer book.",
     });
   }
-  if (relicIds.has("re-t5-3") && !relics.some((r) => RELIC_TAGS[r.id]?.includes("combat"))) {
+  if (relicIds.has("re-t5-3") && !relics.some((r) => RELIC_TAGS[r.id]?.includes("combat")) && !hasMasteries) {
     warnings.push({
       severity: "caution",
       message: "Slayer Master makes you always on-task but you have no combat relics. You'll struggle to kill efficiently.",
@@ -772,10 +789,10 @@ function analyzePactTradeoffs(pacts: Pact[]): PactTradeoff[] {
 
 // ─── Archetype Classification ───────────────────────────────────────────
 
-function classifyArchetype(relics: Relic[], pacts: Pact[], build: LeagueBuild): BuildArchetype {
+function classifyArchetype(relics: Relic[], pacts: Pact[], build: LeagueBuild, hasMasteries = false, masteryStyleCount = 0): BuildArchetype {
   const relicIds = new Set(relics.map((r) => r.id));
   const pactIds = new Set(pacts.map((p) => p.id));
-  const combatPacts = pacts.filter((p) => p.category === "combat").length;
+  const combatPacts = pacts.filter((p) => p.category === "combat").length + masteryStyleCount;
 
   if (relics.length === 0 && pacts.length === 0) {
     return { name: "Undecided", description: "Make some selections to see your build archetype.", icon: "🤔" };

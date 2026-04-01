@@ -9,7 +9,14 @@ export const firemakingP2pGuide: SkillTrainingGuide = {
       name: "Creating pyre logs",
       levelRange: [1, 30],
       xpPerHour: null,
-      description: "{{Inventory|align=right |Sacred oil |Sacred oil |Sacred oil |Sacred oil |Sacred oil |Sacred oil |Sacred oil |Sacred oil",
+      description: "",
+      members: true,
+    },
+    {
+      name: "99: Burning logs",
+      levelRange: [1, 30],
+      xpPerHour: null,
+      description: "",
       members: true,
     },
     {

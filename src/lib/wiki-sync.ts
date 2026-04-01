@@ -24,6 +24,7 @@ import {
   WIKI_HEADERS,
   REQUEST_DELAY_MS,
   fetchWikitext,
+  fetchBulkWikitext,
   fetchSections,
   fetchWikitextSection,
   sleep,
@@ -129,6 +130,26 @@ interface ParsedRegion {
 interface ParsedRewardTier {
   name: string;
   pointsRequired: number;
+  cosmetics: { name: string; type: string }[];
+}
+
+interface ParsedMasteryTier {
+  tier: number;
+  effect: string;
+}
+
+interface ParsedCombatMastery {
+  id: string;
+  name: string;
+  style: "melee" | "ranged" | "magic";
+  tiers: ParsedMasteryTier[];
+}
+
+interface ParsedMasterySystem {
+  maxPoints: number;
+  pointSources: string[];
+  universalPassives: string[];
+  styles: ParsedCombatMastery[];
 }
 
 interface ParsedLeagueData {
@@ -143,6 +164,7 @@ interface ParsedLeagueData {
   maxRegions: number;
   regions: ParsedRegion[];
   relicTiers: ParsedRelicTier[];
+  masteries?: ParsedMasterySystem;
   tasks: ParsedTask[];
   rewardTiers: ParsedRewardTier[];
   mechanicChanges: string[];
@@ -291,10 +313,13 @@ function parseRelicTable(section: string, tier: number, relicIdPrefix = "relic")
     if (effectBullets) {
       for (const bullet of effectBullets) {
         const trimmed = bullet.trim();
-        // Top-level effects only (single *)
-        if (/^\*[^*]/.test(trimmed)) {
-          const text = stripWikiMarkup(trimmed.replace(/^\*\s*/, ""));
-          if (text) effectLines.push(text);
+        // Include both top-level (*) and sub-bullet (**) effects
+        if (/^\*+\s/.test(trimmed) || /^\*+[^*\s]/.test(trimmed)) {
+          const isSubBullet = /^\*\*/.test(trimmed);
+          const text = stripWikiMarkup(trimmed.replace(/^\*+\s*/, ""));
+          if (text) {
+            effectLines.push(isSubBullet ? `  - ${text}` : text);
+          }
         }
       }
     }
@@ -311,12 +336,155 @@ function parseRelicTable(section: string, tier: number, relicIdPrefix = "relic")
       name: relicName,
       tier,
       slot: tier,
-      description: description.length > 120 ? description.slice(0, 117) + "..." : description,
-      effects: effectLines.filter((e) => !e.startsWith("  - ")),
+      description,
+      effects: effectLines,
     });
   }
 
   return relics;
+}
+
+// ---------------------------------------------------------------------------
+// Combat Mastery parsing
+// ---------------------------------------------------------------------------
+
+/**
+ * Fetch and parse combat masteries from {wikiPage}/Combat_Masteries.
+ * Returns null if the page doesn't exist (e.g. DP has no masteries).
+ */
+async function parseMasteries(wikiPage: string): Promise<ParsedMasterySystem | null> {
+  const pageTitle = `${wikiPage}/Combat_Masteries`;
+  console.log(`  Fetching mastery page: ${pageTitle}`);
+  const wikitext = await fetchWikitext(pageTitle);
+  if (!wikitext) {
+    console.log(`  No mastery page found — skipping`);
+    return null;
+  }
+  console.log(`  OK: ${wikitext.length} characters`);
+
+  const styles: ParsedCombatMastery[] = [];
+  const universalPassives: string[] = [];
+  const pointSources: string[] = [];
+
+  // Parse each combat style section
+  const stylePatterns: { name: string; style: "melee" | "ranged" | "magic"; id: string }[] = [
+    { name: "Melee", style: "melee", id: "re-mastery-melee" },
+    { name: "Ranged", style: "ranged", id: "re-mastery-ranged" },
+    { name: "Magic", style: "magic", id: "re-mastery-magic" },
+  ];
+
+  for (const sp of stylePatterns) {
+    // Look for section headers like == Melee == or === Melee Mastery ===
+    const sectionRegex = new RegExp(`={2,3}\\s*${sp.name}(?:\\s+Mastery)?\\s*={2,3}`, "i");
+    const sectionMatch = sectionRegex.exec(wikitext);
+    if (!sectionMatch) continue;
+
+    const sectionStart = sectionMatch.index + sectionMatch[0].length;
+    // Find the next section header to determine section end
+    const nextSectionMatch = wikitext.slice(sectionStart).match(/\n={2,3}\s*\w/);
+    const sectionEnd = nextSectionMatch ? sectionStart + nextSectionMatch.index! : wikitext.length;
+    const sectionText = wikitext.slice(sectionStart, sectionEnd);
+
+    const tiers: ParsedMasteryTier[] = [];
+
+    // Parse tier rows from wiki tables or list items
+    // Format varies: could be table rows with | Tier | Effect | or list items
+    // Try table format first: look for rows like | 1 || effect text or |1||effect
+    const tableRowRegex = /\|\s*(?:I{1,3}V?I{0,3}|[1-6])\s*\|\|?\s*(.+)/g;
+    let tierNum = 0;
+    let tableMatch;
+    while ((tableMatch = tableRowRegex.exec(sectionText)) !== null) {
+      tierNum++;
+      const effect = stripWikiMarkup(tableMatch[1].replace(/\|\|.*/, "").trim());
+      if (effect) {
+        tiers.push({ tier: tierNum, effect });
+      }
+    }
+
+    // If table format didn't work, try bullet list format
+    if (tiers.length === 0) {
+      const bulletRegex = /\*\s*(?:Tier\s+)?(?:I{1,3}V?I{0,3}|[1-6])[\s:–-]+(.+)/gi;
+      tierNum = 0;
+      let bulletMatch;
+      while ((bulletMatch = bulletRegex.exec(sectionText)) !== null) {
+        tierNum++;
+        const effect = stripWikiMarkup(bulletMatch[1].trim());
+        if (effect) {
+          tiers.push({ tier: tierNum, effect });
+        }
+      }
+    }
+
+    if (tiers.length > 0) {
+      styles.push({
+        id: sp.id,
+        name: `${sp.name} Mastery`,
+        style: sp.style,
+        tiers,
+      });
+    }
+  }
+
+  // Parse universal passives — look for "Universal" section or table
+  const universalRegex = /={2,3}\s*Universal(?:\s+Passive)?s?\s*={2,3}/i;
+  const universalMatch = universalRegex.exec(wikitext);
+  if (universalMatch) {
+    const uStart = universalMatch.index + universalMatch[0].length;
+    const nextSection = wikitext.slice(uStart).match(/\n={2,3}\s*\w/);
+    const uEnd = nextSection ? uStart + nextSection.index! : wikitext.length;
+    const uText = wikitext.slice(uStart, uEnd);
+
+    // Try table rows or bullet list
+    const uRows = uText.match(/\|\s*(?:I{1,3}V?I{0,3}|[1-6])\s*\|\|?\s*(.+)/g);
+    if (uRows) {
+      for (const row of uRows) {
+        const effect = stripWikiMarkup(row.replace(/^\|\s*(?:I{1,3}V?I{0,3}|[1-6])\s*\|\|?\s*/, "").replace(/\|\|.*/, "").trim());
+        if (effect) universalPassives.push(effect);
+      }
+    }
+    if (universalPassives.length === 0) {
+      const bullets = uText.match(/\*\s*(.+)/g);
+      if (bullets) {
+        for (const b of bullets) {
+          const effect = stripWikiMarkup(b.replace(/^\*\s*/, "").trim());
+          if (effect) universalPassives.push(effect);
+        }
+      }
+    }
+  }
+
+  // Parse point sources — look for how points are earned
+  const pointRegex = /(?:earn|obtain|gain).*?(?:mastery|combat)\s*point/i;
+  const pointMatch = pointRegex.exec(wikitext);
+  if (pointMatch) {
+    const pStart = Math.max(0, pointMatch.index - 200);
+    const pEnd = Math.min(wikitext.length, pointMatch.index + 1000);
+    const pText = wikitext.slice(pStart, pEnd);
+    const bullets = pText.match(/\*\s*(.+)/g);
+    if (bullets) {
+      for (const b of bullets) {
+        const src = stripWikiMarkup(b.replace(/^\*\s*/, "").trim());
+        if (src && src.length > 5) pointSources.push(src);
+      }
+    }
+  }
+
+  if (styles.length === 0) {
+    console.log(`  WARNING: No combat mastery styles found in wiki page`);
+    return null;
+  }
+
+  console.log(`  Masteries: ${styles.length} styles, ${universalPassives.length} universal passives, ${pointSources.length} point sources`);
+  for (const s of styles) {
+    console.log(`    ${s.name}: ${s.tiers.length} tiers`);
+  }
+
+  return {
+    maxPoints: 10,
+    pointSources,
+    universalPassives,
+    styles,
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -528,6 +696,101 @@ function parseRegions(wikitext: string, areaTemplate: string, leagueSlug: string
 }
 
 // ---------------------------------------------------------------------------
+// Region enrichment (fills empty descriptions/keyContent from wiki area pages)
+// ---------------------------------------------------------------------------
+
+const REGION_WIKI_PAGES: Record<string, string> = {
+  misthalin: "Misthalin",
+  karamja: "Karamja",
+  asgarnia: "Asgarnia",
+  kandarin: "Kandarin",
+  fremennik: "Fremennik Province",
+  morytania: "Morytania",
+  desert: "Kharidian Desert",
+  tirannwn: "Tirannwn",
+  wilderness: "Wilderness",
+  kebos: "Kebos Lowlands",
+  kourend: "Great Kourend",
+  varlamore: "Varlamore",
+  "fossil-island": "Fossil Island",
+};
+
+interface RegionEnrichment {
+  description: string;
+  keyContent: string[];
+}
+
+async function enrichRegionData(
+  regions: ParsedRegion[],
+  existingRegions?: Array<Record<string, unknown>>,
+): Promise<Map<string, RegionEnrichment>> {
+  const enrichments = new Map<string, RegionEnrichment>();
+
+  // Find regions that need enrichment (empty description in existing data or no existing data)
+  const needsEnrichment: { id: string; wikiPage: string }[] = [];
+  for (const region of regions) {
+    const existing = existingRegions?.find((r) => String(r.id) === region.id);
+    const hasDescription = existing && typeof existing.description === "string" && existing.description.length > 10;
+    if (!hasDescription && REGION_WIKI_PAGES[region.id]) {
+      needsEnrichment.push({ id: region.id, wikiPage: REGION_WIKI_PAGES[region.id] });
+    }
+  }
+
+  if (needsEnrichment.length === 0) return enrichments;
+
+  console.log(`  Enriching ${needsEnrichment.length} regions from wiki area pages...`);
+
+  const pageNames = needsEnrichment.map((r) => r.wikiPage);
+  const wikitextMap = await fetchBulkWikitext(pageNames);
+
+  for (const { id, wikiPage } of needsEnrichment) {
+    const wikitext = wikitextMap.get(wikiPage);
+    if (!wikitext) continue;
+
+    // Extract description from page intro (first 1-2 sentences after infobox)
+    let description = "";
+    const introMatch = wikitext.match(
+      /\}\}\s*\n(?:\s*\{\{[^{}]*\}\}\s*\n)*(?:\s*\[\[File:[^\]]*\]\]\s*\n)*([\s\S]+?)(?=\n==)/
+    );
+    if (introMatch) {
+      const rawDesc = stripWikiMarkup(introMatch[1]).replace(/\s+/g, " ").trim();
+      const sentences = rawDesc.match(/[^.!?]+[.!?]+/g);
+      description = sentences ? sentences.slice(0, 2).join("").trim() : rawDesc.slice(0, 200);
+    }
+
+    // Extract keyContent from "Notable features" / "Activities" / "Locations" sections
+    const keyContent: string[] = [];
+    const sectionPatterns = [
+      /==\s*(?:Notable\s+features?|Key\s+features?)\s*==\s*([\s\S]*?)(?=\n==|$)/i,
+      /==\s*(?:Activities|Things\s+to\s+do)\s*==\s*([\s\S]*?)(?=\n==|$)/i,
+      /==\s*(?:Notable\s+locations?|Locations?)\s*==\s*([\s\S]*?)(?=\n==|$)/i,
+      /==\s*(?:Subregions?|Areas?)\s*==\s*([\s\S]*?)(?=\n==|$)/i,
+    ];
+    for (const pattern of sectionPatterns) {
+      const match = wikitext.match(pattern);
+      if (match) {
+        // Extract wiki links as key content items
+        const linkPattern = /\[\[([^\]|]+?)(?:\|[^\]]+)?\]\]/g;
+        let lm;
+        while ((lm = linkPattern.exec(match[1])) !== null && keyContent.length < 12) {
+          const item = lm[1].trim();
+          if (item.length > 2 && !item.includes("File:") && !item.includes("Category:") && !keyContent.includes(item)) {
+            keyContent.push(item);
+          }
+        }
+      }
+    }
+
+    if (description || keyContent.length > 0) {
+      enrichments.set(id, { description, keyContent });
+    }
+  }
+
+  console.log(`  Enriched ${enrichments.size} regions with wiki data`);
+  return enrichments;
+}
+
+// ---------------------------------------------------------------------------
 // Reward tier parsing
 // ---------------------------------------------------------------------------
 
@@ -544,10 +807,8 @@ function parseRegions(wikitext: string, areaTemplate: string, leagueSlug: string
 function parseRewardTiers(wikitext: string): ParsedRewardTier[] {
   const tiers: ParsedRewardTier[] = [];
 
-  // Find the Trophies sub-section or the Rewards section
-  const rewardsSection = wikitext.match(/===?\s*Trophies?\s*===?\s*([\s\S]*?)(?=\n===?\s*[^=]|$)/i)
-    ?? wikitext.match(/==\s*Rewards?\s*==\s*([\s\S]*?)(?=\n==\s*[^=]|$)/i);
-
+  // Find the Rewards section (broad match to capture trophies + cosmetics)
+  const rewardsSection = wikitext.match(/==\s*Rewards?\s*==\s*([\s\S]*?)(?=\n==\s*[^=]|$)/i);
   if (!rewardsSection) return tiers;
 
   const section = rewardsSection[1];
@@ -561,12 +822,44 @@ function parseRewardTiers(wikitext: string): ParsedRewardTier[] {
     const tierName = capitalize(m[1]);
     const points = parseInt(m[2].replace(/,/g, ""));
     if (!isNaN(points)) {
-      tiers.push({ name: tierName, pointsRequired: points });
+      tiers.push({ name: tierName, pointsRequired: points, cosmetics: [] });
     }
   }
 
   // Sort by points ascending (Bronze → Dragon)
   tiers.sort((a, b) => a.pointsRequired - b.pointsRequired);
+
+  // Parse cosmetic rewards from {{plinkt|...}} patterns throughout rewards section
+  // These are items like teleports, outfits, ornament kits
+  const cosmeticPattern = /\{\{plinkt\|([^}]+)\}\}/gi;
+  let cm;
+  while ((cm = cosmeticPattern.exec(section)) !== null) {
+    const itemName = cm[1].trim();
+    // Skip trophies (already parsed above)
+    if (/trophy/i.test(itemName)) continue;
+
+    // Classify cosmetic type
+    let type = "cosmetic";
+    const lower = itemName.toLowerCase();
+    if (/teleport|home\s+teleport/i.test(lower)) type = "home_teleport";
+    else if (/outfit|kit\s+\(|robes?|garb|legs|top|hat|boots/i.test(lower)) type = "outfit";
+    else if (/ornament\s+kit/i.test(lower)) type = "ornament_kit";
+    else if (/title/i.test(lower)) type = "title";
+
+    // Try to associate with the nearest tier by checking the surrounding context
+    // Find which tier's point threshold this cosmetic falls near
+    const contextBefore = section.slice(0, cm.index);
+    const lastPointMatch = contextBefore.match(/(\d[\d,]*)\s*(?:points?|pts)/gi);
+    if (lastPointMatch && tiers.length > 0) {
+      const lastPoints = parseInt(lastPointMatch[lastPointMatch.length - 1].replace(/[,\s]/g, ""));
+      const matchingTier = tiers.find((t) => t.pointsRequired === lastPoints)
+        ?? tiers[tiers.length - 1];
+      matchingTier.cosmetics.push({ name: itemName, type });
+    } else if (tiers.length > 0) {
+      // Default to last tier
+      tiers[tiers.length - 1].cosmetics.push({ name: itemName, type });
+    }
+  }
 
   return tiers;
 }
@@ -953,6 +1246,40 @@ function generateTypeScriptFile(data: ParsedLeagueData, config: LeagueConfig): s
   lines.push(``);
   } // end else for existingRelicTiers
 
+  // Masteries — emit if present (from wiki parse or existing data)
+  const existingMasteries = (data as unknown as Record<string, unknown>).existingMasteries as Record<string, unknown> | undefined;
+  const masteriesData = data.masteries ?? (existingMasteries as unknown as ParsedMasterySystem | undefined);
+  if (masteriesData && masteriesData.styles.length > 0) {
+    lines.push(`${indent}masteries: {`);
+    lines.push(`${indent}${indent}maxPoints: ${masteriesData.maxPoints},`);
+    lines.push(`${indent}${indent}pointSources: [`);
+    for (const src of masteriesData.pointSources) {
+      lines.push(`${indent}${indent}${indent}${q(src)},`);
+    }
+    lines.push(`${indent}${indent}],`);
+    lines.push(`${indent}${indent}universalPassives: [`);
+    for (const passive of masteriesData.universalPassives) {
+      lines.push(`${indent}${indent}${indent}${q(passive)},`);
+    }
+    lines.push(`${indent}${indent}],`);
+    lines.push(`${indent}${indent}styles: [`);
+    for (const style of masteriesData.styles) {
+      lines.push(`${indent}${indent}${indent}{`);
+      lines.push(`${indent}${indent}${indent}${indent}id: ${q(style.id)},`);
+      lines.push(`${indent}${indent}${indent}${indent}name: ${q(style.name)},`);
+      lines.push(`${indent}${indent}${indent}${indent}style: ${q(style.style)},`);
+      lines.push(`${indent}${indent}${indent}${indent}tiers: [`);
+      for (const tier of style.tiers) {
+        lines.push(`${indent}${indent}${indent}${indent}${indent}{ tier: ${tier.tier}, effect: ${q(tier.effect)} },`);
+      }
+      lines.push(`${indent}${indent}${indent}${indent}],`);
+      lines.push(`${indent}${indent}${indent}},`);
+    }
+    lines.push(`${indent}${indent}],`);
+    lines.push(`${indent}},`);
+    lines.push(``);
+  }
+
   // Pacts — use existing if available (wiki doesn't output structured pact data)
   const existingPacts = (data as unknown as Record<string, unknown>).existingPacts as Array<Record<string, unknown>> | undefined;
   if (existingPacts && existingPacts.length > 0) {
@@ -1037,6 +1364,10 @@ function generateTypeScriptFile(data: ParsedLeagueData, config: LeagueConfig): s
       lines.push(`${indent}${indent}${indent}color: ${q(color)},`);
       lines.push(`${indent}${indent}${indent}rewards: [`);
       lines.push(`${indent}${indent}${indent}${indent}{ id: ${q(`rew-${slugify(tier.name)}`)}, name: ${q(`${data.name} Trophy (${tier.name})`)}, description: ${q(`A ${tier.name.toLowerCase()} trophy for your POH`)}, type: "trophy" },`);
+      // Emit cosmetic rewards parsed from wiki
+      for (const cosmetic of tier.cosmetics) {
+        lines.push(`${indent}${indent}${indent}${indent}{ id: ${q(`rew-${slugify(cosmetic.name)}`)}, name: ${q(cosmetic.name)}, description: ${q(`Cosmetic reward: ${cosmetic.name}`)}, type: ${q(cosmetic.type)} },`);
+      }
       lines.push(`${indent}${indent}${indent}],`);
       lines.push(`${indent}${indent}},`);
     }
@@ -1114,6 +1445,12 @@ function mergeWithExisting(
     console.log(`  [merge] Keeping ${existing.pacts.length} existing pacts`);
     // Pacts aren't in ParsedLeagueData — we'll handle this in code generation
     (merged as unknown as Record<string, unknown>).existingPacts = existing.pacts;
+  }
+
+  // Masteries: keep existing if wiki returned none
+  if (!parsed.masteries && existing.masteries && typeof existing.masteries === "object") {
+    console.log(`  [merge] Keeping existing masteries`);
+    (merged as unknown as Record<string, unknown>).existingMasteries = existing.masteries;
   }
 
   // Reward tiers: keep existing if wiki returned none
@@ -1272,6 +1609,10 @@ async function syncLeague(config: LeagueConfig, dryRun: boolean, merge: boolean)
   const baseXpMultiplier = relicsSource ? parseBaseXpMultiplier(relicsSource) : 5;
   console.log(`  Base XP multiplier: ${baseXpMultiplier}x`);
 
+  // Parse combat masteries (only some leagues have them)
+  await sleep(REQUEST_DELAY_MS);
+  const masteries = await parseMasteries(config.wikiPage);
+
   // --- Assemble parsed data ---
 
   let parsedData: ParsedLeagueData = {
@@ -1286,6 +1627,7 @@ async function syncLeague(config: LeagueConfig, dryRun: boolean, merge: boolean)
     maxRegions,
     regions,
     relicTiers,
+    masteries: masteries ?? undefined,
     tasks,
     rewardTiers,
     mechanicChanges,
@@ -1300,6 +1642,23 @@ async function syncLeague(config: LeagueConfig, dryRun: boolean, merge: boolean)
     if (existing) {
       console.log(`  Found existing data for ${config.slug}`);
       parsedData = mergeWithExisting(parsedData, existing, config);
+
+      // Enrich regions with empty descriptions from wiki area pages
+      const existingRegions = (parsedData as unknown as Record<string, unknown>).existingRegions as Array<Record<string, unknown>> | undefined;
+      if (existingRegions) {
+        const enrichments = await enrichRegionData(regions, existingRegions);
+        for (const region of existingRegions) {
+          const enrichment = enrichments.get(String(region.id));
+          if (enrichment) {
+            if (!region.description || String(region.description).length < 10) {
+              region.description = enrichment.description;
+            }
+            if (!Array.isArray(region.keyContent) || region.keyContent.length === 0) {
+              region.keyContent = enrichment.keyContent;
+            }
+          }
+        }
+      }
     } else {
       console.log(`  No existing data found — writing fresh`);
     }

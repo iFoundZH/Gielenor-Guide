@@ -23,7 +23,7 @@ export const hunterP2pGuide: SkillTrainingGuide = {
       name: "Drift net fishing",
       levelRange: [44, 99],
       xpPerHour: null,
-      description: "{{Equipment |align = right",
+      description: "",
       members: true,
     },
     {
@@ -111,6 +111,20 @@ export const hunterP2pGuide: SkillTrainingGuide = {
       members: true,
     },
     {
+      name: "HunterLvl is the player's Hunter level after completing a rumour",
+      levelRange: [72, 91],
+      xpPerHour: null,
+      description: "HunterLvl is the player's Hunter level after completing a rumour",
+      members: true,
+    },
+    {
+      name: "The value of Modifier is dependent on the tier of rumour completed",
+      levelRange: [72, 91],
+      xpPerHour: null,
+      description: "The value of Modifier is dependent on the tier of rumour completed:",
+      members: true,
+    },
+    {
       name: "Check a filled box trap",
       levelRange: [73, 99],
       xpPerHour: null,
@@ -169,7 +183,7 @@ export const hunterP2pGuide: SkillTrainingGuide = {
     {
       name: "Orange salamanders",
       levelRange: [47, 59],
-      xpPerHour: null,
+      xpPerHour: 50000,
       description: "Catching orange salamanders is a slower but less click-intensive alternative to falconry. You will need three small fishing nets, three ropes as well as 10 to 14 waterskins (4) and Desert clothing ...",
       members: true,
     },
@@ -177,7 +191,7 @@ export const hunterP2pGuide: SkillTrainingGuide = {
       name: "Maniacal monkeys",
       levelRange: [60, 99],
       xpPerHour: null,
-      description: "{{Inventory|align=right |Royal seed pod |Kruk monkey greegree |Banana |Banana |Bananas |Bananas |Banana |Banana",
+      description: "",
       members: true,
     },
     {
@@ -190,7 +204,7 @@ export const hunterP2pGuide: SkillTrainingGuide = {
     {
       name: "Black salamanders",
       levelRange: [67, 73],
-      xpPerHour: null,
+      xpPerHour: 115000,
       description: "From level 67 to 73, catch black salamanders in the Boneyard Hunter area in the Wilderness. To get there, use a burning amulet teleport to the Chaos Temple and run north-east, or a games necklace t...",
       members: true,
     },
@@ -209,10 +223,17 @@ export const hunterP2pGuide: SkillTrainingGuide = {
       members: true,
     },
     {
+      name: "99: Carnivorous chinchompas",
+      levelRange: [73, 80],
+      xpPerHour: null,
+      description: "Requires partial completion of the Eagles' Peak quest to be able to set box traps.  Hunting carnivorous chinchompas is a profitable alternative that offers relatively fast experience. While this me...",
+      members: true,
+    },
+    {
       name: "Herbiboar",
       levelRange: [80, 99],
       xpPerHour: null,
-      description: "{{Inventory|align=right |Open herb sack |Numulite\\14116 |Stamina potion(4) |Stamina potion(4) |Stamina potion(4) |Stamina potion(4) |Stamina potion(4) |Stamina potion(4)",
+      description: "",
       members: true,
     },
   ],

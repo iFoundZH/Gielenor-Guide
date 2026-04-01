@@ -7,7 +7,7 @@ export type SkillName =
   | "Magic" | "Runecraft" | "Hitpoints" | "Crafting" | "Mining"
   | "Smithing" | "Fishing" | "Cooking" | "Firemaking" | "Woodcutting"
   | "Agility" | "Herblore" | "Thieving" | "Fletching" | "Slayer"
-  | "Farming" | "Construction" | "Hunter";
+  | "Farming" | "Construction" | "Hunter" | "Sailing";
 
 export interface Relic {
   id: string;
@@ -93,6 +93,25 @@ export interface LeagueBuild {
   updatedAt: number;
 }
 
+export interface MasteryTier {
+  tier: number;
+  effect: string;
+}
+
+export interface CombatMastery {
+  id: string;
+  name: string;
+  style: "melee" | "ranged" | "magic";
+  tiers: MasteryTier[];
+}
+
+export interface MasterySystem {
+  maxPoints: number;
+  pointSources: string[];
+  universalPassives: string[];
+  styles: CombatMastery[];
+}
+
 export interface LeagueData {
   id: string;
   name: string;
@@ -108,6 +127,7 @@ export interface LeagueData {
   regions: Region[];
   relicTiers: RelicTier[];
   pacts: Pact[];
+  masteries?: MasterySystem;
   tasks: LeagueTask[];
   rewardTiers: RewardTier[];
   autoCompletedQuests: string[];
