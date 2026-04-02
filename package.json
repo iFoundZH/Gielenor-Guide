@@ -7,7 +7,7 @@
     "prebuild": "npx tsx src/lib/wiki-sync.ts --merge && npx tsx src/lib/wiki-sync-guides.ts && npx tsx src/lib/wiki-sync-data.ts --merge",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint src/",
     "sync-wiki": "npx tsx src/lib/wiki-sync.ts",
     "sync-guides": "npx tsx src/lib/wiki-sync-guides.ts",
     "sync-data": "npx tsx src/lib/wiki-sync-data.ts",
@@ -27,6 +27,11 @@
     "typescript": "^6.0.2"
   },
   "devDependencies": {
-    "@playwright/test": "^1.58.2"
+    "@eslint/js": "^9.39.4",
+    "@next/eslint-plugin-next": "^16.2.2",
+    "@playwright/test": "^1.58.2",
+    "eslint": "^9.39.4",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "typescript-eslint": "^8.58.0"
   }
 }

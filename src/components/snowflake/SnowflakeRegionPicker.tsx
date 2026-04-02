@@ -1,6 +1,5 @@
 "use client";
 
-import { Card } from "@/components/ui/Card";
 import { osrsRegions } from "@/data/osrs-regions";
 
 interface SnowflakeRegionPickerProps {

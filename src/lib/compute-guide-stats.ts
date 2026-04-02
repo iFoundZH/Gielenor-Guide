@@ -42,14 +42,6 @@ interface LeagueStats {
   generalPoints: number;
 }
 
-const DIFFICULTY_POINTS: Record<string, number> = {
-  easy: 10,
-  medium: 30,
-  hard: 80,
-  elite: 200,
-  master: 400,
-};
-
 function computeLeagueStats(leagueModule: Record<string, unknown>): LeagueStats {
   // Find the league data export (first object with .tasks array)
   let league: Record<string, unknown> | null = null;

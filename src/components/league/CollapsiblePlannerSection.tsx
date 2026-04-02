@@ -27,7 +27,7 @@ export function CollapsiblePlannerSection({
   onToggleExpand,
   current,
   total,
-  isComplete,
+  isComplete: _isComplete,
   summaryItems,
   showDoneButton,
   onDone,

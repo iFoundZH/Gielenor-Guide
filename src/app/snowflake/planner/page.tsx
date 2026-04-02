@@ -3,7 +3,6 @@
 import { Suspense, useState, useEffect, useMemo, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import { Card } from "@/components/ui/Card";
-import { Badge } from "@/components/ui/Badge";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { SnowflakeRegionPicker } from "@/components/snowflake/SnowflakeRegionPicker";
 import { SkillRestrictionGrid } from "@/components/snowflake/SkillRestrictionGrid";

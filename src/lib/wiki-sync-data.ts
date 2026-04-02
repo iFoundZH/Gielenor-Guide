@@ -25,7 +25,6 @@ import {
   q,
   REQUEST_DELAY_MS,
   stripHtml,
-  parseHtmlTable,
 } from "./wiki-parsers";
 import { mapLocationToRegion } from "./wiki-region-map";
 
@@ -519,7 +518,7 @@ async function fetchBossListFromWiki(): Promise<{ name: string; page: string; lo
       if (clMatch) combatLevel = parseInt(clMatch[1]);
 
       // Clean up the name (remove note markers, trailing parentheticals)
-      let cleanName = rawName
+      const cleanName = rawName
         .replace(/\s*\[\d+\]\s*$/, "")
         .replace(/\s*\(.*?\)\s*$/, "")
         .trim();

@@ -11,7 +11,7 @@
  * - Warnings about dangerous combos or gaps
  */
 
-import { LeagueBuild, LeagueData, Region, Relic, Pact, LeagueTask } from "@/types/league";
+import { LeagueBuild, LeagueData, Region, Relic, Pact } from "@/types/league";
 import {
   computeRelicAfkScore,
   computeBuildAfkScore,
@@ -323,7 +323,6 @@ function analyzeBuildBalance(relics: Relic[], pacts: Pact[], hasMasteries = fals
   const slayer = norm(scores.slayer);
 
   const values = [combat, gathering, production, utility, slayer];
-  const avg = values.reduce((a, b) => a + b, 0) / values.length;
   const maxScore = Math.max(...values);
   const dominance = maxScore;
   const spread = maxScore - Math.min(...values.filter((v) => v > 0));

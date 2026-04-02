@@ -1,0 +1,39 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run dev)",
+      "Bash(npm run build)",
+      "Bash(npm run lint)",
+      "Bash(npm run test*)",
+      "Bash(npm run sync-*)",
+      "Bash(npm run compute-*)",
+      "Bash(npx playwright*)",
+      "Bash(npx tsx*)",
+      "Bash(git *)",
+      "Bash(ls *)",
+      "Bash(mkdir *)",
+      "Bash(gh *)"
+    ],
+    "deny": [
+      "Bash(rm -rf *)",
+      "Bash(git push --force*)",
+      "Bash(git push --no-verify*)",
+      "Bash(git reset --hard*)",
+      "Bash(git checkout -- .)",
+      "Bash(git clean -f*)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "filepath=\"$CLAUDE_FILE_PATH\"; if [ -n \"$filepath\" ] && echo \"$filepath\" | grep -qE '\\.(env|pem|key|secret)'; then echo 'BLOCK: Refusing to write to sensitive file'; exit 1; fi"
+          }
+        ]
+      }
+    ]
+  }
+}

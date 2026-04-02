@@ -4,14 +4,6 @@ import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import Link from "next/link";
 
-const ALL_SKILLS = [
-  "Attack", "Strength", "Defence", "Ranged", "Prayer", "Magic",
-  "Runecraft", "Hitpoints", "Crafting", "Mining", "Smithing",
-  "Fishing", "Cooking", "Firemaking", "Woodcutting", "Agility",
-  "Herblore", "Thieving", "Fletching", "Slayer", "Farming",
-  "Construction", "Hunter", "Sailing",
-];
-
 const SKILL_CATEGORIES: Record<string, string[]> = {
   Combat: ["Attack", "Strength", "Defence", "Ranged", "Prayer", "Magic", "Hitpoints"],
   Gathering: ["Mining", "Fishing", "Woodcutting", "Farming", "Hunter", "Sailing"],

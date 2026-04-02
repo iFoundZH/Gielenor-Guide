@@ -1,4 +1,4 @@
-import type { LeagueData, LeagueTask } from "@/types/league";
+import type { LeagueData } from "@/types/league";
 
 export const demonicPactsLeague: LeagueData = {
   id: "demonic-pacts",

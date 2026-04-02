@@ -20,19 +20,13 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import {
-  WIKI_API,
-  WIKI_HEADERS,
   REQUEST_DELAY_MS,
   fetchWikitext,
   fetchBulkWikitext,
-  fetchSections,
-  fetchWikitextSection,
   sleep,
   stripWikiMarkup,
   splitTemplateParts,
   parseSkillsParam,
-  isSkillName,
-  VALID_SKILLS,
   DIFFICULTY_POINTS,
   slugify,
   capitalize,
@@ -1427,7 +1421,7 @@ async function loadExistingData(config: LeagueConfig): Promise<Record<string, un
 function mergeWithExisting(
   parsed: ParsedLeagueData,
   existing: Record<string, unknown>,
-  config: LeagueConfig,
+  _config: LeagueConfig,
 ): ParsedLeagueData {
   const merged = { ...parsed };
 

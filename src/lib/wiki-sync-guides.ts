@@ -16,7 +16,6 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import {
-  fetchWikitext,
   fetchBulkWikitext,
   fetchExpandedHtml,
   sleep,
@@ -61,7 +60,7 @@ function parseTrainingMethods(wikitext: string, members: boolean): ParsedTrainin
   let m;
   while ((m = sectionPattern.exec(wikitext)) !== null) {
     // Clean title: strip wiki markup and any residual = signs
-    let title = stripWikiMarkup(m[2]).replace(/^=+\s*/, "").replace(/\s*=+$/, "").trim();
+    const title = stripWikiMarkup(m[2]).replace(/^=+\s*/, "").replace(/\s*=+$/, "").trim();
     if (title) sectionStarts.push({ index: m.index, title, level: m[1].length });
   }
 

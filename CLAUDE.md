@@ -11,8 +11,8 @@ Gielenor Guide is an OSRS (Old School RuneScape) league companion web app — an
 ```bash
 npm run dev              # Dev server on :3000
 npm run build            # Production build (static export to /out/)
-npm run lint             # ESLint (Next.js defaults)
-npm run test             # Run all Playwright E2E tests (167 tests, 10 spec files)
+npm run lint             # ESLint (flat config: TS, React hooks, Next.js rules)
+npm run test             # Run all Playwright E2E tests (169 tests, 10 spec files)
 npm run test:ui          # Interactive Playwright test runner
 npm run sync-wiki        # Sync league data from OSRS Wiki
 npm run sync-guides      # Sync main game guides from OSRS Wiki
@@ -22,7 +22,7 @@ npm run compute-guide-stats  # Compute real region stats from task data
 
 ## Testing
 
-**Playwright E2E tests** in `e2e/` directory — 167 tests across 10 spec files, Chromium only.
+**Playwright E2E tests** in `e2e/` directory — 169 tests across 10 spec files, Chromium only.
 
 - Dev server on `:3000`, tests reuse existing server (`reuseExistingServer: true`)
 - Global setup warms 21 pages to prevent compilation timeouts

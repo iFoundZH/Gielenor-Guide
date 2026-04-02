@@ -40,7 +40,6 @@ export function RegionPicker({ regions, maxRegions, selectedRegions, onToggle, t
     const items: React.ReactNode[] = [];
     for (const region of regionList) {
       const status = getStatus(region);
-      const isSelected = status === "selected";
       const canClick = status === "available" || status === "selected";
 
       items.push(
