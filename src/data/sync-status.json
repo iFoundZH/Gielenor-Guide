@@ -1,0 +1,54 @@
+{
+  "generatedAt": "2026-04-02T16:14:28.775Z",
+  "leagues": {
+    "demonic-pacts": {
+      "taskCount": 43,
+      "taskBreakdown": {
+        "easy": 15,
+        "medium": 10,
+        "hard": 8,
+        "elite": 6,
+        "master": 4
+      },
+      "totalPoints": 3890,
+      "relicCount": 12,
+      "relicTierCount": 8,
+      "regionCount": 11,
+      "pactCount": 6,
+      "rewardTierCount": 7,
+      "maxRegions": 3,
+      "lastSynced": "2026-04-02"
+    },
+    "raging-echoes": {
+      "taskCount": 1589,
+      "taskBreakdown": {
+        "easy": 224,
+        "medium": 536,
+        "hard": 437,
+        "elite": 345,
+        "master": 47
+      },
+      "totalPoints": 141080,
+      "relicCount": 23,
+      "relicTierCount": 8,
+      "regionCount": 11,
+      "pactCount": 0,
+      "rewardTierCount": 7,
+      "maxRegions": 3,
+      "lastSynced": "2026-04-02"
+    }
+  },
+  "guides": {
+    "skillGuideCount": 47,
+    "uniqueSkillCount": 24,
+    "p2pGuideCount": 24,
+    "f2pGuideCount": 23,
+    "diaryAreaCount": 12,
+    "combatAchievementTierCount": 6,
+    "combatAchievementTaskCount": 637
+  },
+  "data": {
+    "questCount": 203,
+    "bossCount": 63
+  }
+}

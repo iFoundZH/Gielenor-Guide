@@ -47,10 +47,47 @@ export function computeRelicAfkScore(relic: Relic): RelicAfkScore {
   };
 }
 
-export function computeBuildAfkScore(relicScores: RelicAfkScore[]): number {
+/**
+ * Compute the maximum achievable AFK score for a league.
+ * For each tier with relic choices, takes the highest-scoring relic.
+ * Returns the sum of those maximums = the league's AFK ceiling.
+ * Also returns the max single-relic raw score for per-relic normalization.
+ */
+export function computeLeagueAfkCeiling(league: LeagueData): { maxBuildTotal: number; maxSingleRelic: number } {
+  let maxBuildTotal = 0;
+  let maxSingleRelic = 0;
+
+  for (const tier of league.relicTiers) {
+    if (tier.relics.length === 0) continue;
+    const tierMax = Math.max(...tier.relics.map(r => computeRelicAfkScore(r).score));
+    maxBuildTotal += tierMax;
+    maxSingleRelic = Math.max(maxSingleRelic, tierMax);
+  }
+
+  return { maxBuildTotal: maxBuildTotal || 1, maxSingleRelic: maxSingleRelic || 1 };
+}
+
+/**
+ * Build-level AFK score, normalized 0-100 within the league.
+ * Picking the most AFK relic at every tier = 100.
+ */
+export function computeBuildAfkScore(relicScores: RelicAfkScore[], league: LeagueData): number {
   if (relicScores.length === 0) return 0;
-  const total = relicScores.reduce((sum, rs) => sum + rs.score, 0);
-  return Math.round(total / relicScores.length);
+  const { maxBuildTotal } = computeLeagueAfkCeiling(league);
+  const rawTotal = relicScores.reduce((sum, rs) => sum + rs.score, 0);
+  return Math.min(100, Math.round((rawTotal / maxBuildTotal) * 100));
+}
+
+/**
+ * Normalize per-relic AFK scores for display.
+ * The most AFK relic in the league = 100.
+ */
+export function normalizeRelicAfkScores(scores: RelicAfkScore[], league: LeagueData): RelicAfkScore[] {
+  const { maxSingleRelic } = computeLeagueAfkCeiling(league);
+  return scores.map(s => ({
+    ...s,
+    score: Math.min(100, Math.round((s.score / maxSingleRelic) * 100)),
+  }));
 }
 
 // ─── Power Rating ───────────────────────────────────────────────────────
@@ -106,9 +143,14 @@ const POWER_RATINGS: Record<string, Omit<RelicPowerRating, "relicId" | "relicNam
   "re-t8-3": { dps: 5, skilling: 0, qol: 4, pointGen: 4 },  // Last Stand — lethal damage → 1 HP + 255 stats
 };
 
-export function computeRelicPowerRating(relic: Relic): RelicPowerRating {
+/**
+ * Compute power rating for a single relic.
+ * @param maxAfkRaw - the max raw AFK score of any relic in the league (for normalizing the afk axis)
+ */
+export function computeRelicPowerRating(relic: Relic, maxAfkRaw?: number): RelicPowerRating {
   const afkScore = computeRelicAfkScore(relic);
-  const afk = Math.round(afkScore.score / 10);
+  const normalizer = maxAfkRaw || 100;
+  const afk = Math.min(10, Math.round((afkScore.score / normalizer) * 10));
   const base = POWER_RATINGS[relic.id];
 
   if (!base) {
@@ -124,10 +166,17 @@ export function computeRelicPowerRating(relic: Relic): RelicPowerRating {
   };
 }
 
-export function computeAllPowerRatings(relics: Relic[]): Record<string, RelicPowerRating> {
+/**
+ * Compute power ratings for all relics, normalizing the AFK axis within the league.
+ */
+export function computeAllPowerRatings(relics: Relic[], league?: LeagueData): Record<string, RelicPowerRating> {
+  // Pre-compute the max AFK score across all relics in the league
+  const allRelics = league ? league.relicTiers.flatMap(t => t.relics) : relics;
+  const maxAfkRaw = Math.max(1, ...allRelics.map(r => computeRelicAfkScore(r).score));
+
   const map: Record<string, RelicPowerRating> = {};
   for (const relic of relics) {
-    map[relic.id] = computeRelicPowerRating(relic);
+    map[relic.id] = computeRelicPowerRating(relic, maxAfkRaw);
   }
   return map;
 }

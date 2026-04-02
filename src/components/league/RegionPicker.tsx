@@ -197,7 +197,7 @@ function RegionCard({
           {bossCount != null && bossCount > 0 && (
             <span className="text-osrs-text-dim">{bossCount} bosses</span>
           )}
-          {analysis && analysis.totalPoints > 0 && (
+          {analysis && analysis.totalPoints != null && analysis.totalPoints > 0 && (
             <span className="text-osrs-text-dim">{analysis.totalPoints.toLocaleString()} pts</span>
           )}
         </div>

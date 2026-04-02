@@ -78,13 +78,7 @@ export function LeagueOverview({ league, basePath, otherLeaguePath, otherLeagueN
       </div>
 
       {/* Wiki Sync Notice */}
-      <div className="mb-6 flex items-center gap-2 text-xs text-osrs-text-dim bg-osrs-panel rounded-lg px-4 py-2 border border-osrs-border">
-        <span className="w-2 h-2 rounded-full bg-osrs-green" />
-        Data synced from OSRS Wiki — Last updated: {league.lastSynced}
-        <a href={league.wikiUrl} target="_blank" rel="noopener noreferrer" className="ml-auto text-osrs-gold hover:underline">
-          View on Wiki →
-        </a>
-      </div>
+      <SyncNotice league={league} isActive={!isEnded && new Date() >= new Date(league.startDate)} />
 
       <Tabs tabs={tabs}>
         {(activeTab) => (
@@ -197,6 +191,36 @@ export function LeagueOverview({ league, basePath, otherLeaguePath, otherLeagueN
           </>
         )}
       </Tabs>
+    </div>
+  );
+}
+
+function SyncNotice({ league, isActive }: { league: LeagueData; isActive: boolean }) {
+  const synced = new Date(league.lastSynced);
+  const now = new Date();
+  const daysSince = Math.floor((now.getTime() - synced.getTime()) / (1000 * 60 * 60 * 24));
+  const threshold = isActive ? 2 : 7;
+
+  let dotColor = "bg-osrs-green";
+  let label = "Up to date";
+  if (daysSince > threshold * 2) {
+    dotColor = "bg-red-500";
+    label = `${daysSince}d ago`;
+  } else if (daysSince > threshold) {
+    dotColor = "bg-yellow-500";
+    label = `${daysSince}d ago`;
+  }
+
+  return (
+    <div className="mb-6 flex items-center gap-2 text-xs text-osrs-text-dim bg-osrs-panel rounded-lg px-4 py-2 border border-osrs-border">
+      <span className={`w-2 h-2 rounded-full ${dotColor}`} />
+      Data synced from OSRS Wiki — {label} ({league.lastSynced})
+      <Link href="/data-status" className="ml-1 text-osrs-gold hover:underline">
+        Details
+      </Link>
+      <a href={league.wikiUrl} target="_blank" rel="noopener noreferrer" className="ml-auto text-osrs-gold hover:underline">
+        View on Wiki
+      </a>
     </div>
   );
 }

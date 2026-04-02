@@ -26,6 +26,7 @@ async function globalSetup() {
     "/leagues/raging-echoes/planner",
     "/leagues/raging-echoes/guide",
     "/leagues/raging-echoes/tasks",
+    "/data-status",
   ];
 
   console.log("Warming dev server compilation cache...");

@@ -6,10 +6,9 @@ export interface RegionAnalysis {
   regionId: string;
   regionName: string;
   tier: RegionTier;
-  totalTasks: number;
-  totalPoints: number;
-  tasksByDifficulty: Record<TaskDifficulty, number>;
-  estimatedPtsPerHour: number;
+  totalTasks?: number;
+  totalPoints?: number;
+  tasksByDifficulty?: Record<TaskDifficulty, number>;
   uniqueBosses: string[];
   reasoning: string;
 }
@@ -33,8 +32,6 @@ export interface TaskRoutingPhase {
   name: string;
   pointRange: string;
   strategy: string;
-  tasksPerHour: number;
-  pointsPerHour: number;
 }
 
 export interface DailyMilestone {
@@ -47,8 +44,6 @@ export interface DailyMilestone {
 export interface TierProjection {
   tierName: string;
   pointsRequired: number;
-  estimatedHours: number;
-  estimatedDay: number;
 }
 
 export interface PactProfile {
@@ -80,7 +75,6 @@ export interface EchoBossStrategy {
   boss: string;
   region: string;
   strategy: string;
-  kph: number;
 }
 
 export interface EfficiencyGuide {

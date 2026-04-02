@@ -21,14 +21,6 @@ const MINUTES_PER_TASK: Record<TaskDifficulty, number> = {
   master: 120,
 };
 
-// Points-per-hour phase rates for tier projections
-const PHASE_RATES = [
-  { ceiling: 5000, ptsPerHour: 350 },
-  { ceiling: 20000, ptsPerHour: 200 },
-  { ceiling: Infinity, ptsPerHour: 100 },
-];
-
-const HOURS_PER_DAY = 10;
 
 /**
  * Count tasks strictly assigned to a region (excluding general).
@@ -161,7 +153,7 @@ export function analyzeRegionEfficiency(
       totalTasks: regionTasks.length,
       totalPoints,
       tasksByDifficulty: byDifficulty,
-      estimatedPtsPerHour: estimatePointsPerHour(regionTasks),
+      ptsPerHourEstimate: estimatePointsPerHour(regionTasks),
       uniqueBosses: bosses,
       reasoning: "", // filled after tiering
       _region: region,
@@ -172,7 +164,7 @@ export function analyzeRegionEfficiency(
   const tiered = assignTiers(raw);
 
   // Generate reasoning strings
-  return tiered.map(({ _region, ...item }) => {
+  return tiered.map(({ _region, ptsPerHourEstimate, ...item }) => {
     const bossNote =
       item.uniqueBosses.length > 0
         ? ` Echo boss: ${item.uniqueBosses.join(", ")}.`
@@ -183,8 +175,8 @@ export function analyzeRegionEfficiency(
         : "";
 
     const reasoning =
-      `${item.regionName} has ${item.totalTasks} region-specific tasks worth ${item.totalPoints.toLocaleString()} points. ` +
-      `Estimated ${item.estimatedPtsPerHour.toLocaleString()} pts/hr.${bossNote}${generalNote}`;
+      `${item.regionName} has ${item.totalTasks} region-specific tasks worth ${item.totalPoints?.toLocaleString()} points. ` +
+      `Estimated ${ptsPerHourEstimate.toLocaleString()} pts/hr.${bossNote}${generalNote}`;
 
     return {
       regionId: item.regionId,
@@ -193,7 +185,6 @@ export function analyzeRegionEfficiency(
       totalTasks: item.totalTasks,
       totalPoints: item.totalPoints,
       tasksByDifficulty: item.tasksByDifficulty,
-      estimatedPtsPerHour: item.estimatedPtsPerHour,
       uniqueBosses: item.uniqueBosses,
       reasoning,
     };
@@ -420,8 +411,6 @@ export function generateTaskRouting(
         name: "No Tasks",
         pointRange: "0 → 0",
         strategy: "No accessible tasks for the selected regions.",
-        tasksPerHour: 0,
-        pointsPerHour: 0,
       },
     ];
   }
@@ -465,8 +454,6 @@ export function generateTaskRouting(
       strategy:
         `Focus on ${easyMedium.length} easy/medium tasks across starting regions and unlocked areas. ` +
         `Prioritize quick completions to unlock relic tiers and region picks.`,
-      tasksPerHour: 15,
-      pointsPerHour: 300,
     },
     {
       name: "Mid Grind",
@@ -474,8 +461,6 @@ export function generateTaskRouting(
       strategy:
         `Tackle ${hardTasks.length} hard tasks. Start boss kills for echo boss tasks. ` +
         `Mix in remaining medium tasks between boss attempts.`,
-      tasksPerHour: 6,
-      pointsPerHour: 200,
     },
     {
       name: "Late Push",
@@ -483,21 +468,15 @@ export function generateTaskRouting(
       strategy:
         `Grind ${eliteMaster.length} elite/master tasks. These require significant time investment — ` +
         `high KC bosses, collection logs, and skill milestones.`,
-      tasksPerHour: 3,
-      pointsPerHour: 120,
     },
   ];
 }
 
 /**
- * Project how long each reward tier will take to reach.
+ * Project tier timelines from reward tier data.
  *
- * Uses phased points/hour rates:
- *  - 0-5000 pts: 350 pts/hr (easy/medium rush)
- *  - 5000-20000 pts: 200 pts/hr (hard tasks, bosses)
- *  - 20000+ pts: 100 pts/hr (elite/master grind)
- *
- * Assumes ~10 hours/day for day estimates.
+ * Maps league reward tiers to tier projections, flagging tiers that may
+ * exceed the total accessible points for the selected regions.
  */
 export function projectTierTimelines(
   league: LeagueData,
@@ -529,35 +508,11 @@ export function projectTierTimelines(
   return sortedTiers.map((tier) => {
     const target = tier.pointsRequired;
 
-    // Accumulate hours through each phase rate bracket
-    let pointsAccumulated = 0;
-    let hoursAccumulated = 0;
-
-    for (const phase of PHASE_RATES) {
-      if (pointsAccumulated >= target) break;
-
-      const phaseEnd = Math.min(phase.ceiling, target);
-      const pointsInPhase = phaseEnd - pointsAccumulated;
-
-      if (pointsInPhase <= 0) continue;
-
-      hoursAccumulated += pointsInPhase / phase.ptsPerHour;
-      pointsAccumulated = phaseEnd;
-    }
-
-    const estimatedHours = Math.round(hoursAccumulated * 10) / 10;
-    const estimatedDay = Math.max(1, Math.ceil(estimatedHours / HOURS_PER_DAY));
-
     return {
-      tierName: tier.name,
+      tierName: target > maxAccessiblePoints && maxAccessiblePoints > 0
+        ? `${tier.name} (may exceed accessible points)`
+        : tier.name,
       pointsRequired: target,
-      estimatedHours,
-      estimatedDay,
-      ...(target > maxAccessiblePoints && maxAccessiblePoints > 0
-        ? {
-            tierName: `${tier.name} (may exceed accessible points)`,
-          }
-        : {}),
     };
   });
 }

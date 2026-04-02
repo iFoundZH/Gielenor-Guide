@@ -104,7 +104,7 @@ export function computeRegionStats(
     tasksByDifficulty,
     totalTaskPoints,
     tier: analysis?.tier,
-    estimatedPtsPerHour: analysis?.estimatedPtsPerHour,
+    estimatedPtsPerHour: undefined,
     reasoning: analysis?.reasoning,
   };
 }

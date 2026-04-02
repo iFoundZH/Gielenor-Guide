@@ -41,7 +41,6 @@ export const dpGettingStarted: GettingStartedGuide = {
         "Collect starting tools and supplies from the Leagues Tutor",
       ],
       tips: [
-        "Set your XP mode before you start training -- you cannot change it later",
         "Grab starter tools (axe, pickaxe, net) from the Leagues Tutor immediately",
         "Stepping stones in Yama's Lair allow Agility training from level 1",
         "Your POH is located in Aldarin rather than Rimmington",
@@ -89,7 +88,7 @@ export const dpGettingStarted: GettingStartedGuide = {
         "Build combat stats for upcoming boss content",
       ],
       tips: [
-        "Hotfoot pairs well with Endless Harvest for supply generation -- fish auto-cook, ore auto-smelts",
+        "Hotfoot auto-cooks fish you catch and auto-smelts ore you mine, providing passive Cooking/Smithing XP alongside gathering",
         "Woodsman pairs well with Barbarian Gathering for hunter chains -- traps auto-bank, double loot",
         "The 8x XP multiplier at T2 significantly accelerates skill leveling",
         "Start banking supplies for Herblore and Crafting tasks you will need later",
@@ -379,7 +378,7 @@ export const dpRelicGuide: RelicGuide = {
           synergyWith: [
             "Evil Eye (pick boss task, teleport instantly, 5-kill completion, repeat)",
             "Conniving Clues (elite clues from superiors feed the clue pipeline)",
-            "Morytania (Slayer Tower + Catacombs stacking with superior chains)",
+            "Kourend (Catacombs stacking with superior chains) and Morytania (Slayer Tower)",
           ],
         },
       ],
@@ -484,7 +483,7 @@ export const dpRegionGuide: RegionGuide = {
       name: "Kebos & Kourend",
       tier: "S",
       type: "choosable",
-      echoBoss: "Echo Hydra",
+      // echoBoss: unconfirmed for DP -- echo bosses have not been announced for this league
       highlights: [
         "Chambers of Xeric (CoX) -- highest raid task density",
         "Alchemical Hydra at 95 Slayer -- massive point farm with boosted drop rates",
@@ -632,7 +631,7 @@ export const dpRegionGuide: RegionGuide = {
       name: "Varlamore",
       tier: "B",
       type: "starting",
-      echoBoss: "Echo Amoxliatl",
+      // echoBoss: unconfirmed for DP -- echo bosses have not been announced for this league
       highlights: [
         "Fortis Colosseum -- scalable combat challenge with elite/master tasks",
         "Moons of Peril -- individual moon targeting with Evil Eye",
@@ -807,7 +806,7 @@ export const dpCombatBuilds: CombatBuildGuide = {
         {
           phase: "Late (18,000+ pts)",
           items: [
-            "Armadyl chestplate and chainskirt (if Asgarnia picked via Reloaded synergy)",
+            "Armadyl chestplate and chainskirt (requires Asgarnia region)",
             "Masori armour (ToA -- requires Desert pick)",
             "Twisted bow (CoX)",
             "Dizana's quiver (ammo saving enabled by default in DP)",
@@ -857,7 +856,7 @@ export const dpCombatBuilds: CombatBuildGuide = {
             "Mystic robes",
             "Staff of fire or air",
             "Amulet of magic",
-            "God cape from Mage Arena",
+            "God cape from Mage Arena (requires Wilderness region)",
           ],
         },
         {

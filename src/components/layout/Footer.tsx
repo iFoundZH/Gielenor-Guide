@@ -1,4 +1,5 @@
 import Link from "next/link";
+import syncStatus from "@/data/sync-status.json";
 
 export function Footer() {
   return (
@@ -70,13 +71,25 @@ export function Footer() {
                   OSRS Wiki
                 </a>
               </li>
+              <li>
+                <Link href="/data-status" className="text-osrs-text-dim text-sm hover:text-osrs-gold transition-colors">
+                  Data Status
+                </Link>
+              </li>
             </ul>
           </div>
         </div>
 
-        <div className="border-t border-osrs-border mt-8 pt-6 text-center text-xs text-osrs-text-dim">
-          Gielinor Guide is a fan-made tool and is not affiliated with Jagex Ltd.
-          Old School RuneScape is a trademark of Jagex Ltd.
+        <div className="border-t border-osrs-border mt-8 pt-6 space-y-2">
+          <div className="text-center text-xs text-osrs-text-dim">
+            Data synced: {new Date(syncStatus.generatedAt).toLocaleDateString()}{" "}
+            | {syncStatus.data.questCount} quests | {syncStatus.data.bossCount} bosses{" "}
+            | <Link href="/data-status" className="text-osrs-gold hover:underline">Data Status</Link>
+          </div>
+          <div className="text-center text-xs text-osrs-text-dim">
+            Gielinor Guide is a fan-made tool and is not affiliated with Jagex Ltd.
+            Old School RuneScape is a trademark of Jagex Ltd.
+          </div>
         </div>
       </div>
     </footer>

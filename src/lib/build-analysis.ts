@@ -15,7 +15,8 @@ import { LeagueBuild, LeagueData, Region, Relic, Pact } from "@/types/league";
 import {
   computeRelicAfkScore,
   computeBuildAfkScore,
-  computeRelicPowerRating,
+  normalizeRelicAfkScores,
+  computeAllPowerRatings,
   computePointCeiling,
   type RelicAfkScore,
   type RelicPowerRating,
@@ -235,8 +236,10 @@ export function analyzeBuild(build: LeagueBuild, league: LeagueData): BuildAnaly
   ).size;
   const hasMasteries = masteryStyleCount > 0;
 
-  const relicAfkScores = selectedRelics.map(computeRelicAfkScore);
-  const relicPowerRatings = selectedRelics.map(computeRelicPowerRating);
+  const rawRelicAfkScores = selectedRelics.map(computeRelicAfkScore);
+  const relicAfkScores = normalizeRelicAfkScores(rawRelicAfkScores, league);
+  const powerRatingsMap = computeAllPowerRatings(selectedRelics, league);
+  const relicPowerRatings = selectedRelics.map(r => powerRatingsMap[r.id]);
 
   return {
     missedContent: analyzeMissedContent(build, league, accessibleRegionIds),
@@ -249,7 +252,7 @@ export function analyzeBuild(build: LeagueBuild, league: LeagueData): BuildAnaly
     pactTradeoffs: analyzePactTradeoffs(selectedPacts),
     archetype: classifyArchetype(selectedRelics, selectedPacts, build, hasMasteries, masteryStyleCount),
     bossAccess: analyzeBossAccess(accessibleRegionIds),
-    afkScore: computeBuildAfkScore(relicAfkScores),
+    afkScore: computeBuildAfkScore(rawRelicAfkScores, league),
     relicAfkScores,
     relicPowerRatings,
     pointCeiling: computePointCeiling(build, league),

@@ -102,7 +102,7 @@ export default function BuildPlanner() {
   const selectedPacts = useMemo(() => league.pacts.filter((p) => build.pacts.includes(p.id)), [build.pacts, league.pacts]);
   const gielinorScore = useMemo(() => calculateGielinorScore(build, league), [build, league]);
   const buildAnalysis = useMemo(() => analyzeBuild(build, league), [build, league]);
-  const powerRatings = useMemo(() => computeAllPowerRatings(allRelics), [allRelics]);
+  const powerRatings = useMemo(() => computeAllPowerRatings(allRelics, league), [allRelics, league]);
 
   const regionsComplete = build.regions.length === league.maxRegions;
   const relicsComplete = selectedRelics.length === relicTiersWithChoices;

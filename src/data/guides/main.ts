@@ -26,7 +26,7 @@ export const mainAccountGuide: MainAccountGuide = {
           title: "Initial Money Making",
           level: 1,
           content:
-            "At the very start of the game, your best money-making options are simple gathering and processing tasks. Kill cows north of Lumbridge and tan their cowhides at Al Kharid for a quick profit by selling the leather on the Grand Exchange. You can also mine copper and tin ore, smelt bronze bars, and sell them. Picking up steel platebodies from the Wilderness (level 6, near the Graveyard of Shadows) and selling them is another early option. Aim to build up at least 50,000-100,000 gold before moving on, as this covers basic gear, runes, and quest supplies.",
+            "At the very start of the game, your best money-making options are simple gathering and processing tasks. Kill cows north of Lumbridge and tan their cowhides at Al Kharid for a quick profit by selling the leather on the Grand Exchange. You can also mine copper and tin ore, smelt bronze bars, and sell them. Collecting and selling items from shops or gathering resources like flax can also help early on. Aim to build up a cash stack before moving on, as this covers basic gear, runes, and quest supplies.",
           subsections: [],
         },
       ],
@@ -62,14 +62,14 @@ export const mainAccountGuide: MainAccountGuide = {
           title: "Basic Money Making",
           level: 1,
           content:
-            "Tanning cowhides at Al Kharid or the Crafting Guild generates 100,000-200,000 gold per hour. If you have the Magic level, enchanting sapphire rings into rings of recoil or emerald amulets into amulets of defence is decent profit. Killing Chaos Druids in the Edgeville Dungeon drops valuable herbs that sell well on the Grand Exchange. You can also start doing easy Treasure Trails (clue scrolls) from pickpocketing HAM members for a chance at rare rewards. For a less conventional approach, looting on PvP worlds near the Grand Exchange can yield quick gold, though it's inconsistent and risky for new players.",
+            "Tanning cowhides at Al Kharid or the Crafting Guild is decent early-game money. If you have the Magic level, enchanting sapphire rings into rings of recoil or emerald amulets into amulets of defence is solid profit. Killing Chaos Druids in the Edgeville Dungeon drops valuable herbs that sell well on the Grand Exchange. You can also start doing easy Treasure Trails (clue scrolls) from pickpocketing HAM members for a chance at rare rewards. For a less conventional approach, looting on PvP worlds near the Grand Exchange can yield quick gold, though it's inconsistent and risky for new players.",
           subsections: [],
         },
         {
           title: "Early Gear Upgrades",
           level: 1,
           content:
-            "Focus on achieving these gear milestones: a rune scimitar at 40 Attack, full rune armour at 40 Defence, an amulet of power (or glory if you can afford it), and a combat bracelet. For Ranged, get a maple shortbow and green dragonhide armour at 40 Ranged and Defence. For Magic, equip wizard robes and an elemental staff. An Obsidian cape from the Champions' Guild TzHaar shop area or a team cape works as a cheap back slot item. Once you can afford it, an amulet of glory provides solid all-around combat bonuses and useful teleports.",
+            "Focus on achieving these gear milestones: a rune scimitar at 40 Attack, full rune armour at 40 Defence, an amulet of power (or glory if you can afford it), and a combat bracelet. For Ranged, get a maple shortbow and green dragonhide armour at 40 Ranged and Defence. For Magic, equip wizard robes and an elemental staff. An Obsidian cape from TzHaar City shops (Karamja volcano) or a team cape works as a cheap back slot item. Once you can afford it, an amulet of glory provides solid all-around combat bonuses and useful teleports.",
           subsections: [],
         },
       ],
@@ -84,7 +84,7 @@ export const mainAccountGuide: MainAccountGuide = {
           title: "Recipe for Disaster and Barrows Gloves",
           level: 1,
           content:
-            "Recipe for Disaster (RFD) is a quest series that requires completing 8 sub-quests, each with different skill and quest requirements. The final reward is Barrows Gloves, which provide the best melee attack bonuses of any gloves and are essential for efficient PvM. To complete the entire quest, you need 175 quest points and a wide range of skills including 70 Cooking, 53 Fishing, 53 Thieving, and 59 Magic among others. Work toward RFD from the start of mid game, as the requirements naturally push you to level a balanced set of skills and complete many other useful quests. Use the quest helper plugin in RuneLite to track your progress.",
+            "Recipe for Disaster (RFD) is a quest series that requires completing 8 sub-quests, each with different skill and quest requirements. The final reward is Barrows Gloves, which provide the best melee attack bonuses of any gloves and are essential for efficient PvM. To complete the entire quest, you need 176 quest points and a wide range of skill requirements including 70 Cooking and 59 Magic among others. Work toward RFD from the start of mid game, as the requirements naturally push you to level a balanced set of skills and complete many other useful quests. Use the quest helper plugin in RuneLite to track your progress.",
           subsections: [],
         },
         {
@@ -98,14 +98,14 @@ export const mainAccountGuide: MainAccountGuide = {
           title: "Slayer Training",
           level: 1,
           content:
-            "Slayer becomes your primary source of combat XP and money from the mid game onward. Aim for key milestones: Broad Bolts at 55, Dust Devils at 65 (burst with Magic for fast XP), Gargoyles at 75 (excellent AFK money), and Abyssal Demons at 85 (whip drops). Use Konar for points early, then switch to Nieve/Steve at 85 combat or Duradel at 100 combat for better tasks. Block and skip bad tasks aggressively — efficient Slayer is about maximizing XP per hour, not completing every assignment.",
+            "Slayer becomes your primary source of combat XP and money from the mid game onward. Aim for key milestones: Broad Bolts at 55, Dust Devils at 65 (burst with Magic for fast XP), Gargoyles at 75 (excellent AFK money), and Abyssal Demons at 85 (whip drops). Use Konar once you reach 75 combat for bonus points, then switch to Nieve/Steve at 85 combat or Duradel at 100 combat for better tasks. Block and skip bad tasks aggressively — efficient Slayer is about maximizing XP per hour, not completing every assignment.",
           subsections: [],
         },
         {
           title: "Mid Game Money Making",
           level: 1,
           content:
-            "Blast Furnace becomes available and is one of the best mid-game money makers. Smelting steel bars earns around 600,000 gold per hour, and adamantite or runite bars push profits significantly higher at 50+ and 85+ Smithing. Herb runs are a passive money maker you should start immediately: plant ranarr or snapdragon seeds across all available patches every 80 minutes for 100,000-200,000 gold per run. Gargoyles at 75 Slayer are an excellent AFK money-making Slayer task, dropping 20,000-30,000 gold in alchables per kill. Birdhouse runs on Fossil Island are another passive activity that generates hunter XP and valuable bird nests every 50 minutes.",
+            "Blast Furnace becomes available and is one of the best mid-game money makers. Smelting steel bars is good money, and adamantite or runite bars push profits significantly higher at 50+ and 85+ Smithing. Herb runs are a passive money maker you should start immediately: plant ranarr or snapdragon seeds across all available patches every 80 minutes for reliable passive income. Gargoyles at 75 Slayer are an excellent AFK money-making Slayer task, dropping generous alchable drops. Birdhouse runs on Fossil Island are another passive activity that generates hunter XP and valuable bird nests every 50 minutes.",
           subsections: [],
         },
         {
@@ -141,7 +141,7 @@ export const mainAccountGuide: MainAccountGuide = {
           title: "Bossing",
           level: 1,
           content:
-            "Vorkath is one of the best consistent money makers in the game, earning 3-4 million gold per hour with a Dragon Hunter Crossbow or Dragon Hunter Lance. It requires completion of Dragon Slayer II and has straightforward mechanics. Zulrah is a more mechanically demanding boss that drops the Toxic Blowpipe and Serpentine Helm, both best-in-slot items. It requires completion of Regicide and rewards 2-4 million gold per hour. The God Wars Dungeon (GWD) contains four boss rooms: General Graardor drops Bandos armour (best melee), Kree'arra drops Armadyl armour (best ranged), Commander Zilyana drops the Armadyl Crossbow, and K'ril Tsutsaroth drops the Zamorakian Spear and Staff of the Dead. GWD is best done with 90+ combat stats and 70+ Agility for shortcuts.",
+            "Vorkath is one of the best consistent money makers in the game with a Dragon Hunter Crossbow or Dragon Hunter Lance. It requires completion of Dragon Slayer II and has straightforward mechanics. Zulrah is a more mechanically demanding boss that drops the Toxic Blowpipe and Serpentine Helm, both best-in-slot items. It requires completion of Regicide and is a strong money maker. The God Wars Dungeon (GWD) contains four boss rooms: General Graardor drops Bandos armour (best melee), Kree'arra drops Armadyl armour (best ranged), Commander Zilyana drops the Armadyl Crossbow, and K'ril Tsutsaroth drops the Zamorakian Spear and Staff of the Dead. GWD is best done with 90+ combat stats and 70+ Agility for shortcuts.",
           subsections: [],
         },
         {
@@ -169,7 +169,7 @@ export const mainAccountGuide: MainAccountGuide = {
           title: "Elite Diaries",
           level: 1,
           content:
-            "Elite Achievement Diaries require high skill levels (typically 80-91) and completion of advanced quests. The rewards are significant: the Karamja Elite Diary provides free teleports to the gem mine and double Tokkul from TzHaar content, the Lumbridge Elite Diary provides unlimited daily teleports via the Explorer's Ring, and the Ardougne Elite Diary gives the best cloak in the game with a free daily teleport to a farming patch. The Western Provinces Elite Diary grants access to the best Slayer master in the game (Duradel shortcut via Shilo Village), and the Fremennik Elite Diary provides noted Dagannoth King bones. Complete elite diaries as you reach the required levels -- the rewards compound over hundreds of hours of play.",
+            "Elite Achievement Diaries require high skill levels (typically 80-91) and completion of advanced quests. The rewards are significant: the Karamja Elite Diary provides free teleports to the gem mine and double Tokkul from TzHaar content, the Lumbridge Elite Diary provides unlimited daily teleports via the Explorer's Ring, and the Ardougne Elite Diary gives the best cloak in the game with a free daily teleport to a farming patch. The Western Provinces Elite Diary provides unlimited Zulrah teleports and crystal equipment benefits, and the Fremennik Elite Diary provides noted Dagannoth King bones. Complete elite diaries as you reach the required levels -- the rewards compound over hundreds of hours of play.",
           subsections: [],
         },
         {
@@ -185,7 +185,7 @@ export const mainAccountGuide: MainAccountGuide = {
       title: "Money Making Methods",
       level: 0,
       content:
-        "Making gold is essential at every stage of the game. Your money-making methods will evolve as your stats and gear improve. Early methods are slow but accessible, while late-game methods can earn 3-5 million gold per hour or more. Always consider passive money makers like herb runs and birdhouse runs alongside your primary activity.",
+        "Making gold is essential at every stage of the game. Your money-making methods will evolve as your stats and gear improve. Early methods are slow but accessible, while late-game methods are significantly more profitable. Always consider passive money makers like herb runs and birdhouse runs alongside your primary activity.",
       subsections: [
         {
           title: "Low Level Methods",
@@ -197,21 +197,21 @@ export const mainAccountGuide: MainAccountGuide = {
               title: "Tanning Cowhides",
               level: 2,
               content:
-                "Kill cows and collect their cowhides, then tan them at the Al Kharid tannery (1 gold per hide) or the Crafting Guild tanner. Sell the leather on the Grand Exchange. This earns roughly 100,000-150,000 gold per hour and also trains your combat stats. The Crafting Guild tannery is faster if you have 40 Crafting and access.",
+                "Kill cows and collect their cowhides, then tan them at the Al Kharid tannery (1 gold per hide) or the Crafting Guild tanner. Sell the leather on the Grand Exchange. This is decent early-game money and also trains your combat stats. The Crafting Guild tannery is faster if you have 40 Crafting and access.",
               subsections: [],
             },
             {
               title: "Enchanting Jewellery",
               level: 2,
               content:
-                "Buy unenchanted jewellery from the Grand Exchange and enchant them using the appropriate Magic spell. Sapphire rings into rings of recoil (Level 7 Enchant) and emerald amulets into amulets of defence (Level 27 Enchant) are both profitable. This also trains your Magic level. Profit varies with market prices but typically runs 100,000-300,000 gold per hour.",
+                "Buy unenchanted jewellery from the Grand Exchange and enchant them using the appropriate Magic spell. Sapphire rings into rings of recoil (Level 7 Enchant) and emerald amulets into amulets of defence (Level 27 Enchant) are both profitable. This also trains your Magic level. Profit varies with market prices but is generally solid.",
               subsections: [],
             },
             {
               title: "Killing Chaos Druids",
               level: 2,
               content:
-                "Chaos Druids in the Edgeville Dungeon (or Taverley Dungeon for a safer location) drop grimy herbs frequently. Ranarr weeds, snapdragon, and other valuable herbs add up quickly. This method earns 200,000-400,000 gold per hour depending on herb prices and your combat level. Bring food and an antipoison if using the Edgeville Dungeon, as other players may attack you in the Wilderness section.",
+                "Chaos Druids in the Edgeville Dungeon (or Taverley Dungeon for a safer location) drop grimy herbs frequently. Ranarr weeds, snapdragon, and other valuable herbs add up quickly. This is a solid early money method, with profit depending on herb prices and your combat level. Bring food and an antipoison if using the Edgeville Dungeon, as other players may attack you in the Wilderness section.",
               subsections: [],
             },
           ],
@@ -226,21 +226,21 @@ export const mainAccountGuide: MainAccountGuide = {
               title: "Blast Furnace",
               level: 2,
               content:
-                "The Blast Furnace in Keldagrim lets you smelt bars using half the normal coal requirement. Smelting steel bars earns around 600,000 gold per hour, mithril bars around 500,000, and adamantite bars around 800,000-1,000,000. At 85 Smithing, runite bars earn 1,200,000+ gold per hour. Use the official Blast Furnace worlds (352, 355, 358, 386) where other players operate the machinery. Bring a coal bag from Motherlode Mine to double your efficiency. Ice gloves (from the Ice Queen) let you pick up bars without waiting for them to cool.",
+                "The Blast Furnace in Keldagrim lets you smelt bars using half the normal coal requirement. Smelting steel bars is good money, and profits increase substantially with mithril, adamantite, and runite bars at higher Smithing levels. Use the official Blast Furnace worlds where other players operate the machinery. Bring a coal bag from Motherlode Mine to double your efficiency. Ice gloves (from the Ice Queen) let you pick up bars without waiting for them to cool.",
               subsections: [],
             },
             {
               title: "Herb Runs",
               level: 2,
               content:
-                "Herb runs involve planting herb seeds across all available farming patches and harvesting them every 80 minutes. Ranarr seeds are profitable at any Farming level, while snapdragon and torstol become available at higher levels. With all patches unlocked (Falador, Ardougne, Catherby, Morytania, Hosidius, Farming Guild, Troll Stronghold, and Harmony Island), a single run takes 5-10 minutes and yields 100,000-200,000 gold in profit. Use ultracompost and the Magic Secateurs from Fairy Tale Part I to maximize yield. Herb runs are best done between other activities.",
+                "Herb runs involve planting herb seeds across all available farming patches and harvesting them every 80 minutes. Ranarr seeds are profitable at any Farming level, while snapdragon and torstol become available at higher levels. With all patches unlocked (Falador, Ardougne, Catherby, Morytania, Hosidius, Farming Guild, Troll Stronghold, and Harmony Island), a single run takes 5-10 minutes and yields reliable passive income. Use ultracompost and the Magic Secateurs from Fairy Tale Part I to maximize yield. Herb runs are best done between other activities.",
               subsections: [],
             },
             {
               title: "Barrows",
               level: 2,
               content:
-                "Barrows runs take about 3-5 minutes each and average 80,000-120,000 gold per chest including runes and equipment drops. With Morytania Hard Diary completed, rune drops are increased by 50%, significantly boosting average profit to around 150,000 per chest. Use Iban's Blast or Trident of the Seas for the magic-vulnerable brothers and a melee weapon for Ahrim. Complete each run quickly by only killing the brothers needed for maximum reward potential (all six).",
+                "Barrows runs take about 3-5 minutes each and provide decent profit per chest from runes and equipment drops. With Morytania Hard Diary completed, rune drops are increased by 50%, significantly boosting average profit per chest. Use Iban's Blast or Trident of the Seas for the magic-vulnerable brothers and a melee weapon for Ahrim. Complete each run quickly by only killing the brothers needed for maximum reward potential (all six).",
               subsections: [],
             },
           ],
@@ -255,28 +255,28 @@ export const mainAccountGuide: MainAccountGuide = {
               title: "Vorkath",
               level: 2,
               content:
-                "Vorkath is a consistent 3-4 million gold per hour with a Dragon Hunter Crossbow or Dragon Hunter Lance (5-6 million with max gear). It requires completion of Dragon Slayer II and 90+ Ranged or melee stats. Each kill averages about 120,000-150,000 gold in loot. Vorkath's mechanics are straightforward: dodge the acid phase, walk during the zombie spawn phase, and pray against its attacks. The consistency of Vorkath's drops makes it one of the most reliable money makers in the game.",
+                "Vorkath is one of the best consistent money makers in the game with a Dragon Hunter Crossbow or Dragon Hunter Lance. It requires completion of Dragon Slayer II and 90+ Ranged or melee stats. Each kill provides generous loot. Vorkath's mechanics are straightforward: dodge the acid phase, walk during the zombie spawn phase, and pray against its attacks. The consistency of Vorkath's drops makes it one of the most reliable money makers in the game.",
               subsections: [],
             },
             {
               title: "Zulrah",
               level: 2,
               content:
-                "Zulrah averages 2-4 million gold per hour and drops valuable unique items including the Toxic Blowpipe, Serpentine Helm, and Magic Fang. It requires completion of Regicide, 85+ Magic and Ranged, and knowledge of Zulrah's four rotation patterns. Each kill takes 1.5-3 minutes depending on gear and skill. Zulrah is more mechanically demanding than Vorkath but has higher potential profit through unique drops. Use the Zulrah plugin in RuneLite to track rotations while learning.",
+                "Zulrah is a strong money maker and drops valuable unique items including the Toxic Blowpipe, Serpentine Helm, and Magic Fang. It requires completion of Regicide, 85+ Magic and Ranged, and knowledge of Zulrah's four rotation patterns. Each kill takes 1.5-3 minutes depending on gear and skill. Zulrah is more mechanically demanding than Vorkath but has higher potential profit through unique drops. Use the Zulrah plugin in RuneLite to track rotations while learning.",
               subsections: [],
             },
             {
               title: "Raids",
               level: 2,
               content:
-                "Chambers of Xeric and Tombs of Amascut are the most profitable repeatable content in the game when considering unique drop rates. CoX averages 4-8 million gold per hour including uniques, while ToA at higher invocation levels can exceed this. Theatre of Blood is similarly profitable but requires a coordinated team and near-max gear. Unique drops from raids (Twisted Bow, Scythe of Vitur, Fang of Osmumten) are worth hundreds of millions to over a billion gold. Even without uniques, regular drops average 200,000-400,000 gold per raid.",
+                "Chambers of Xeric and Tombs of Amascut are the most profitable repeatable content in the game when considering unique drop rates. CoX is highly profitable, while ToA at higher invocation levels can exceed this. Theatre of Blood is similarly profitable but requires a coordinated team and near-max gear. Unique drops from raids (Twisted Bow, Scythe of Vitur, Fang of Osmumten) are worth hundreds of millions to over a billion gold. Even without uniques, raids provide solid regular drops.",
               subsections: [],
             },
             {
               title: "Runecrafting",
               level: 2,
               content:
-                "Runecrafting becomes highly profitable at higher levels. Crafting double nature runes at 91 Runecrafting earns 1,500,000-2,000,000 gold per hour through the Abyss. Blood runes at 77 Runecrafting via the Arceuus method earn around 600,000-800,000 gold per hour with minimal effort, making it a popular AFK option. Wrath runes at 95 Runecrafting earn about 1,500,000-1,800,000 gold per hour. The Guardians of the Rift minigame is a popular alternative that provides competitive Runecrafting XP with decent profit.",
+                "Runecrafting becomes highly profitable at higher levels. Crafting double nature runes at 91 Runecrafting through the Abyss is one of the best Runecraft money methods. Blood runes at 77 Runecrafting via the Arceuus method provide steady Runecraft income with minimal effort, making it a popular AFK option. Wrath runes at 95 Runecrafting are profitable at high levels. The Guardians of the Rift minigame is a popular alternative that provides competitive Runecrafting XP with decent profit.",
               subsections: [],
             },
           ],

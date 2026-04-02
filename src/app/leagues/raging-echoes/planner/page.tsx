@@ -112,7 +112,7 @@ export default function RagingEchoesPlanner() {
   const selectedRelics = useMemo(() => allRelics.filter((r) => build.relics.includes(r.id)), [build.relics, allRelics]);
   const gielinorScore = useMemo(() => calculateGielinorScore(build, league), [build, league]);
   const buildAnalysis = useMemo(() => analyzeBuild(build, league), [build, league]);
-  const powerRatings = useMemo(() => computeAllPowerRatings(allRelics), [allRelics]);
+  const powerRatings = useMemo(() => computeAllPowerRatings(allRelics, league), [allRelics, league]);
   const relicTiersWithChoices = league.relicTiers.filter((t) => t.relics.length > 0).length;
 
   const masteryPointsUsed = build.pacts.filter((id) => id.startsWith("re-mastery-")).length;

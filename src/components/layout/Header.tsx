@@ -42,6 +42,7 @@ const navItems = [
     ],
   },
   { label: "Snowflake", href: "/snowflake" },
+  { label: "Data Status", href: "/data-status" },
 ];
 
 export function Header() {

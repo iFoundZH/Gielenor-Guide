@@ -13,7 +13,7 @@ const tierColors: Record<string, "gold" | "red" | "green" | "blue" | "purple" | 
   C: "default",
 };
 
-type SortKey = "tier" | "points" | "ptsPerHour" | "tasks";
+type SortKey = "tier" | "points" | "tasks";
 
 export function EfficiencyGuideSection({ guide }: { guide: EfficiencyGuide }) {
   const [regionSort, setRegionSort] = useState<SortKey>("tier");
@@ -24,9 +24,8 @@ export function EfficiencyGuideSection({ guide }: { guide: EfficiencyGuide }) {
       const order = { S: 0, A: 1, B: 2, C: 3 };
       return (order[a.tier] ?? 4) - (order[b.tier] ?? 4);
     }
-    if (regionSort === "points") return b.totalPoints - a.totalPoints;
-    if (regionSort === "ptsPerHour") return b.estimatedPtsPerHour - a.estimatedPtsPerHour;
-    return b.totalTasks - a.totalTasks;
+    if (regionSort === "points") return (b.totalPoints ?? 0) - (a.totalPoints ?? 0);
+    return (b.totalTasks ?? 0) - (a.totalTasks ?? 0);
   });
 
   const maxTierPoints = guide.tierProjections.length > 0
@@ -83,7 +82,6 @@ export function EfficiencyGuideSection({ guide }: { guide: EfficiencyGuide }) {
           >
             <option value="tier">Sort: Tier</option>
             <option value="points">Sort: Total Points</option>
-            <option value="ptsPerHour">Sort: Pts/Hour</option>
             <option value="tasks">Sort: Task Count</option>
           </select>
         </div>
@@ -199,17 +197,7 @@ export function EfficiencyGuideSection({ guide }: { guide: EfficiencyGuide }) {
                 {phase.name}
               </h4>
               <p className="text-xs text-osrs-text-dim mb-2">{phase.pointRange}</p>
-              <p className="text-sm text-osrs-text-dim mb-3">{phase.strategy}</p>
-              <div className="flex gap-4 text-xs">
-                <div>
-                  <span className="text-osrs-text-dim">Tasks/hr: </span>
-                  <span className="text-osrs-text font-bold">{phase.tasksPerHour}</span>
-                </div>
-                <div>
-                  <span className="text-osrs-text-dim">Pts/hr: </span>
-                  <span className="text-osrs-gold font-bold">{phase.pointsPerHour}</span>
-                </div>
-              </div>
+              <p className="text-sm text-osrs-text-dim">{phase.strategy}</p>
             </Card>
           ))}
         </div>
@@ -253,10 +241,9 @@ export function EfficiencyGuideSection({ guide }: { guide: EfficiencyGuide }) {
                   }
                 />
               </div>
-              <div className="w-32 flex-shrink-0 text-right text-xs">
-                <span className="text-osrs-text-dim">{tier.estimatedHours}h</span>
-                <span className="text-osrs-text-dim mx-1">/</span>
-                <span className="text-osrs-text">Day {tier.estimatedDay}</span>
+              <div className="w-24 flex-shrink-0 text-right text-xs">
+                <span className="text-osrs-gold font-bold">{tier.pointsRequired.toLocaleString()}</span>
+                <span className="text-osrs-text-dim"> pts</span>
               </div>
             </div>
           ))}
@@ -458,11 +445,7 @@ export function EfficiencyGuideSection({ guide }: { guide: EfficiencyGuide }) {
                   {boss.boss}
                 </h4>
                 <p className="text-xs text-osrs-text-dim mb-2">{boss.region}</p>
-                <p className="text-sm text-osrs-text-dim mb-2">{boss.strategy}</p>
-                <div className="text-xs">
-                  <span className="text-osrs-text-dim">Est. KPH: </span>
-                  <span className="text-osrs-gold font-bold">{boss.kph}</span>
-                </div>
+                <p className="text-sm text-osrs-text-dim">{boss.strategy}</p>
               </Card>
             ))}
           </div>
@@ -484,22 +467,24 @@ function RegionCard({ region }: { region: RegionAnalysis }) {
           >
             {region.regionName}
           </h4>
-          <div className="flex flex-wrap gap-3 text-xs mb-2">
-            <span>
-              <span className="text-osrs-text-dim">Tasks: </span>
-              <span className="text-osrs-text font-bold">{region.totalTasks}</span>
-            </span>
-            <span>
-              <span className="text-osrs-text-dim">Points: </span>
-              <span className="text-osrs-gold font-bold">
-                {region.totalPoints.toLocaleString()}
-              </span>
-            </span>
-            <span>
-              <span className="text-osrs-text-dim">Pts/hr: </span>
-              <span className="text-osrs-text font-bold">~{region.estimatedPtsPerHour}</span>
-            </span>
-          </div>
+          {(region.totalTasks != null || region.totalPoints != null) && (
+            <div className="flex flex-wrap gap-3 text-xs mb-2">
+              {region.totalTasks != null && (
+                <span>
+                  <span className="text-osrs-text-dim">Tasks: </span>
+                  <span className="text-osrs-text font-bold">{region.totalTasks}</span>
+                </span>
+              )}
+              {region.totalPoints != null && (
+                <span>
+                  <span className="text-osrs-text-dim">Points: </span>
+                  <span className="text-osrs-gold font-bold">
+                    {region.totalPoints.toLocaleString()}
+                  </span>
+                </span>
+              )}
+            </div>
+          )}
           {region.uniqueBosses.length > 0 && (
             <div className="flex flex-wrap gap-1 mb-2">
               {region.uniqueBosses.map((boss) => (

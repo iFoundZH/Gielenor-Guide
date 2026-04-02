@@ -27,7 +27,6 @@ export const reGettingStarted: GettingStartedGuide = {
         "Review the relic and region unlock thresholds",
       ],
       tips: [
-        "Set your XP mode before doing anything else — this cannot be changed later",
         "Misthalin and Karamja are your starting regions and are always available",
         "Pin a few easy tasks from the task list so you have immediate goals",
         "Check the league HUD to understand point thresholds for relics and regions",
@@ -75,7 +74,7 @@ export const reGettingStarted: GettingStartedGuide = {
         "Start pursuing combat milestones for mastery points",
       ],
       tips: [
-        "Dodgy Deals is the fastest GP and task combo — 100% pickpocket success with noted loot is incredibly powerful",
+        "Dodgy Deals is the fastest GP and task combo — greatly increased pickpocket success with noted loot is incredibly powerful",
         "Corner Cutter is the safest choice for newer players — 100% agility success rate removes frustration and double marks are great income",
         "Friendly Forager supports herblore pipelines early if you plan to do a lot of PvM later",
         "Start thinking about which combat mastery you want to invest in based on your preferred style",
@@ -185,7 +184,7 @@ export const reRelicGuide: RelicGuide = {
           name: "Dodgy Deals",
           ranking: "S",
           description:
-            "100% pickpocket success rate with noted loot. Can pickpocket multiple NPCs simultaneously and stalls never deplete. Insane GP generation and thieving XP.",
+            "Greatly increased pickpocket success rate with noted loot. AoE pickpocketing hits multiple NPCs simultaneously and stalls never deplete. Insane GP generation and thieving XP.",
           bestFor: [
             "GP generation",
             "Fast thieving tasks",
@@ -213,7 +212,7 @@ export const reRelicGuide: RelicGuide = {
           name: "Friendly Forager",
           ranking: "A",
           description:
-            "Gathering skills passively fill an herb pouch. 90% secondary ingredient preservation and all potions are created as 4-dose. Excellent herblore support.",
+            "Gathering skills passively fill an herb pouch. High secondary ingredient preservation and all potions are created as 4-dose. Excellent herblore support.",
           bestFor: [
             "PvM-focused accounts needing potions",
             "Herblore task completion",
@@ -302,7 +301,7 @@ export const reRelicGuide: RelicGuide = {
           name: "Golden God",
           ranking: "A",
           description:
-            "Free high alchemy with 65% item preservation. Shops give noted items. Prayer points restored from spending GP. Strong GP engine and prayer sustain.",
+            "Free high alchemy with chance to preserve items on alchemy. Shops give noted items. Prayer points restored from spending GP. Strong GP engine and prayer sustain.",
           bestFor: [
             "GP generation without thieving",
             "Prayer-focused accounts",
@@ -367,7 +366,7 @@ export const reRelicGuide: RelicGuide = {
           name: "Treasure Arbiter",
           ranking: "A",
           description:
-            "1/15 clue drop rate from all sources. 10x clue vessel capacity. Always receive maximum casket rewards with minimum steps per clue.",
+            "Greatly increased clue drop rate from all sources. Greatly increased vessel capacity. Always receive maximum casket rewards with minimum steps per clue.",
           bestFor: [
             "Clue scroll specialists",
             "Players who paired Clue Compass at T3",
@@ -441,7 +440,7 @@ export const reRelicGuide: RelicGuide = {
           name: "Overgrown",
           ranking: "A",
           description:
-            "Crops never die, auto-harvest and auto-replant on completion, and 75% seed preservation. Turns farming into a fully passive income stream.",
+            "Crops never die, auto-harvest and auto-replant on completion, and high seed preservation. Turns farming into a fully passive income stream.",
           bestFor: [
             "Farming task completionists",
             "Herblore pipeline support",
@@ -576,7 +575,7 @@ export const reRegionGuide: RegionGuide = {
       name: "Kourend",
       tier: "S",
       type: "choosable",
-      echoBoss: "Echo Hydra",
+      echoBoss: "Echo Skotizo",
       highlights: [
         "Chambers of Xeric (CoX) — premier raid content",
         "Alchemical Hydra for high-value Slayer",
@@ -593,7 +592,7 @@ export const reRegionGuide: RegionGuide = {
       name: "Asgarnia",
       tier: "A",
       type: "choosable",
-      echoBoss: "Echo Graardor",
+      echoBoss: "Echo Cerberus",
       highlights: [
         "God Wars Dungeon — all four generals plus Nex",
         "Corporeal Beast for high-level group PvM",
@@ -609,7 +608,7 @@ export const reRegionGuide: RegionGuide = {
       name: "Kandarin",
       tier: "A",
       type: "choosable",
-      echoBoss: "Echo Zulrah",
+      echoBoss: "Echo Hespori",
       highlights: [
         "Zulrah for Blowpipe and Magic Fang",
         "Seers' Village for fletching, agility course, and maple trees",
@@ -625,7 +624,7 @@ export const reRegionGuide: RegionGuide = {
       name: "Desert",
       tier: "A",
       type: "choosable",
-      echoBoss: "Echo KQ",
+      echoBoss: "Echo Tempoross",
       highlights: [
         "Tombs of Amascut (ToA) — scalable raid with top-tier loot",
         "Kalphite Queen for mid-game bossing",
@@ -641,7 +640,7 @@ export const reRegionGuide: RegionGuide = {
       name: "Fremennik",
       tier: "A",
       type: "choosable",
-      echoBoss: "Echo Vorkath",
+      echoBoss: "Echo Phantom Muspah",
       highlights: [
         "Vorkath for consistent high-value drops",
         "Dagannoth Kings (DKS) for ring upgrades",
@@ -657,7 +656,7 @@ export const reRegionGuide: RegionGuide = {
       name: "Tirannwn",
       tier: "A",
       type: "choosable",
-      echoBoss: "Echo CG",
+      echoBoss: "Echo Araxxor",
       highlights: [
         "Corrupted Gauntlet — best self-sufficient PvM content",
         "Zalcano for mining-based bossing",
@@ -673,7 +672,7 @@ export const reRegionGuide: RegionGuide = {
       name: "Wilderness",
       tier: "B",
       type: "choosable",
-      echoBoss: "Echo Callisto",
+      echoBoss: "Echo Nex",
       highlights: [
         "Callisto, Venenatis, and Vet'ion wilderness bosses",
         "Revenant Caves with PvP disabled in leagues",
@@ -689,7 +688,7 @@ export const reRegionGuide: RegionGuide = {
       name: "Varlamore",
       tier: "B",
       type: "choosable",
-      echoBoss: "Echo Amoxliatl",
+      echoBoss: "Echo Wintertodt",
       highlights: [
         "Fortis Colosseum for endgame wave-based combat",
         "Moons of Peril for group PvM",
@@ -749,7 +748,7 @@ export const reCombatBuilds: CombatBuildGuide = {
           items: [
             "Barrows armor sets (Dharok's, Torag's, Verac's)",
             "Barrows weapons for specific encounters",
-            "Fighter torso from Warriors' Guild (with Asgarnia)",
+            "Fighter torso from Barbarian Assault (with Asgarnia)",
           ],
         },
         {
@@ -802,7 +801,7 @@ export const reCombatBuilds: CombatBuildGuide = {
       ],
       mastery: [
         "Ranged-heavy allocation",
-        "T2 scaling damage (+5% per hit) is core to sustained DPS",
+        "T2 scaling damage per hit is core to sustained DPS",
         "T6 never-miss in PvM eliminates accuracy concerns entirely",
       ],
       gearProgression: [
@@ -872,7 +871,7 @@ export const reCombatBuilds: CombatBuildGuide = {
       ],
       mastery: [
         "Magic-heavy allocation",
-        "T2 damage scaling (+5% per tick between attacks) rewards slow, powerful spells",
+        "T2 damage scaling between attacks rewards slow, powerful spells",
         "T6 guaranteed max hit on low-HP targets is incredible for finishing bosses",
       ],
       gearProgression: [
@@ -1015,20 +1014,20 @@ export const reCombatMasteries: CombatMasteryGuide = {
     "Defeat TzKal-Zuk",
   ],
   universalPassives: [
-    "95% chance to save ammo, runes, and charges",
-    "Healing increased by 20%",
-    "Accuracy increased by 100% for all styles",
-    "Damage taken reduced by 15%",
-    "Prayer point gain increased by 25%",
-    "60% prayer penetration",
+    "High chance to save ammo, runes, and charges",
+    "Increased healing from all sources",
+    "Significantly increased accuracy for all styles",
+    "Reduced damage taken",
+    "Increased prayer point gain from all sources",
+    "Attacks gain prayer penetration",
   ],
   styles: [
     {
       name: "Melee Mastery",
       style: "melee",
       strengths: [
-        "Highest burst potential with echo hits that chain up to 8 times at T6",
-        "Strong sustain with T4 lifesteal on 5% of attacks",
+        "Highest burst potential with echo hits that chain multiple times at T6",
+        "Strong sustain with T4 lifesteal chance",
         "Attack speed reductions at T3 and T5 compound with weapon speed",
       ],
       bestFor: [
@@ -1040,29 +1039,29 @@ export const reCombatMasteries: CombatMasteryGuide = {
         {
           tier: 1,
           effect:
-            "25% chance to roll damage twice, taking the highest result",
+            "Chance to roll damage twice, taking the highest result",
         },
         {
           tier: 2,
           effect:
-            "10% chance for an echo hit — an additional hit at 50% of your max hit",
+            "Chance for echo hits — additional hits at reduced max hit",
         },
         {
           tier: 3,
-          effect: "Attack rate set to 80% of base (attacks are faster)",
+          effect: "Increased attack speed",
         },
         {
           tier: 4,
-          effect: "5% chance to heal for 40% of damage dealt per hit",
+          effect: "Chance to heal from damage dealt",
         },
         {
           tier: 5,
-          effect: "Attack rate set to 50% of base (attacks are much faster)",
+          effect: "Significantly increased attack speed",
         },
         {
           tier: 6,
           effect:
-            "Echo hit chance increases to 20%, and echoes chain up to 8 times",
+            "Greatly increased echo hit chance with multi-target chaining",
         },
       ],
     },
@@ -1070,7 +1069,7 @@ export const reCombatMasteries: CombatMasteryGuide = {
       name: "Ranged Mastery",
       style: "ranged",
       strengths: [
-        "Consistent damage floor with T1 minimum damage at 30% of max hit",
+        "Consistent damage floor with T1 minimum damage guarantee",
         "Scaling damage per hit at T2 rewards sustained combat",
         "T6 never-miss eliminates accuracy as a concern entirely",
       ],
@@ -1082,24 +1081,24 @@ export const reCombatMasteries: CombatMasteryGuide = {
       tiers: [
         {
           tier: 1,
-          effect: "Minimum damage roll is set to 30% of your max hit",
+          effect: "Minimum damage roll is raised to a portion of your max hit",
         },
         {
           tier: 2,
           effect:
-            "Each subsequent hit increases max hit by 5%, resetting at +20%",
+            "Each subsequent hit increases max hit, resetting after several stacks",
         },
         {
           tier: 3,
-          effect: "Attack rate set to 80% of base (attacks are faster)",
+          effect: "Increased attack speed",
         },
         {
           tier: 4,
-          effect: "Every 5th hit heals 5 HP",
+          effect: "Periodic hits heal a small amount of HP",
         },
         {
           tier: 5,
-          effect: "Attack rate set to 50% of base (attacks are much faster)",
+          effect: "Significantly increased attack speed",
         },
         {
           tier: 6,
@@ -1111,7 +1110,7 @@ export const reCombatMasteries: CombatMasteryGuide = {
       name: "Magic Mastery",
       style: "magic",
       strengths: [
-        "Extreme scaling on high-damage hits with T1 bonus above 90% max hit",
+        "Extreme scaling on high-damage hits with T1 bonus on near-max rolls",
         "Passive damage growth between attacks at T2 rewards methodical play",
         "T6 is devastating on high-HP bosses — guaranteed max hits when target HP is low",
       ],
@@ -1124,30 +1123,30 @@ export const reCombatMasteries: CombatMasteryGuide = {
         {
           tier: 1,
           effect:
-            "Hits above 90% of your max hit receive an additional 50% damage bonus",
+            "Hits near your max hit receive a bonus damage multiplier",
         },
         {
           tier: 2,
           effect:
-            "Gain +5% max hit per tick between attacks, stacking up to +40%",
+            "Max hit increases for each tick between attacks, stacking multiple times",
         },
         {
           tier: 3,
-          effect: "Attack rate set to 80% of base (attacks are faster)",
+          effect: "Increased attack speed",
         },
         {
           tier: 4,
           effect:
-            "Hits above 90% of your max hit heal you for 10% of damage dealt",
+            "Near-max hits heal you for a portion of damage dealt",
         },
         {
           tier: 5,
-          effect: "Attack rate set to 50% of base (attacks are much faster)",
+          effect: "Significantly increased attack speed",
         },
         {
           tier: 6,
           effect:
-            "Gain +1% max hit per 100 HP remaining on target, up to +10%. When your hit would be below your max hit, it is set to your max hit instead",
+            "Max hit scales with target's remaining HP. Low hits are boosted to your max hit",
         },
       ],
     },
