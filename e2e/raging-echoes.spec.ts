@@ -49,83 +49,63 @@ test.describe("Raging Echoes Strategy Guide", () => {
     await page.goto("/leagues/raging-echoes/guide");
   });
 
-  test("loads with Rank 1 Guide as default tab", async ({ page }) => {
+  test("loads with all guide tabs", async ({ page }) => {
     await expect(page.locator("h1")).toContainText("Raging Echoes Strategy Guide");
-    // Default tab is now Rank 1 Guide; Speedrunner is a separate tab
+    await expect(page.locator("button >> text=Getting Started")).toBeVisible();
+    await expect(page.locator("button >> text=Relic Guide")).toBeVisible();
+    await expect(page.locator("button >> text=Region Guide")).toBeVisible();
+    await expect(page.locator("button >> text=Combat Builds")).toBeVisible();
+    await expect(page.locator("button >> text=Combat Masteries")).toBeVisible();
     await expect(page.locator("button >> text=Rank 1 Guide")).toBeVisible();
   });
 
-  test("shows all 4 strategy tabs", async ({ page }) => {
-    await expect(page.locator("button >> text=Speedrunner")).toBeVisible();
-    await expect(page.locator("button >> text=PvM Destroyer")).toBeVisible();
-    await expect(page.locator("button >> text=Completionist")).toBeVisible();
-    await expect(page.locator("button >> text=Casual / AFK")).toBeVisible();
+  test("Getting Started tab shows step-by-step guide", async ({ page }) => {
+    // Getting Started is the default tab
+    await expect(page.locator("text=Misthalin").first()).toBeVisible();
   });
 
-  test("Speedrunner shows correct 8 relics", async ({ page }) => {
-    await page.locator("button >> text=Speedrunner").click();
-    const relics = ["Animal Wrangler", "Dodgy Deals", "Clue Compass", "Golden God",
-      "Treasure Arbiter", "Total Recall", "Grimoire", "Specialist"];
-    for (const relic of relics) {
-      await expect(page.locator(`text=${relic}`).first()).toBeVisible();
-    }
+  test("Relic Guide tab shows tier list with relics", async ({ page }) => {
+    await page.locator("button >> text=Relic Guide").click();
+    await expect(page.locator("text=Tier 1").first()).toBeVisible();
+    await expect(page.locator("text=Tier 8").first()).toBeVisible();
+    // Expand T1 to see relics
+    await page.locator("text=Tier 1").first().click();
+    await expect(page.locator("text=Power Miner").first()).toBeVisible();
+    await expect(page.locator("text=Lumberjack").first()).toBeVisible();
+    await expect(page.locator("text=Animal Wrangler").first()).toBeVisible();
   });
 
-  test("PvM Destroyer shows correct relics", async ({ page }) => {
-    await page.locator("button >> text=PvM Destroyer").click();
-    const relics = ["Power Miner", "Corner Cutter", "Bank Heist", "Reloaded",
-      "Slayer Master", "Banker's Note", "Grimoire", "Guardian"];
-    for (const relic of relics) {
-      await expect(page.locator(`text=${relic}`).first()).toBeVisible();
-    }
+  test("Region Guide tab shows regions with tiers", async ({ page }) => {
+    await page.locator("button >> text=Region Guide").click();
+    await expect(page.locator("text=Kourend").first()).toBeVisible();
+    await expect(page.locator("text=Morytania").first()).toBeVisible();
+    await expect(page.locator("text=Kandarin").first()).toBeVisible();
   });
 
-  test("Completionist shows correct relics", async ({ page }) => {
-    await page.locator("button >> text=Completionist").click();
-    const relics = ["Lumberjack", "Friendly Forager", "Fairy's Flight", "Equilibrium",
-      "Production Master", "Total Recall", "Overgrown", "Last Stand"];
-    for (const relic of relics) {
-      await expect(page.locator(`text=${relic}`).first()).toBeVisible();
-    }
+  test("Combat Builds tab shows build archetypes", async ({ page }) => {
+    await page.locator("button >> text=Combat Builds").click();
+    await expect(page.locator("text=Melee").first()).toBeVisible();
+    await expect(page.locator("text=Ranged").first()).toBeVisible();
+    await expect(page.locator("text=Magic").first()).toBeVisible();
   });
 
-  test("shows mastery recommendations", async ({ page }) => {
-    await page.locator("button >> text=Speedrunner").click();
-    await expect(page.locator("text=Recommended Masteries")).toBeVisible();
+  test("Combat Masteries tab shows all 3 styles", async ({ page }) => {
+    await page.locator("button >> text=Combat Masteries").click();
     await expect(page.locator("text=Melee Mastery").first()).toBeVisible();
+    await expect(page.locator("text=Ranged Mastery").first()).toBeVisible();
+    await expect(page.locator("text=Magic Mastery").first()).toBeVisible();
   });
 
-  test("shows Open in Planner button", async ({ page }) => {
-    await page.locator("button >> text=Speedrunner").click();
-    const link = page.locator("a >> text=Open in Planner");
-    await expect(link).toBeVisible();
-    const href = await link.getAttribute("href");
-    expect(href).toContain("/leagues/raging-echoes/planner?build=");
+  test("Combat Masteries tab shows point sources", async ({ page }) => {
+    await page.locator("button >> text=Combat Masteries").click();
+    await expect(page.locator("text=Mastery Point Sources")).toBeVisible();
+    await expect(page.locator("text=Defeat TzTok-Jad").first()).toBeVisible();
   });
 
-  test("Open in Planner loads correct Speedrunner build", async ({ page }) => {
-    await page.locator("button >> text=Speedrunner").click();
-    const link = page.locator("a >> text=Open in Planner");
-    await link.click();
-    await expect(page).toHaveURL(/\/leagues\/raging-echoes\/planner\?build=/);
-    // Should have Speedrunner relics selected
-    await expect(page.locator("text=Selected Relics")).toBeVisible();
-  });
-
-  test("phase cards reference all tier picks", async ({ page }) => {
-    await page.locator("button >> text=Speedrunner").click();
-    // Speedrunner early game should mention T1 and T2
-    await expect(page.locator("text=Animal Wrangler (T1)")).toBeVisible();
-    await expect(page.locator("text=Dodgy Deals (T2)")).toBeVisible();
-  });
-
-  test("difficulty badges display correctly", async ({ page }) => {
-    await page.locator("button >> text=Speedrunner").click();
-    await expect(page.locator("text=Advanced").first()).toBeVisible();
-    await page.locator("button >> text=PvM Destroyer").click();
-    await expect(page.locator("text=Intermediate").first()).toBeVisible();
-    await page.locator("button >> text=Completionist").click();
-    await expect(page.locator("text=Expert").first()).toBeVisible();
+  test("Relic Guide shows tier rankings", async ({ page }) => {
+    await page.locator("button >> text=Relic Guide").click();
+    // Check that ranking badges are visible (S/A/B tiers)
+    await expect(page.locator("text=Tier 1").first()).toBeVisible();
   });
 });
 

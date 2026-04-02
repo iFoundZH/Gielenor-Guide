@@ -2441,9 +2441,7 @@ const tasks: LeagueTask[] = [
     description: "Complete all of the easy tasks in the  Western Provinces Achievement Diary",
     difficulty: "medium",
     points: 30,
-    category: "Tirannwn",
-    region: "tirannwn",
-    skills: [],
+    category: "Diary",
   },
   {
     id: "task-1621",
@@ -2475,9 +2473,7 @@ const tasks: LeagueTask[] = [
     description: "Complete all of the medium tasks in the  Western Provinces Achievement Diary",
     difficulty: "medium",
     points: 30,
-    category: "Tirannwn",
-    region: "tirannwn",
-    skills: [],
+    category: "Diary",
   },
   {
     id: "task-1519",
@@ -3532,7 +3528,6 @@ const tasks: LeagueTask[] = [
     points: 30,
     category: "Asgarnia",
     region: "asgarnia",
-    skills: [],
   },
   {
     id: "task-768",
@@ -3552,7 +3547,6 @@ const tasks: LeagueTask[] = [
     points: 30,
     category: "Asgarnia",
     region: "asgarnia",
-    skills: [],
   },
   {
     id: "task-1813",
@@ -3878,7 +3872,6 @@ const tasks: LeagueTask[] = [
     points: 30,
     category: "Desert",
     region: "desert",
-    skills: [],
   },
   {
     id: "task-897",
@@ -3898,7 +3891,6 @@ const tasks: LeagueTask[] = [
     points: 30,
     category: "Desert",
     region: "desert",
-    skills: [],
   },
   {
     id: "task-855",
@@ -4229,7 +4221,6 @@ const tasks: LeagueTask[] = [
     points: 30,
     category: "Fremennik",
     region: "fremennik",
-    skills: [],
   },
   {
     id: "task-624",
@@ -4239,7 +4230,6 @@ const tasks: LeagueTask[] = [
     points: 30,
     category: "Fremennik",
     region: "fremennik",
-    skills: [],
   },
   {
     id: "task-574",
@@ -4567,7 +4557,6 @@ const tasks: LeagueTask[] = [
     points: 30,
     category: "Kandarin",
     region: "kandarin",
-    skills: [],
   },
   {
     id: "task-759",
@@ -4577,7 +4566,6 @@ const tasks: LeagueTask[] = [
     points: 30,
     category: "Kandarin",
     region: "kandarin",
-    skills: [],
   },
   {
     id: "task-1054",
@@ -4587,7 +4575,6 @@ const tasks: LeagueTask[] = [
     points: 30,
     category: "Kandarin",
     region: "kandarin",
-    skills: [],
   },
   {
     id: "task-760",
@@ -4597,7 +4584,6 @@ const tasks: LeagueTask[] = [
     points: 30,
     category: "Kandarin",
     region: "kandarin",
-    skills: [],
   },
   {
     id: "task-746",
@@ -4888,7 +4874,6 @@ const tasks: LeagueTask[] = [
     points: 30,
     category: "Karamja",
     region: "karamja",
-    skills: [],
   },
   {
     id: "task-672",
@@ -4898,7 +4883,6 @@ const tasks: LeagueTask[] = [
     points: 30,
     category: "Karamja",
     region: "karamja",
-    skills: [],
   },
   {
     id: "task-648",
@@ -5251,7 +5235,6 @@ const tasks: LeagueTask[] = [
     points: 30,
     category: "Kourend",
     region: "kourend",
-    skills: [],
   },
   {
     id: "task-136",
@@ -5261,7 +5244,6 @@ const tasks: LeagueTask[] = [
     points: 30,
     category: "Kourend",
     region: "kourend",
-    skills: [],
   },
   {
     id: "task-1592",
@@ -5504,7 +5486,6 @@ const tasks: LeagueTask[] = [
     points: 30,
     category: "Misthalin",
     region: "misthalin",
-    skills: [],
   },
   {
     id: "task-1047",
@@ -5514,7 +5495,6 @@ const tasks: LeagueTask[] = [
     points: 30,
     category: "Misthalin",
     region: "misthalin",
-    skills: [],
   },
   {
     id: "task-489",
@@ -5524,7 +5504,6 @@ const tasks: LeagueTask[] = [
     points: 30,
     category: "Misthalin",
     region: "misthalin",
-    skills: [],
   },
   {
     id: "task-1048",
@@ -5534,7 +5513,6 @@ const tasks: LeagueTask[] = [
     points: 30,
     category: "Misthalin",
     region: "misthalin",
-    skills: [],
   },
   {
     id: "task-503",
@@ -5915,7 +5893,6 @@ const tasks: LeagueTask[] = [
     points: 30,
     category: "Morytania",
     region: "morytania",
-    skills: [],
   },
   {
     id: "task-953",
@@ -5925,7 +5902,6 @@ const tasks: LeagueTask[] = [
     points: 30,
     category: "Morytania",
     region: "morytania",
-    skills: [],
   },
   {
     id: "task-909",
@@ -6775,7 +6751,6 @@ const tasks: LeagueTask[] = [
     points: 30,
     category: "Wilderness",
     region: "wilderness",
-    skills: [],
   },
   {
     id: "task-1027",
@@ -6785,7 +6760,6 @@ const tasks: LeagueTask[] = [
     points: 30,
     category: "Wilderness",
     region: "wilderness",
-    skills: [],
   },
   {
     id: "task-975",
@@ -7198,9 +7172,7 @@ const tasks: LeagueTask[] = [
     description: "Complete all of the hard tasks in the  Western Provinces Achievement Diary",
     difficulty: "hard",
     points: 80,
-    category: "Tirannwn",
-    region: "tirannwn",
-    skills: [],
+    category: "Diary",
   },
   {
     id: "task-1347",
@@ -7841,7 +7813,6 @@ const tasks: LeagueTask[] = [
     points: 80,
     category: "Asgarnia",
     region: "asgarnia",
-    skills: [],
   },
   {
     id: "task-776",
@@ -8164,7 +8135,6 @@ const tasks: LeagueTask[] = [
     points: 80,
     category: "Desert",
     region: "desert",
-    skills: [],
   },
   {
     id: "task-1186",
@@ -8491,7 +8461,6 @@ const tasks: LeagueTask[] = [
     points: 80,
     category: "Fremennik",
     region: "fremennik",
-    skills: [],
   },
   {
     id: "task-575",
@@ -8861,7 +8830,6 @@ const tasks: LeagueTask[] = [
     points: 80,
     category: "Kandarin",
     region: "kandarin",
-    skills: [],
   },
   {
     id: "task-761",
@@ -8871,7 +8839,6 @@ const tasks: LeagueTask[] = [
     points: 80,
     category: "Kandarin",
     region: "kandarin",
-    skills: [],
   },
   {
     id: "task-688",
@@ -9133,7 +9100,6 @@ const tasks: LeagueTask[] = [
     points: 80,
     category: "Karamja",
     region: "karamja",
-    skills: [],
   },
   {
     id: "task-1197",
@@ -9565,7 +9531,6 @@ const tasks: LeagueTask[] = [
     points: 80,
     category: "Kourend",
     region: "kourend",
-    skills: [],
   },
   {
     id: "task-89",
@@ -9635,7 +9600,6 @@ const tasks: LeagueTask[] = [
     points: 80,
     category: "Misthalin",
     region: "misthalin",
-    skills: [],
   },
   {
     id: "task-1049",
@@ -9645,7 +9609,6 @@ const tasks: LeagueTask[] = [
     points: 80,
     category: "Misthalin",
     region: "misthalin",
-    skills: [],
   },
   {
     id: "task-1758",
@@ -9831,7 +9794,6 @@ const tasks: LeagueTask[] = [
     points: 80,
     category: "Morytania",
     region: "morytania",
-    skills: [],
   },
   {
     id: "task-1587",
@@ -10786,7 +10748,6 @@ const tasks: LeagueTask[] = [
     points: 80,
     category: "Wilderness",
     region: "wilderness",
-    skills: [],
   },
   {
     id: "task-981",
@@ -11228,9 +11189,7 @@ const tasks: LeagueTask[] = [
     description: "Complete all of the elite tasks in the  Western Provinces Achievement Diary",
     difficulty: "elite",
     points: 200,
-    category: "Tirannwn",
-    region: "tirannwn",
-    skills: [],
+    category: "Diary",
   },
   {
     id: "task-339",
@@ -12179,7 +12138,6 @@ const tasks: LeagueTask[] = [
     points: 200,
     category: "Asgarnia",
     region: "asgarnia",
-    skills: [],
   },
   {
     id: "task-811",
@@ -12402,7 +12360,6 @@ const tasks: LeagueTask[] = [
     points: 200,
     category: "Desert",
     region: "desert",
-    skills: [],
   },
   {
     id: "task-1189",
@@ -12586,7 +12543,6 @@ const tasks: LeagueTask[] = [
     points: 200,
     category: "Fremennik",
     region: "fremennik",
-    skills: [],
   },
   {
     id: "task-1429",
@@ -12832,7 +12788,6 @@ const tasks: LeagueTask[] = [
     points: 200,
     category: "Kandarin",
     region: "kandarin",
-    skills: [],
   },
   {
     id: "task-762",
@@ -12842,7 +12797,6 @@ const tasks: LeagueTask[] = [
     points: 200,
     category: "Kandarin",
     region: "kandarin",
-    skills: [],
   },
   {
     id: "task-732",
@@ -12989,7 +12943,6 @@ const tasks: LeagueTask[] = [
     points: 200,
     category: "Karamja",
     region: "karamja",
-    skills: [],
   },
   {
     id: "task-665",
@@ -13286,7 +13239,6 @@ const tasks: LeagueTask[] = [
     points: 200,
     category: "Kourend",
     region: "kourend",
-    skills: [],
   },
   {
     id: "task-1067",
@@ -13334,7 +13286,6 @@ const tasks: LeagueTask[] = [
     points: 200,
     category: "Misthalin",
     region: "misthalin",
-    skills: [],
   },
   {
     id: "task-1050",
@@ -13344,7 +13295,6 @@ const tasks: LeagueTask[] = [
     points: 200,
     category: "Misthalin",
     region: "misthalin",
-    skills: [],
   },
   {
     id: "task-486",
@@ -13471,7 +13421,6 @@ const tasks: LeagueTask[] = [
     points: 200,
     category: "Morytania",
     region: "morytania",
-    skills: [],
   },
   {
     id: "task-904",
@@ -14024,7 +13973,6 @@ const tasks: LeagueTask[] = [
     points: 200,
     category: "Wilderness",
     region: "wilderness",
-    skills: [],
   },
   {
     id: "task-973",

@@ -71,7 +71,7 @@ export function Header() {
             {navItems.map((item) => (
               <div
                 key={item.label}
-                className="relative"
+                className="relative pb-2 -mb-2"
                 onMouseEnter={() => item.children && setOpenDropdown(item.label)}
                 onMouseLeave={() => setOpenDropdown(null)}
               >
@@ -84,7 +84,7 @@ export function Header() {
                     <span className="w-1.5 h-1.5 rounded-full bg-osrs-green animate-pulse" />
                   )}
                   {"status" in item && item.status === "ended" && (
-                    <span className="text-[10px] text-osrs-text-dim opacity-60">ended</span>
+                    <span className="text-[10px] text-osrs-text-dim opacity-60 ml-0.5">ended</span>
                   )}
                   {item.children && (
                     <svg className="inline-block w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -93,7 +93,7 @@ export function Header() {
                   )}
                 </Link>
                 {item.children && openDropdown === item.label && (
-                  <div className="absolute top-full left-0 mt-1 w-56 bg-osrs-panel border border-osrs-border rounded-lg shadow-xl py-2">
+                  <div className="absolute top-full left-0 w-56 bg-osrs-panel border border-osrs-border rounded-lg shadow-xl py-2">
                     {item.children.map((child) => (
                       <Link
                         key={child.href}

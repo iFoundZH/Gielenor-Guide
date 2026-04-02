@@ -29,6 +29,15 @@ body {
   font-family: system-ui, -apple-system, sans-serif;
 }
 
+/* Tailwind v4 removed automatic cursor:pointer on buttons — restore it */
+button, [role="button"] {
+  cursor: pointer;
+}
+
+select {
+  cursor: pointer;
+}
+
 /* Scrollbar styling */
 ::-webkit-scrollbar {
   width: 8px;

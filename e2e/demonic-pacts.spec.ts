@@ -26,87 +26,58 @@ test.describe("Demonic Pacts Strategy Guide", () => {
     await page.goto("/leagues/demonic-pacts/guide");
   });
 
-  test("loads with 4 strategy tabs", async ({ page }) => {
+  test("loads with all guide tabs", async ({ page }) => {
     await expect(page.locator("h1")).toContainText("Strategy Guide");
-    await expect(page.locator("button >> text=Speedrunner")).toBeVisible();
-    await expect(page.locator("button >> text=PvM Powerhouse")).toBeVisible();
-    await expect(page.locator("button >> text=Completionist")).toBeVisible();
-    await expect(page.locator("button >> text=Casual / AFK")).toBeVisible();
+    await expect(page.locator("button >> text=Getting Started")).toBeVisible();
+    await expect(page.locator("button >> text=Relic Guide")).toBeVisible();
+    await expect(page.locator("button >> text=Region Guide")).toBeVisible();
+    await expect(page.locator("button >> text=Combat Builds")).toBeVisible();
+    await expect(page.locator("button >> text=Pact Strategies")).toBeVisible();
+    await expect(page.locator("button >> text=Rank 1 Guide")).toBeVisible();
   });
 
-  test("Speedrunner shows real DP relic: Barbarian Gathering", async ({ page }) => {
-    await expect(page.locator("text=Barbarian Gathering").first()).toBeVisible();
+  test("Getting Started tab shows step-by-step guide", async ({ page }) => {
+    // Getting Started is the default tab
+    await expect(page.locator("text=Varlamore").first()).toBeVisible();
   });
 
-  test("PvM shows real DP relic: Endless Harvest", async ({ page }) => {
-    await page.locator("button >> text=PvM Powerhouse").click();
+  test("Relic Guide tab shows tier list", async ({ page }) => {
+    await page.locator("button >> text=Relic Guide").click();
+    await expect(page.locator("text=Tier 1").first()).toBeVisible();
+    await expect(page.locator("text=Tier 8").first()).toBeVisible();
+    // Expand T1 to see relics
+    await page.locator("text=Tier 1").first().click();
     await expect(page.locator("text=Endless Harvest").first()).toBeVisible();
-  });
-
-  test("Completionist shows real DP relic: Abundance", async ({ page }) => {
-    await page.locator("button >> text=Completionist").click();
+    await expect(page.locator("text=Barbarian Gathering").first()).toBeVisible();
     await expect(page.locator("text=Abundance").first()).toBeVisible();
   });
 
-  test("strategies show region recommendations", async ({ page }) => {
-    // Speedrunner regions
-    await expect(page.locator("text=Regions").first()).toBeVisible();
+  test("Region Guide tab shows regions with tiers", async ({ page }) => {
+    await page.locator("button >> text=Region Guide").click();
     await expect(page.locator("text=Kebos & Kourend").first()).toBeVisible();
     await expect(page.locator("text=Morytania").first()).toBeVisible();
-    await expect(page.locator("text=Kandarin").first()).toBeVisible();
+    await expect(page.locator("text=Misthalin").first()).toBeVisible();
   });
 
-  test("shows real DP pact names", async ({ page }) => {
-    // Speedrunner pacts
+  test("Combat Builds tab shows build archetypes", async ({ page }) => {
+    await page.locator("button >> text=Combat Builds").click();
+    await expect(page.locator("text=Melee").first()).toBeVisible();
+    await expect(page.locator("text=Ranged").first()).toBeVisible();
+  });
+
+  test("Pact Strategies tab shows pact rankings", async ({ page }) => {
+    await page.locator("button >> text=Pact Strategies").click();
     await expect(page.locator("text=Glass Cannon").first()).toBeVisible();
-  });
-
-  test("PvM strategy shows Berserker's Oath", async ({ page }) => {
-    await page.locator("button >> text=PvM Powerhouse").click();
     await expect(page.locator("text=Berserker's Oath").first()).toBeVisible();
-  });
-
-  test("auto-selected relics note is shown", async ({ page }) => {
-    await page.locator("button >> text=Speedrunner").click();
-    await expect(page.locator("text=T3 Evil Eye, T4 Conniving Clues")).toBeVisible();
-  });
-
-  test("shows Open in Planner button for each strategy", async ({ page }) => {
-    await page.locator("button >> text=Speedrunner").click();
-    const link = page.locator("a >> text=Open in Planner");
-    await expect(link).toBeVisible();
-    const href = await link.getAttribute("href");
-    expect(href).toContain("/leagues/demonic-pacts/planner?build=");
-  });
-
-  test("Open in Planner loads Speedrunner build correctly", async ({ page }) => {
-    await page.locator("button >> text=Speedrunner").click();
-    await page.locator("a >> text=Open in Planner").click();
-    await expect(page).toHaveURL(/\/leagues\/demonic-pacts\/planner\?build=/);
-    // Should have Barbarian Gathering selected
-    await expect(page.locator("text=Selected Relics")).toBeVisible();
-  });
-
-  test("PvM Open in Planner loads correct regions", async ({ page }) => {
-    await page.locator("button >> text=PvM Powerhouse").click();
-    await page.locator("a >> text=Open in Planner").click();
-    await expect(page).toHaveURL(/\/leagues\/demonic-pacts\/planner\?build=/);
-    // Should load with regions pre-selected
-    await expect(page.locator("text=Selected Regions")).toBeVisible();
-  });
-
-  test("Completionist shows pacts", async ({ page }) => {
-    await page.locator("button >> text=Completionist").click();
     await expect(page.locator("text=Melee Might").first()).toBeVisible();
-    await expect(page.locator("text=Glass Cannon").first()).toBeVisible();
   });
 
-  test("phase cards mention auto-selected relics", async ({ page }) => {
-    await page.locator("button >> text=Speedrunner").click();
-    // Speedrunner phases should mention auto-unlocked relics
-    await expect(page.locator("text=Woodsman").first()).toBeVisible();
-    // Evil Eye is mentioned in relic note
+  test("Relic Guide shows mandatory relics", async ({ page }) => {
+    await page.locator("button >> text=Relic Guide").click();
+    // Expand T3 to see mandatory Evil Eye
+    await page.locator("text=Tier 3").first().click();
     await expect(page.locator("text=Evil Eye").first()).toBeVisible();
+    await expect(page.locator("text=Mandatory").first()).toBeVisible();
   });
 });
 
