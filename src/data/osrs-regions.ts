@@ -70,7 +70,7 @@ export const osrsRegions: OsrsRegion[] = [
     id: "kourend",
     name: "Great Kourend",
     description: "A massive continent with five houses: Arceuus, Hosidius, Lovakengj, Piscarilius, and Shayzien.",
-    subAreas: ["Arceuus", "Hosidius", "Lovakengj", "Piscarilius", "Shayzien", "Fortis Colosseum"],
+    subAreas: ["Arceuus", "Hosidius", "Lovakengj", "Piscarilius", "Shayzien"],
   },
   {
     id: "fossil-island",
@@ -82,7 +82,7 @@ export const osrsRegions: OsrsRegion[] = [
     id: "varlamore",
     name: "Varlamore",
     description: "A new southern kingdom with unique content and the Colosseum.",
-    subAreas: ["Civitas Illa Fortis", "Cam Torum", "Hunter Guild"],
+    subAreas: ["Civitas Illa Fortis", "Cam Torum", "Hunter Guild", "Fortis Colosseum"],
   },
   {
     id: "zanaris",

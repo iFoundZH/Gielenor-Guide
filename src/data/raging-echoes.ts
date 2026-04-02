@@ -688,7 +688,7 @@ const tasks: LeagueTask[] = [
     points: 10,
     category: "Asgarnia",
     region: "asgarnia",
-    skills: ["Cooking", "Quest}} [[Perilous Moons]]"],
+    skills: ["Cooking"],
   },
   {
     id: "task-1312",
@@ -2441,8 +2441,9 @@ const tasks: LeagueTask[] = [
     description: "Complete all of the easy tasks in the  Western Provinces Achievement Diary",
     difficulty: "medium",
     points: 30,
-    category: "Diary}} [[Western Provinces Diary#Easy]]",
-    skills: ["Diary}} [[Western Provinces Diary#Easy]]"],
+    category: "Tirannwn",
+    region: "tirannwn",
+    skills: [],
   },
   {
     id: "task-1621",
@@ -2474,8 +2475,9 @@ const tasks: LeagueTask[] = [
     description: "Complete all of the medium tasks in the  Western Provinces Achievement Diary",
     difficulty: "medium",
     points: 30,
-    category: "Diary}} [[Western Provinces Diary#Medium]]",
-    skills: ["Diary}} [[Western Provinces Diary#Medium]]"],
+    category: "Tirannwn",
+    region: "tirannwn",
+    skills: [],
   },
   {
     id: "task-1519",
@@ -3530,7 +3532,7 @@ const tasks: LeagueTask[] = [
     points: 30,
     category: "Asgarnia",
     region: "asgarnia",
-    skills: ["Diary}} [[Falador Diary#Easy]]"],
+    skills: [],
   },
   {
     id: "task-768",
@@ -3550,7 +3552,7 @@ const tasks: LeagueTask[] = [
     points: 30,
     category: "Asgarnia",
     region: "asgarnia",
-    skills: ["Diary}} [[Falador Diary#Medium]]"],
+    skills: [],
   },
   {
     id: "task-1813",
@@ -3876,7 +3878,7 @@ const tasks: LeagueTask[] = [
     points: 30,
     category: "Desert",
     region: "desert",
-    skills: ["Diary}} [[Desert Diary#Easy]]"],
+    skills: [],
   },
   {
     id: "task-897",
@@ -3896,7 +3898,7 @@ const tasks: LeagueTask[] = [
     points: 30,
     category: "Desert",
     region: "desert",
-    skills: ["Diary}} [[Desert Diary#Medium]]"],
+    skills: [],
   },
   {
     id: "task-855",
@@ -4227,7 +4229,7 @@ const tasks: LeagueTask[] = [
     points: 30,
     category: "Fremennik",
     region: "fremennik",
-    skills: ["Diary}} [[Fremennik Diary#Easy]]"],
+    skills: [],
   },
   {
     id: "task-624",
@@ -4237,7 +4239,7 @@ const tasks: LeagueTask[] = [
     points: 30,
     category: "Fremennik",
     region: "fremennik",
-    skills: ["Diary}} [[Fremennik Diary#Medium]]"],
+    skills: [],
   },
   {
     id: "task-574",
@@ -4565,7 +4567,7 @@ const tasks: LeagueTask[] = [
     points: 30,
     category: "Kandarin",
     region: "kandarin",
-    skills: ["Diary}} [[Ardougne Diary#Easy]]"],
+    skills: [],
   },
   {
     id: "task-759",
@@ -4575,7 +4577,7 @@ const tasks: LeagueTask[] = [
     points: 30,
     category: "Kandarin",
     region: "kandarin",
-    skills: ["Diary}} [[Kandarin Diary#Easy]]"],
+    skills: [],
   },
   {
     id: "task-1054",
@@ -4585,7 +4587,7 @@ const tasks: LeagueTask[] = [
     points: 30,
     category: "Kandarin",
     region: "kandarin",
-    skills: ["Diary}} [[Ardougne Diary#Medium]]"],
+    skills: [],
   },
   {
     id: "task-760",
@@ -4595,7 +4597,7 @@ const tasks: LeagueTask[] = [
     points: 30,
     category: "Kandarin",
     region: "kandarin",
-    skills: ["Diary}} [[Kandarin Diary#Medium]]"],
+    skills: [],
   },
   {
     id: "task-746",
@@ -4886,7 +4888,7 @@ const tasks: LeagueTask[] = [
     points: 30,
     category: "Karamja",
     region: "karamja",
-    skills: ["Diary}} [[Karamja Diary#Easy]]"],
+    skills: [],
   },
   {
     id: "task-672",
@@ -4896,7 +4898,7 @@ const tasks: LeagueTask[] = [
     points: 30,
     category: "Karamja",
     region: "karamja",
-    skills: ["Diary}} [[Karamja Diary#Medium]]"],
+    skills: [],
   },
   {
     id: "task-648",
@@ -5249,7 +5251,7 @@ const tasks: LeagueTask[] = [
     points: 30,
     category: "Kourend",
     region: "kourend",
-    skills: ["Diary}} [[Kourend & Kebos Diary#Easy]]"],
+    skills: [],
   },
   {
     id: "task-136",
@@ -5259,7 +5261,7 @@ const tasks: LeagueTask[] = [
     points: 30,
     category: "Kourend",
     region: "kourend",
-    skills: ["Diary}} [[Kourend & Kebos Diary#Medium]]"],
+    skills: [],
   },
   {
     id: "task-1592",
@@ -5502,7 +5504,7 @@ const tasks: LeagueTask[] = [
     points: 30,
     category: "Misthalin",
     region: "misthalin",
-    skills: ["Diary}} [[Lumbridge & Draynor Diary#Easy]]"],
+    skills: [],
   },
   {
     id: "task-1047",
@@ -5512,7 +5514,7 @@ const tasks: LeagueTask[] = [
     points: 30,
     category: "Misthalin",
     region: "misthalin",
-    skills: ["Diary}} [[Varrock Diary#Easy]]"],
+    skills: [],
   },
   {
     id: "task-489",
@@ -5522,7 +5524,7 @@ const tasks: LeagueTask[] = [
     points: 30,
     category: "Misthalin",
     region: "misthalin",
-    skills: ["Diary}} [[Lumbridge & Draynor Diary#Medium]]"],
+    skills: [],
   },
   {
     id: "task-1048",
@@ -5532,7 +5534,7 @@ const tasks: LeagueTask[] = [
     points: 30,
     category: "Misthalin",
     region: "misthalin",
-    skills: ["Diary}} [[Varrock Diary#Medium]]"],
+    skills: [],
   },
   {
     id: "task-503",
@@ -5913,7 +5915,7 @@ const tasks: LeagueTask[] = [
     points: 30,
     category: "Morytania",
     region: "morytania",
-    skills: ["Diary}} [[Morytania Diary#Easy]]"],
+    skills: [],
   },
   {
     id: "task-953",
@@ -5923,7 +5925,7 @@ const tasks: LeagueTask[] = [
     points: 30,
     category: "Morytania",
     region: "morytania",
-    skills: ["Diary}} [[Morytania Diary#Medium]]"],
+    skills: [],
   },
   {
     id: "task-909",
@@ -6773,7 +6775,7 @@ const tasks: LeagueTask[] = [
     points: 30,
     category: "Wilderness",
     region: "wilderness",
-    skills: ["Diary}} [[Wilderness Diary#Easy]]"],
+    skills: [],
   },
   {
     id: "task-1027",
@@ -6783,7 +6785,7 @@ const tasks: LeagueTask[] = [
     points: 30,
     category: "Wilderness",
     region: "wilderness",
-    skills: ["Diary}} [[Wilderness Diary#Medium]]"],
+    skills: [],
   },
   {
     id: "task-975",
@@ -7196,8 +7198,9 @@ const tasks: LeagueTask[] = [
     description: "Complete all of the hard tasks in the  Western Provinces Achievement Diary",
     difficulty: "hard",
     points: 80,
-    category: "Diary}} [[Western Provinces Diary#Hard]]",
-    skills: ["Diary}} [[Western Provinces Diary#Hard]]"],
+    category: "Tirannwn",
+    region: "tirannwn",
+    skills: [],
   },
   {
     id: "task-1347",
@@ -7838,7 +7841,7 @@ const tasks: LeagueTask[] = [
     points: 80,
     category: "Asgarnia",
     region: "asgarnia",
-    skills: ["Diary}} [[Falador Diary#Hard]]"],
+    skills: [],
   },
   {
     id: "task-776",
@@ -8161,7 +8164,7 @@ const tasks: LeagueTask[] = [
     points: 80,
     category: "Desert",
     region: "desert",
-    skills: ["Diary}} [[Desert Diary#Hard]]"],
+    skills: [],
   },
   {
     id: "task-1186",
@@ -8488,7 +8491,7 @@ const tasks: LeagueTask[] = [
     points: 80,
     category: "Fremennik",
     region: "fremennik",
-    skills: ["Diary}} [[Fremennik Diary#Hard]]"],
+    skills: [],
   },
   {
     id: "task-575",
@@ -8858,7 +8861,7 @@ const tasks: LeagueTask[] = [
     points: 80,
     category: "Kandarin",
     region: "kandarin",
-    skills: ["Diary}} [[Ardougne Diary#Hard]]"],
+    skills: [],
   },
   {
     id: "task-761",
@@ -8868,7 +8871,7 @@ const tasks: LeagueTask[] = [
     points: 80,
     category: "Kandarin",
     region: "kandarin",
-    skills: ["Diary}} [[Kandarin Diary#Hard]]"],
+    skills: [],
   },
   {
     id: "task-688",
@@ -9130,7 +9133,7 @@ const tasks: LeagueTask[] = [
     points: 80,
     category: "Karamja",
     region: "karamja",
-    skills: ["Diary}} [[Karamja Diary#Hard]]"],
+    skills: [],
   },
   {
     id: "task-1197",
@@ -9562,7 +9565,7 @@ const tasks: LeagueTask[] = [
     points: 80,
     category: "Kourend",
     region: "kourend",
-    skills: ["Diary}} [[Kourend & Kebos Diary#Hard]]"],
+    skills: [],
   },
   {
     id: "task-89",
@@ -9632,7 +9635,7 @@ const tasks: LeagueTask[] = [
     points: 80,
     category: "Misthalin",
     region: "misthalin",
-    skills: ["Diary}} [[Lumbridge & Draynor Diary#Hard]]"],
+    skills: [],
   },
   {
     id: "task-1049",
@@ -9642,7 +9645,7 @@ const tasks: LeagueTask[] = [
     points: 80,
     category: "Misthalin",
     region: "misthalin",
-    skills: ["Diary}} [[Varrock Diary#Hard]]"],
+    skills: [],
   },
   {
     id: "task-1758",
@@ -9828,7 +9831,7 @@ const tasks: LeagueTask[] = [
     points: 80,
     category: "Morytania",
     region: "morytania",
-    skills: ["Diary}} [[Morytania Diary#Hard]]"],
+    skills: [],
   },
   {
     id: "task-1587",
@@ -10783,7 +10786,7 @@ const tasks: LeagueTask[] = [
     points: 80,
     category: "Wilderness",
     region: "wilderness",
-    skills: ["Diary}} [[Wilderness Diary#Hard]]"],
+    skills: [],
   },
   {
     id: "task-981",
@@ -11225,8 +11228,9 @@ const tasks: LeagueTask[] = [
     description: "Complete all of the elite tasks in the  Western Provinces Achievement Diary",
     difficulty: "elite",
     points: 200,
-    category: "Diary}} [[Western Provinces Diary#Elite]]",
-    skills: ["Diary}} [[Western Provinces Diary#Elite]]"],
+    category: "Tirannwn",
+    region: "tirannwn",
+    skills: [],
   },
   {
     id: "task-339",
@@ -12175,7 +12179,7 @@ const tasks: LeagueTask[] = [
     points: 200,
     category: "Asgarnia",
     region: "asgarnia",
-    skills: ["Diary}} [[Falador Diary#Elite]]"],
+    skills: [],
   },
   {
     id: "task-811",
@@ -12398,7 +12402,7 @@ const tasks: LeagueTask[] = [
     points: 200,
     category: "Desert",
     region: "desert",
-    skills: ["Diary}} [[Desert Diary#Elite]]"],
+    skills: [],
   },
   {
     id: "task-1189",
@@ -12582,7 +12586,7 @@ const tasks: LeagueTask[] = [
     points: 200,
     category: "Fremennik",
     region: "fremennik",
-    skills: ["Diary}} [[Fremennik Diary#Elite]]"],
+    skills: [],
   },
   {
     id: "task-1429",
@@ -12828,7 +12832,7 @@ const tasks: LeagueTask[] = [
     points: 200,
     category: "Kandarin",
     region: "kandarin",
-    skills: ["Diary}} [[Ardougne Diary#Elite]]"],
+    skills: [],
   },
   {
     id: "task-762",
@@ -12838,7 +12842,7 @@ const tasks: LeagueTask[] = [
     points: 200,
     category: "Kandarin",
     region: "kandarin",
-    skills: ["Diary}} [[Kandarin Diary#Elite]]"],
+    skills: [],
   },
   {
     id: "task-732",
@@ -12985,7 +12989,7 @@ const tasks: LeagueTask[] = [
     points: 200,
     category: "Karamja",
     region: "karamja",
-    skills: ["Diary}} [[Karamja Diary#Elite]]"],
+    skills: [],
   },
   {
     id: "task-665",
@@ -13282,7 +13286,7 @@ const tasks: LeagueTask[] = [
     points: 200,
     category: "Kourend",
     region: "kourend",
-    skills: ["Diary}} [[Kourend & Kebos Diary#Elite]]"],
+    skills: [],
   },
   {
     id: "task-1067",
@@ -13330,7 +13334,7 @@ const tasks: LeagueTask[] = [
     points: 200,
     category: "Misthalin",
     region: "misthalin",
-    skills: ["Diary}} [[Lumbridge & Draynor Diary#Elite]]"],
+    skills: [],
   },
   {
     id: "task-1050",
@@ -13340,7 +13344,7 @@ const tasks: LeagueTask[] = [
     points: 200,
     category: "Misthalin",
     region: "misthalin",
-    skills: ["Diary}} [[Varrock Diary#Elite]]"],
+    skills: [],
   },
   {
     id: "task-486",
@@ -13467,7 +13471,7 @@ const tasks: LeagueTask[] = [
     points: 200,
     category: "Morytania",
     region: "morytania",
-    skills: ["Diary}} [[Morytania Diary#Elite]]"],
+    skills: [],
   },
   {
     id: "task-904",
@@ -14020,7 +14024,7 @@ const tasks: LeagueTask[] = [
     points: 200,
     category: "Wilderness",
     region: "wilderness",
-    skills: ["Diary}} [[Wilderness Diary#Elite]]"],
+    skills: [],
   },
   {
     id: "task-973",
@@ -14714,7 +14718,7 @@ export const ragingEchoesLeague: LeagueData = {
   startDate: "2024-11-27",
   endDate: "2025-01-22",
   wikiUrl: "https://oldschool.runescape.wiki/w/Raging_Echoes_League",
-  lastSynced: "2026-04-01",
+  lastSynced: "2026-04-02",
   baseXpMultiplier: 5,
   baseDropMultiplier: 2,
   maxRegions: 3,

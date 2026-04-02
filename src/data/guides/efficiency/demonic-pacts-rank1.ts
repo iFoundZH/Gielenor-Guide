@@ -233,7 +233,7 @@ export const demonicPactsRank1Guide: EfficiencyGuide = {
       recommended: "Minion",
       alternatives: ["Flask of Fervour"],
       reasoning:
-        "Minion summons a powerful combat companion for 30 minutes: 45,000 accuracy, 10 max hit (up to 20 with 5 Zamorak items), 1.8s attack speed, AoE in multi-combat, auto-looting kills, and works on thrall-immune targets. This is a permanent DPS increase of roughly 15-25% depending on the boss. The auto-loot feature means drops are collected without stopping your attack cycle. Flask of Fervour is the alternative: full HP/Prayer/spec restore with AoE damage explosion on a cooldown reduced by dealing damage. Flask is better for burst-focused strategies (spec dump then restore), while Minion is better for sustained DPS across long grinds. For rank 1 pushing, Minion's consistent DPS increase over hundreds of hours of bossing likely outweighs Flask's burst potential.",
+        "Minion summons a powerful combat companion for 30 minutes: 45,000 accuracy, 10 max hit (up to 20 with 5 Zamorak items), 1.8s attack speed, AoE in multi-combat, auto-looting kills, and works on thrall-immune targets. This is a significant permanent DPS increase. The auto-loot feature means drops are collected without stopping your attack cycle. Flask of Fervour is the alternative: full HP/Prayer/spec restore with AoE damage explosion on a cooldown reduced by dealing damage. Flask is better for burst-focused strategies (spec dump then restore), while Minion is better for sustained DPS across long grinds. For rank 1 pushing, Minion's consistent DPS increase over hundreds of hours of bossing likely outweighs Flask's burst potential.",
       synergyNotes:
         "Minion + Culling Spree boss tasks + Evil Eye teleports creates maximum sustained DPS: teleport to boss, summon minion, boss melts under combined player + minion damage, auto-loot drops, teleport to next boss. The minion's AoE in multi-combat is particularly strong in Catacombs Slayer (chain superiors with Culling Spree), Barrows (hitting multiple brothers), and any multi-target encounter. Flask of Fervour is worth considering if pact penalties [SPECULATIVE] create situations where burst healing/Prayer restoration is critical.",
     },
@@ -461,7 +461,7 @@ export const demonicPactsRank1Guide: EfficiencyGuide = {
         riskLevel: "balanced",
         pacts: ["Melee Might", "Vampiric Touch"],
         reasoning:
-          "[SPECULATIVE] Melee Might (T1) for primary combat boost plus Vampiric Touch (T2) for lifesteal sustain. The Vampiric Touch penalty (reduced prayer effectiveness) is manageable because the lifesteal itself replaces some prayer-based sustain. This combination lets you extend boss trips significantly: every hit heals you, reducing food consumption by an estimated 30-50%. Longer trips mean more kills/hr which means more tasks/hr. The prayer reduction is felt most at protection-prayer-dependent bosses like GWD and Nightmare, but with league-boosted gear and Minion's DPS, kill times are fast enough to minimize prayer drain. Avoids Berserker's Oath (T3) because losing protection prayers entirely is too risky for raid content (ToB, CoX).",
+          "[SPECULATIVE] Melee Might (T1) for primary combat boost plus Vampiric Touch (T2) for lifesteal sustain. The Vampiric Touch penalty (reduced prayer effectiveness) is manageable because the lifesteal itself replaces some prayer-based sustain. This combination lets you extend boss trips significantly: every hit heals you, reducing food consumption substantially. Longer trips mean more kills/hr which means more tasks/hr. The prayer reduction is felt most at protection-prayer-dependent bosses like GWD and Nightmare, but with league-boosted gear and Minion's DPS, kill times are fast enough to minimize prayer drain. Avoids Berserker's Oath (T3) because losing protection prayers entirely is too risky for raid content (ToB, CoX).",
       },
       {
         name: "Aggressive Pacts",
@@ -470,7 +470,7 @@ export const demonicPactsRank1Guide: EfficiencyGuide = {
         riskLevel: "aggressive",
         pacts: ["Melee Might", "Glass Cannon", "Berserker's Oath"],
         reasoning:
-          "[SPECULATIVE] All three pact tiers stacked: Melee Might (T1) for accuracy/damage, Glass Cannon (T2) for significantly increased damage output across all styles, and Berserker's Oath (T3) for major attack speed and damage boost. The combined penalties are severe: reduced non-melee effectiveness, increased damage taken, and no protection prayers. This turns every boss encounter into a DPS race where you must kill before being killed. With Minion's sustained DPS, Vampiric Touch's lifesteal would have been preferable but Glass Cannon's raw output ceiling is higher. This profile likely produces 20-30% faster kill times than Balanced but with a 3-5x death rate. Only viable at bosses with predictable mechanics (Hydra, Zulrah, Vorkath) where prayer flicking isn't required. Extremely risky at ToB and CoX where protection prayers are near-mandatory for certain phases.",
+          "[SPECULATIVE] All three pact tiers stacked: Melee Might (T1) for accuracy/damage, Glass Cannon (T2) for significantly increased damage output across all styles, and Berserker's Oath (T3) for major attack speed and damage boost. The combined penalties are severe: reduced non-melee effectiveness, increased damage taken, and no protection prayers. This turns every boss encounter into a DPS race where you must kill before being killed. With Minion's sustained DPS, Vampiric Touch's lifesteal would have been preferable but Glass Cannon's raw output ceiling is higher. This profile likely produces significantly faster kill times than Balanced but with a much higher death rate. Only viable at bosses with predictable mechanics (Hydra, Zulrah, Vorkath) where prayer flicking isn't required. Extremely risky at ToB and CoX where protection prayers are near-mandatory for certain phases.",
       },
     ],
     comboAnalysis: [
@@ -479,28 +479,28 @@ export const demonicPactsRank1Guide: EfficiencyGuide = {
         synergy:
           "[SPECULATIVE] Melee damage boost + lifesteal creates a self-sustaining melee DPS loop. Higher hits from Melee Might mean more HP healed per hit from Vampiric Touch. This combination is especially strong at bosses where you are constantly dealing damage (Slayer monsters, Barrows, Hydra) and weaker at bosses with long invulnerability phases (Olm, Verzik P1).",
         risk: "Moderate. Reduced prayer effectiveness means slower Prayer drain management and less effective Protect prayers. Protection prayers still work, just reduced, so you can still pray against dangerous mechanics. Main danger is extended trips where prayer runs low faster than expected.",
-        reward: "Estimated 15-25% longer boss trips from lifesteal sustain, translating to roughly 10-15% more kills/hr. Over 480 hours of league play, this compounds to thousands of extra kills and dozens of additional task completions.",
+        reward: "[SPECULATIVE] Significantly longer boss trips from lifesteal sustain, translating to more kills/hr. Over extended league play, this compounds to thousands of extra kills and dozens of additional task completions.",
       },
       {
         combo: ["Melee Might", "Glass Cannon"],
         synergy:
           "[SPECULATIVE] Pure damage stacking: Melee Might's accuracy/damage plus Glass Cannon's significant output boost across all styles. This maximizes DPS ceiling for speed-kill tasks (sub-X time completions) which are common elite/master tasks. The 'all styles' clause on Glass Cannon means Ranged and Magic still benefit despite Melee Might's off-style penalty, creating a net positive for hybrid bosses like Zulrah.",
         risk: "High. Increased damage taken from Glass Cannon means every boss hit hurts more. Without lifesteal (Vampiric Touch), food consumption spikes. Shorter trips, more banking, more deaths at punishing bosses. Protection prayers still available but you take more when they fail (e.g., Jad/Zuk mechanics, ToB special attacks).",
-        reward: "Estimated 20-30% DPS increase over no-pact baseline. Speed-kill master tasks become achievable earlier in the league. Higher burst damage with spec weapons (Dragon Claws, etc.) for boss finishes.",
+        reward: "[SPECULATIVE] Significant DPS increase over no-pact baseline. Speed-kill master tasks become achievable earlier in the league. Higher burst damage with spec weapons (Dragon Claws, etc.) for boss finishes.",
       },
       {
         combo: ["Melee Might", "Glass Cannon", "Berserker's Oath"],
         synergy:
-          "[SPECULATIVE] Maximum offensive stacking. Melee damage, universal damage boost, and major attack speed/damage increase. Attack speed increase from Berserker's Oath is the standout: turning a 4-tick whip into potentially a 3 or 2-tick weapon would be a massive DPS multiplier. Combined with Glass Cannon's output boost, theoretical DPS approaches 2x baseline.",
+          "[SPECULATIVE] Maximum offensive stacking. Melee damage, universal damage boost, and major attack speed/damage increase. Attack speed increase from Berserker's Oath is the standout: increased attack speed on top of Glass Cannon's output boost creates an enormous DPS multiplier.",
         risk: "Extreme. No protection prayers (Berserker's Oath) plus increased damage taken (Glass Cannon) means you will die frequently at any boss with unavoidable damage. ToB Verzik, CoX Olm, and Nightmare become extremely dangerous. Jad/Zuk are likely impossible without prayer flicking alternatives. Death costs in time (travel, resupply) may negate the DPS gains. Only viable at bosses with safe spots or completely predictable damage (Hydra, DKs, Barrows).",
-        reward: "Theoretical 50-80% DPS increase over baseline. If boss kill times drop below death-risk thresholds, this produces the fastest task completions in the league. Highest ceiling for leaderboard position but highest floor for required player skill.",
+        reward: "[SPECULATIVE] Theoretical massive DPS increase over baseline. If boss kill times drop below death-risk thresholds, this produces the fastest task completions in the league. Highest ceiling for leaderboard position but highest floor for required player skill.",
       },
       {
         combo: ["Ranged Fury", "Vampiric Touch"],
         synergy:
           "[SPECULATIVE] Alternative to Melee Might for players focusing on ranged bosses. Ranged is the safest combat style (safe-spotting, kiting) and Vampiric Touch provides sustain for extended trips. Strong at Zulrah (ranged phase), Vorkath (if Fremennik picked), Hydra (ranged meta), and CoX Olm head phase. The off-style melee penalty matters less if your build is ranged-primary.",
         risk: "Moderate. Same prayer reduction as Melee Might + Vampiric Touch combo. Ranged is naturally safer due to distance, so the practical risk is lower than melee equivalents. Main concern is reduced melee effectiveness for bosses that require melee switches (ToB Nylocas, CoX melee hand).",
-        reward: "Similar 15-25% trip extension from lifesteal. Ranged DPS boost benefits the widest range of boss content since most bosses have a ranged-viable strategy. Slightly lower ceiling than melee but significantly safer execution.",
+        reward: "[SPECULATIVE] Similar trip extension from lifesteal. Ranged DPS boost benefits the widest range of boss content since most bosses have a ranged-viable strategy. Slightly lower ceiling than melee but significantly safer execution.",
       },
     ],
   },

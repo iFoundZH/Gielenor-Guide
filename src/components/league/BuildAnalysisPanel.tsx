@@ -117,6 +117,113 @@ export function BuildAnalysisPanel({ analysis }: BuildAnalysisPanelProps) {
         </div>
       </AnalysisSection>
 
+      {/* AFK Score */}
+      {analysis.relicAfkScores.length > 0 && (
+        <AnalysisSection
+          title="AFK Score"
+          icon="🛋️"
+          badge={`${analysis.afkScore}/100`}
+          sectionKey="afk"
+          expanded={expandedSection}
+          onToggle={toggle}
+        >
+          <div className="space-y-3">
+            <BalanceBar
+              label="Aggregate"
+              value={analysis.afkScore}
+              color={analysis.afkScore >= 60 ? "bg-osrs-green" : analysis.afkScore >= 30 ? "bg-osrs-gold" : "bg-demon-glow"}
+            />
+            <div className="space-y-2 mt-3">
+              <h5 className="text-xs font-bold text-osrs-text-dim uppercase tracking-wider">
+                Per Relic
+              </h5>
+              {analysis.relicAfkScores.map((rs) => (
+                <div key={rs.relicId} className="flex items-center gap-3">
+                  <span className="text-xs text-osrs-text w-28 truncate" title={rs.relicName}>{rs.relicName}</span>
+                  <div className="flex-1 h-2.5 bg-osrs-darker rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-osrs-blue rounded-full transition-all duration-500"
+                      style={{ width: `${rs.score}%` }}
+                    />
+                  </div>
+                  <span className="text-xs text-osrs-text font-medium w-8 text-right">{rs.score}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </AnalysisSection>
+      )}
+
+      {/* Point Ceiling */}
+      {analysis.pointCeiling.totalTasks > 0 && (
+        <AnalysisSection
+          title="Point Ceiling"
+          icon="📊"
+          badge={`${analysis.pointCeiling.pointPercent}%`}
+          sectionKey="ceiling"
+          expanded={expandedSection}
+          onToggle={toggle}
+        >
+          <div className="space-y-3">
+            <ProgressBar
+              value={analysis.pointCeiling.accessiblePoints}
+              max={analysis.pointCeiling.totalPoints}
+              label="Accessible Points"
+              color="bg-osrs-gold"
+              size="md"
+            />
+            <ProgressBar
+              value={analysis.pointCeiling.accessibleTasks}
+              max={analysis.pointCeiling.totalTasks}
+              label="Accessible Tasks"
+              color="bg-osrs-green"
+              size="md"
+            />
+            <p className="text-xs text-osrs-text-dim">
+              {analysis.pointCeiling.accessiblePoints.toLocaleString()} / {analysis.pointCeiling.totalPoints.toLocaleString()} points reachable ({analysis.pointCeiling.pointPercent}%)
+            </p>
+
+            {analysis.pointCeiling.categoryGaps.length > 0 && (
+              <div className="mt-2">
+                <h5 className="text-xs font-bold text-osrs-text-dim uppercase tracking-wider mb-1.5">
+                  Category Gaps
+                </h5>
+                <div className="flex flex-wrap gap-1">
+                  {analysis.pointCeiling.categoryGaps.map((cat) => (
+                    <span key={cat} className="text-xs bg-demon-glow/10 text-demon-glow rounded px-2 py-0.5 border border-demon-glow/20">
+                      {cat}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="mt-2">
+              <h5 className="text-xs font-bold text-osrs-text-dim uppercase tracking-wider mb-1.5">
+                By Difficulty
+              </h5>
+              <div className="grid grid-cols-5 gap-2">
+                {(["easy", "medium", "hard", "elite", "master"] as const).map((diff) => {
+                  const d = analysis.pointCeiling.byDifficulty[diff];
+                  if (!d || d.total === 0) return null;
+                  const pct = Math.round((d.accessible / d.total) * 100);
+                  return (
+                    <div key={diff} className="text-center">
+                      <div className="text-xs text-osrs-text-dim capitalize">{diff}</div>
+                      <div className="text-sm font-medium text-osrs-text">{d.accessible}</div>
+                      <div className="text-xs text-osrs-text-dim">/ {d.total}</div>
+                      <div className="mt-1 h-1.5 bg-osrs-darker rounded-full overflow-hidden">
+                        <div className="h-full bg-osrs-gold rounded-full" style={{ width: `${pct}%` }} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </AnalysisSection>
+      )}
+
       {/* Active Synergies */}
       {analysis.synergies.length > 0 && (
         <AnalysisSection

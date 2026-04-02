@@ -45,6 +45,9 @@ export function EfficiencyGuideSection({ guide }: { guide: EfficiencyGuide }) {
             >
               Rank 1 Efficiency Guide
             </h2>
+            <p className="text-xs text-osrs-text-dim/60 italic mb-2">
+              Task counts, points/hr, and time estimates are community analysis based on game knowledge, not exact wiki data.
+            </p>
             <p className="text-sm text-osrs-text-dim mb-3">{guide.summary.keyInsight}</p>
             <div className="flex flex-wrap gap-3">
               <div className="text-sm">

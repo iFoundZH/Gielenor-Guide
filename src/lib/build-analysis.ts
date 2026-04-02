@@ -12,6 +12,15 @@
  */
 
 import { LeagueBuild, LeagueData, Region, Relic, Pact, LeagueTask } from "@/types/league";
+import {
+  computeRelicAfkScore,
+  computeBuildAfkScore,
+  computeRelicPowerRating,
+  computePointCeiling,
+  type RelicAfkScore,
+  type RelicPowerRating,
+  type BuildPointCeiling,
+} from "./relic-metrics";
 
 export interface BuildAnalysis {
   /** Content you're locking yourself out of */
@@ -34,6 +43,14 @@ export interface BuildAnalysis {
   archetype: BuildArchetype;
   /** Key bosses accessible/inaccessible */
   bossAccess: BossAccess[];
+  /** AFK score: 0-100 aggregate of automation keywords in selected relics */
+  afkScore: number;
+  /** Per-relic AFK score breakdown */
+  relicAfkScores: RelicAfkScore[];
+  /** Per-relic multi-axis power ratings */
+  relicPowerRatings: RelicPowerRating[];
+  /** Accessible tasks/points given selected regions */
+  pointCeiling: BuildPointCeiling;
 }
 
 export interface MissedContent {
@@ -104,12 +121,12 @@ export interface BossAccess {
 
 // ─── Region → Content mapping ───────────────────────────────────────────
 
-const REGION_BOSSES: Record<string, { name: string; difficulty: "mid" | "high" | "endgame" }[]> = {
+export const REGION_BOSSES: Record<string, { name: string; difficulty: "mid" | "high" | "endgame" }[]> = {
   varlamore: [
     { name: "Vardorvis", difficulty: "endgame" },
     { name: "Amoxliatl", difficulty: "mid" },
     { name: "Hueycoatl", difficulty: "high" },
-    { name: "Fortis Colosseum", difficulty: "endgame" },
+    { name: "Fortis Colosseum (Sol Heredit)", difficulty: "endgame" },
     { name: "Moons of Peril", difficulty: "endgame" },
   ],
   karamja: [
@@ -137,6 +154,7 @@ const REGION_BOSSES: Record<string, { name: string; difficulty: "mid" | "high" |
   morytania: [
     { name: "Theatre of Blood", difficulty: "endgame" },
     { name: "The Nightmare", difficulty: "endgame" },
+    { name: "Phosani's Nightmare", difficulty: "endgame" },
     { name: "Barrows", difficulty: "mid" },
   ],
   tirannwn: [
@@ -168,7 +186,8 @@ const RELIC_TAGS: Record<string, string[]> = {
   "relic-t1-1": ["gathering", "fishing", "woodcutting", "mining", "banking"],
   "relic-t1-2": ["gathering", "agility", "strength", "early-game"],
   "relic-t1-3": ["skilling", "money", "all-skills", "production"],
-  "relic-t2-1": ["production", "fletching", "firemaking", "hunter", "gathering"],
+  "relic-t2-1": ["agility", "production", "cooking", "mining", "gathering"],  // Hotfoot
+  "relic-t2-2": ["production", "fletching", "firemaking", "hunter", "gathering"],  // Woodsman
   "relic-t3-1": ["combat", "bossing", "teleport", "utility"],
   "relic-t4-1": ["clues", "utility", "teleport"],
   "relic-t6-1": ["combat", "slayer", "clues", "utility"],
@@ -216,6 +235,9 @@ export function analyzeBuild(build: LeagueBuild, league: LeagueData): BuildAnaly
   ).size;
   const hasMasteries = masteryStyleCount > 0;
 
+  const relicAfkScores = selectedRelics.map(computeRelicAfkScore);
+  const relicPowerRatings = selectedRelics.map(computeRelicPowerRating);
+
   return {
     missedContent: analyzeMissedContent(build, league, accessibleRegionIds),
     buildBalance: analyzeBuildBalance(selectedRelics, selectedPacts, hasMasteries),
@@ -227,6 +249,10 @@ export function analyzeBuild(build: LeagueBuild, league: LeagueData): BuildAnaly
     pactTradeoffs: analyzePactTradeoffs(selectedPacts),
     archetype: classifyArchetype(selectedRelics, selectedPacts, build, hasMasteries, masteryStyleCount),
     bossAccess: analyzeBossAccess(accessibleRegionIds),
+    afkScore: computeBuildAfkScore(relicAfkScores),
+    relicAfkScores,
+    relicPowerRatings,
+    pointCeiling: computePointCeiling(build, league),
   };
 }
 
@@ -331,7 +357,7 @@ function findActiveSynergies(relics: Relic[], pacts: Pact[], hasMasteries = fals
   const hasCombatPower = pacts.some((p) => p.category === "combat") || hasMasteries;
 
   // DP synergies
-  if (relicIds.has("relic-t1-1") && relicIds.has("relic-t2-1")) {
+  if (relicIds.has("relic-t1-1") && relicIds.has("relic-t2-2")) {
     synergies.push({
       name: "Gathering Pipeline",
       description: "Resources auto-bank from Endless Harvest, then Woodsman doubles Hunter loot and provides instant Fletching. Seeds from traps fuel farming loop.",
@@ -497,7 +523,7 @@ function findMissedSynergies(
   const hasCombatPower = selectedPacts.some((p) => p.category === "combat") || hasMasteries;
 
   // DP missed synergies
-  if (relicIds.has("relic-t1-1") && !relicIds.has("relic-t2-1")) {
+  if (relicIds.has("relic-t1-1") && !relicIds.has("relic-t2-2")) {
     missed.push({
       name: "Gathering Pipeline",
       description: "Add Woodsman (T2) to double Hunter loot and auto-process gathered resources. Your Endless Harvest would feed perfectly into it.",
@@ -794,7 +820,7 @@ function classifyArchetype(relics: Relic[], pacts: Pact[], build: LeagueBuild, h
   const pactIds = new Set(pacts.map((p) => p.id));
   const combatPacts = pacts.filter((p) => p.category === "combat").length + masteryStyleCount;
 
-  if (relics.length === 0 && pacts.length === 0) {
+  if (relics.length === 0 && pacts.length === 0 && !hasMasteries) {
     return { name: "Undecided", description: "Make some selections to see your build archetype.", icon: "🤔" };
   }
 
@@ -805,7 +831,7 @@ function classifyArchetype(relics: Relic[], pacts: Pact[], build: LeagueBuild, h
   if (relicIds.has("relic-t6-1") && combatPacts >= 1 && relicIds.has("relic-t3-1")) {
     return { name: "PvM Powerhouse", description: "Built to kill. Boss teleports, optimized Slayer, and combat pacts make you a boss-farming machine.", icon: "⚔️" };
   }
-  if (relicIds.has("relic-t1-1") && relicIds.has("relic-t2-1")) {
+  if (relicIds.has("relic-t1-1") && relicIds.has("relic-t2-2")) {
     return { name: "Gathering Lord", description: "Resources flow endlessly. Auto-banking, doubled outputs, and instant processing create a resource empire.", icon: "⛏️" };
   }
   if (relicIds.has("relic-t1-3") && relics.length >= 2) {

@@ -7,12 +7,15 @@ import { RelicTierDisplay } from "@/components/league/RelicTierDisplay";
 import { PactCard } from "@/components/league/PactCard";
 import { RegionPicker } from "@/components/league/RegionPicker";
 import { ProgressBar } from "@/components/ui/ProgressBar";
+import { CollapsiblePlannerSection } from "@/components/league/CollapsiblePlannerSection";
 import { encodeBuild, decodeBuild } from "@/lib/build-storage";
 import { calculateGielinorScore } from "@/lib/player-score";
 import { GielinorScoreCard } from "@/components/league/GielinorScoreCard";
 import { BuildAnalysisPanel } from "@/components/league/BuildAnalysisPanel";
 import { analyzeBuild } from "@/lib/build-analysis";
+import { computeAllPowerRatings } from "@/lib/relic-metrics";
 import type { LeagueBuild } from "@/types/league";
+import { demonicPactsRank1Guide } from "@/data/guides/efficiency/demonic-pacts-rank1";
 import Link from "next/link";
 
 const sections = [
@@ -41,6 +44,7 @@ export default function BuildPlanner() {
 
   const [copied, setCopied] = useState(false);
   const [mobileExpanded, setMobileExpanded] = useState(false);
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(["regions", "relics", "pacts"]));
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -59,6 +63,7 @@ export default function BuildPlanner() {
   }, [build]);
 
   const allRelics = useMemo(() => league.relicTiers.flatMap((t) => t.relics), [league.relicTiers]);
+  const relicTiersWithChoices = league.relicTiers.filter((t) => t.relics.length > 0).length;
 
   const toggleRelic = useCallback((relicId: string) => {
     setBuild((prev) => {
@@ -97,6 +102,94 @@ export default function BuildPlanner() {
   const selectedPacts = useMemo(() => league.pacts.filter((p) => build.pacts.includes(p.id)), [build.pacts, league.pacts]);
   const gielinorScore = useMemo(() => calculateGielinorScore(build, league), [build, league]);
   const buildAnalysis = useMemo(() => analyzeBuild(build, league), [build, league]);
+  const powerRatings = useMemo(() => computeAllPowerRatings(allRelics), [allRelics]);
+
+  const regionsComplete = build.regions.length === league.maxRegions;
+  const relicsComplete = selectedRelics.length === relicTiersWithChoices;
+
+  // Auto-collapse regions when complete, re-expand when incomplete
+  useEffect(() => {
+    setExpandedSections((prev) => {
+      if (regionsComplete && prev.has("regions")) {
+        const next = new Set(prev);
+        next.delete("regions");
+        return next;
+      }
+      if (!regionsComplete && !prev.has("regions")) {
+        const next = new Set(prev);
+        next.add("regions");
+        return next;
+      }
+      return prev;
+    });
+  }, [regionsComplete]);
+
+  // Auto-collapse relics when complete, re-expand when incomplete
+  useEffect(() => {
+    setExpandedSections((prev) => {
+      if (relicsComplete && prev.has("relics")) {
+        const next = new Set(prev);
+        next.delete("relics");
+        return next;
+      }
+      if (!relicsComplete && !prev.has("relics")) {
+        const next = new Set(prev);
+        next.add("relics");
+        return next;
+      }
+      return prev;
+    });
+  }, [relicsComplete]);
+
+  const toggleSection = useCallback((id: string) => {
+    setExpandedSections((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
+
+  const scrollToSection = useCallback((id: string) => {
+    setExpandedSections((prev) => {
+      if (prev.has(id)) return prev;
+      const next = new Set(prev);
+      next.add(id);
+      return next;
+    });
+    requestAnimationFrame(() => {
+      document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }, []);
+
+  const handlePactsDone = useCallback(() => {
+    setExpandedSections((prev) => {
+      const next = new Set(prev);
+      next.delete("pacts");
+      return next;
+    });
+  }, []);
+
+  const regionSummary = useMemo(
+    () => build.regions.map((id) => league.regions.find((r) => r.id === id)?.name).filter(Boolean) as string[],
+    [build.regions, league.regions]
+  );
+
+  const relicSummary = useMemo(
+    () => [...selectedRelics].sort((a, b) => a.tier - b.tier).map((r) => r.name),
+    [selectedRelics]
+  );
+
+  const pactSummary = useMemo(
+    () => selectedPacts.map((p) => p.name),
+    [selectedPacts]
+  );
+
+  const sectionComplete = useMemo(() => ({
+    regions: regionsComplete,
+    relics: relicsComplete,
+    pacts: selectedPacts.length > 0 && !expandedSections.has("pacts"),
+  }), [regionsComplete, relicsComplete, selectedPacts.length, expandedSections]);
 
   const handleShare = async () => {
     const encoded = encodeBuild(build);
@@ -116,14 +209,10 @@ export default function BuildPlanner() {
       id: "", name: "My Demonic Pacts Build", accountType: "ironman", regions: [],
       relics: [], pacts: [], completedTasks: [], notes: "", createdAt: Date.now(), updatedAt: Date.now(),
     });
+    setExpandedSections(new Set(["regions", "relics", "pacts"]));
   };
 
-  const relicTiersWithChoices = league.relicTiers.filter((t) => t.relics.length > 0).length;
   const isEmpty = build.regions.length === 0 && build.relics.length === 0 && build.pacts.length === 0;
-
-  const scrollToSection = (id: string) => {
-    document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
-  };
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10">
@@ -149,15 +238,23 @@ export default function BuildPlanner() {
           {/* Sticky Section Nav */}
           <nav className="sticky top-14 z-20 -mx-4 sm:-mx-6 px-4 sm:px-6 py-2 bg-osrs-dark/95 backdrop-blur-sm border-b border-osrs-border">
             <div className="flex gap-1 overflow-x-auto">
-              {sections.map((s) => (
-                <button
-                  key={s.id}
-                  onClick={() => scrollToSection(s.id)}
-                  className="px-3 py-1.5 text-xs font-medium rounded-lg text-osrs-text-dim hover:text-osrs-gold hover:bg-osrs-gold/10 transition-all whitespace-nowrap"
-                >
-                  {s.label}
-                </button>
-              ))}
+              {sections.map((s) => {
+                const complete = sectionComplete[s.id as keyof typeof sectionComplete];
+                return (
+                  <button
+                    key={s.id}
+                    onClick={() => scrollToSection(s.id)}
+                    className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all whitespace-nowrap ${
+                      complete
+                        ? "text-osrs-green hover:bg-osrs-green/10"
+                        : "text-osrs-text-dim hover:text-osrs-gold hover:bg-osrs-gold/10"
+                    }`}
+                  >
+                    {complete && <span className="mr-1">✓</span>}
+                    {s.label}
+                  </button>
+                );
+              })}
             </div>
           </nav>
 
@@ -205,23 +302,39 @@ export default function BuildPlanner() {
           )}
 
           {/* Region Selection */}
-          <div id="regions" className="scroll-mt-24">
-            <h2 className="text-2xl font-bold text-osrs-gold mb-4" style={{ fontFamily: "var(--font-runescape)" }}>
-              Choose Your Regions
-            </h2>
+          <CollapsiblePlannerSection
+            id="regions"
+            title="Choose Your Regions"
+            label="Regions"
+            isExpanded={expandedSections.has("regions")}
+            onToggleExpand={() => toggleSection("regions")}
+            current={build.regions.length}
+            total={league.maxRegions}
+            isComplete={regionsComplete}
+            summaryItems={regionSummary}
+          >
             <RegionPicker
               regions={league.regions}
               maxRegions={league.maxRegions}
               selectedRegions={build.regions}
               onToggle={toggleRegion}
+              tasks={league.tasks}
+              regionAnalysis={demonicPactsRank1Guide.regionAnalysis}
             />
-          </div>
+          </CollapsiblePlannerSection>
 
           {/* Relic Selection */}
-          <div id="relics" className="scroll-mt-24">
-            <h2 className="text-2xl font-bold text-osrs-gold mb-6" style={{ fontFamily: "var(--font-runescape)" }}>
-              Choose Your Relics
-            </h2>
+          <CollapsiblePlannerSection
+            id="relics"
+            title="Choose Your Relics"
+            label="Relics"
+            isExpanded={expandedSections.has("relics")}
+            onToggleExpand={() => toggleSection("relics")}
+            current={selectedRelics.length}
+            total={relicTiersWithChoices}
+            isComplete={relicsComplete}
+            summaryItems={relicSummary}
+          >
             <div className="space-y-8">
               {league.relicTiers.map((rt) => (
                 <RelicTierDisplay
@@ -229,25 +342,33 @@ export default function BuildPlanner() {
                   relicTier={rt}
                   selectedRelicId={build.relics.find((id) => rt.relics.some((r) => r.id === id))}
                   onSelect={toggleRelic}
+                  powerRatings={powerRatings}
                 />
               ))}
             </div>
-          </div>
+          </CollapsiblePlannerSection>
 
           {/* Pact Selection */}
-          <div id="pacts" className="scroll-mt-24">
-            <h2 className="text-2xl font-bold text-osrs-gold mb-2" style={{ fontFamily: "var(--font-runescape)" }}>
-              Demonic Pacts
-            </h2>
-            <p className="text-sm text-osrs-text-dim mb-6">
-              Combat-focused pacts. Full details TBD before launch. Click to activate.
-            </p>
+          <CollapsiblePlannerSection
+            id="pacts"
+            title="Demonic Pacts"
+            label="Pacts"
+            subtitle="Combat-focused pacts. Full details TBD before launch. Click to activate."
+            isExpanded={expandedSections.has("pacts")}
+            onToggleExpand={() => toggleSection("pacts")}
+            current={selectedPacts.length}
+            total={null}
+            isComplete={selectedPacts.length > 0 && !expandedSections.has("pacts")}
+            summaryItems={pactSummary}
+            showDoneButton
+            onDone={handlePactsDone}
+          >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {league.pacts.map((pact) => (
                 <PactCard key={pact.id} pact={pact} selected={build.pacts.includes(pact.id)} onToggle={togglePact} />
               ))}
             </div>
-          </div>
+          </CollapsiblePlannerSection>
 
           {/* Build Analysis */}
           <div id="analysis" className="scroll-mt-24">
@@ -271,7 +392,7 @@ export default function BuildPlanner() {
         {/* Sidebar — desktop only */}
         <div className="hidden lg:block lg:w-80">
           <div className="sticky top-20 space-y-4">
-            <GielinorScoreCard score={gielinorScore} playerName={build.name} />
+            <GielinorScoreCard score={gielinorScore} playerName={build.name} afkScore={buildAnalysis.afkScore} />
 
             <Card glow="gold">
               <h3 className="text-lg font-bold text-osrs-gold mb-4" style={{ fontFamily: "var(--font-runescape)" }}>Build Summary</h3>

@@ -7,6 +7,7 @@ import { ProgressBar } from "@/components/ui/ProgressBar";
 interface GielinorScoreCardProps {
   score: GielinorScore;
   playerName?: string;
+  afkScore?: number;
 }
 
 const IMPROVEMENT_TIPS: Record<string, string> = {
@@ -32,7 +33,7 @@ function getImprovementTip(breakdown: GielinorScore["breakdown"]): { axis: strin
   return { axis: best.axis, tip: IMPROVEMENT_TIPS[best.axis], headroom: best.headroom };
 }
 
-export function GielinorScoreCard({ score, playerName }: GielinorScoreCardProps) {
+export function GielinorScoreCard({ score, playerName, afkScore }: GielinorScoreCardProps) {
   const { color } = getRankInfo(score.total);
   const ranks = getAllRanks();
   const currentRankIdx = ranks.findIndex((r) => r.rank === score.rank);
@@ -77,6 +78,9 @@ export function GielinorScoreCard({ score, playerName }: GielinorScoreCardProps)
           <ScoreRow label="Completion" value={score.breakdown.completion} max={500} color="bg-osrs-green" highlight={improvement?.axis === "completion"} />
           <ScoreRow label="Build" value={score.breakdown.build} max={500} color="bg-osrs-blue" highlight={improvement?.axis === "build"} />
           <ScoreRow label="Risk" value={score.breakdown.risk} max={500} color="bg-demon-glow" highlight={improvement?.axis === "risk"} />
+          {afkScore !== undefined && (
+            <ScoreRow label="AFK Rating" value={afkScore} max={100} color="bg-osrs-purple" />
+          )}
         </div>
 
         {/* Improvement Tip */}

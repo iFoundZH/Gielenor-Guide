@@ -23,7 +23,7 @@ test.describe("Demonic Pacts Build Planner", () => {
     // Click on a choosable region card - find by region name
     await page.locator("h5 >> text=Asgarnia").click();
     // RegionPicker shows "1 / 3 selected"
-    await expect(page.locator("text=1 / 3 selected")).toBeVisible();
+    await expect(page.locator("p:has-text('1 / 3 selected')")).toBeVisible();
   });
 
   test("enforces max region limit of 3", async ({ page }) => {
@@ -31,6 +31,8 @@ test.describe("Demonic Pacts Build Planner", () => {
     await page.locator("h5 >> text=Asgarnia").click();
     await page.locator("h5 >> text=Kandarin").click();
     await page.locator("h5 >> text=Morytania").click();
+    // Section auto-collapses after 3/3 — click Edit to re-expand
+    await page.locator("button:has-text('Edit')").first().click();
     // Should show 3/3
     await expect(page.locator("text=3 / 3").first()).toBeVisible();
     // Try to select a 4th - should not work
@@ -92,7 +94,7 @@ test.describe("Demonic Pacts Build Planner", () => {
     page.once("dialog", (dialog) => dialog.accept());
     await page.locator("text=Reset").click();
 
-    // After reset, the relic should no longer have gold ring
+    // After reset, sections re-expand. The relic should no longer have gold ring
     await expect(relicCard.locator("xpath=ancestor::div[contains(@class,'bg-osrs-panel')]")).not.toHaveClass(/ring-osrs-gold/, { timeout: 5000 });
   });
 
@@ -102,6 +104,28 @@ test.describe("Demonic Pacts Build Planner", () => {
     await expect(page.locator("text=Selected Relics")).toBeVisible();
     await page.reload({ waitUntil: "networkidle" });
     await expect(page.locator("text=Selected Relics")).toBeVisible();
+  });
+
+  test("sections auto-collapse when complete", async ({ page }) => {
+    // Select 3 regions to trigger auto-collapse
+    await page.locator("h5 >> text=Asgarnia").click();
+    await page.locator("h5 >> text=Kandarin").click();
+    await page.locator("h5 >> text=Morytania").click();
+    // Collapsed summary should show region names
+    await expect(page.locator("text=Asgarnia · Kandarin · Morytania")).toBeVisible();
+    // Edit button should be visible
+    await expect(page.locator("button:has-text('Edit')").first()).toBeVisible();
+  });
+
+  test("collapsed sections expand on Edit click", async ({ page }) => {
+    // Select 3 regions to trigger auto-collapse
+    await page.locator("h5 >> text=Asgarnia").click();
+    await page.locator("h5 >> text=Kandarin").click();
+    await page.locator("h5 >> text=Morytania").click();
+    // Click Edit to re-expand
+    await page.locator("button:has-text('Edit')").first().click();
+    // Region picker should be visible again
+    await expect(page.locator("p:has-text('3 / 3 selected')")).toBeVisible();
   });
 });
 

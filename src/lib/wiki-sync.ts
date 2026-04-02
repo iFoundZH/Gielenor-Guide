@@ -570,15 +570,21 @@ function parseTaskTemplate(inner: string, _templateName: string): ParsedTask | n
   // Map region name to a category
   const category = mapRegionToCategory(region, name, skills);
 
+  // Sanitize: strip any skills entries containing wiki markup
+  const cleanSkills = skills.filter(s => !s.includes('}}') && !s.includes('[['));
+
+  // Sanitize: strip wiki markup from category
+  const cleanCategory = (category.includes('}}') || category.includes('[[')) ? 'Diary' : category;
+
   return {
     id: id ? `task-${id}` : `task-${slugify(name)}`,
     name,
     description,
     difficulty: tier,
     points: DIFFICULTY_POINTS[tier] ?? 10,
-    category,
+    category: cleanCategory,
     region: region !== "General" ? slugify(region) : undefined,
-    skills,
+    skills: cleanSkills,
   };
 }
 

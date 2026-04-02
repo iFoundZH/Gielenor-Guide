@@ -7,7 +7,7 @@ export const ragingEchoesRank1Guide: EfficiencyGuide = {
     targetPoints: 60000,
     optimalRegions: ["Morytania", "Kourend", "Kandarin"],
     keyInsight:
-      "Dragon tier (60,000 pts) is achievable in ~500 hours across 56 days by stacking region-specific task density with relic synergies. Morytania + Kourend + Kandarin yields ~430 region-locked tasks on top of ~400 general tasks, giving you access to 830+ completable tasks worth over 80,000 potential points. The real accelerant is pairing Animal Wrangler (T1) with Dodgy Deals (T2) for instant early Fishing/Hunter/Thieving XP, then layering Slayer Master (T5) and Total Recall (T6) for bossing efficiency once you hit mid-game. Region order matters: Morytania first at 90 tasks gives immediate Barrows access for equipment and echo boss, Kourend second at 200 tasks opens CoX and the largest task pool, and Kandarin third at 400 tasks fills skilling gaps with Zulrah, Seers' agility, and Catherby fishing.",
+      "Dragon tier (60,000 pts) is achievable by stacking region-specific task density with relic synergies. Morytania + Kourend + Kandarin yields ~323 region-locked tasks on top of ~484 general tasks, giving you access to ~807 completable tasks worth ~71,070 potential points. The real accelerant is pairing Animal Wrangler (T1) with Dodgy Deals (T2) for instant early Fishing/Hunter/Thieving XP, then layering Slayer Master (T5) and Total Recall (T6) for bossing efficiency once you hit mid-game. Region order matters: Morytania first at 90 tasks gives immediate Barrows access for equipment and echo boss, Kourend second at 200 tasks opens CoX and a large task pool, and Kandarin third at 400 tasks fills skilling gaps with Zulrah and Catherby fishing.",
   },
 
   regionAnalysis: [
@@ -15,16 +15,15 @@ export const ragingEchoesRank1Guide: EfficiencyGuide = {
       regionId: "morytania",
       regionName: "Morytania",
       tier: "S",
-      totalTasks: 130,
-      totalPoints: 11400,
-      tasksByDifficulty: { easy: 15, medium: 35, hard: 40, elite: 30, master: 10 },
+      totalTasks: 101,
+      totalPoints: 10200,
+      tasksByDifficulty: { easy: 7, medium: 35, hard: 31, elite: 23, master: 5 },
       estimatedPtsPerHour: 220,
       uniqueBosses: [
         "Theatre of Blood (ToB)",
         "Nightmare / Phosani's Nightmare",
         "Barrows",
         "Grotesque Guardians",
-        "Bryophyta (nearby Canifis cave)",
       ],
       reasoning:
         "Morytania is the single highest-value region in RE. Barrows is farmable within hours of unlocking for task completions and equipment upgrades. ToB provides a massive cluster of elite/master tasks once geared. Nightmare drops are boosted with 5x item rates. The Slayer Tower covers Gargoyles, Nechryael, Abyssal demons, and Grotesque Guardians for stacked Slayer tasks. Swamp is one of the densest task regions per hour invested. Echo Barrows is the most accessible echo boss in the game, farmable at mid-level gear with Total Recall for infinite supplies.",
@@ -33,9 +32,9 @@ export const ragingEchoesRank1Guide: EfficiencyGuide = {
       regionId: "kourend",
       regionName: "Kourend",
       tier: "S",
-      totalTasks: 180,
-      totalPoints: 14200,
-      tasksByDifficulty: { easy: 25, medium: 55, hard: 50, elite: 40, master: 10 },
+      totalTasks: 119,
+      totalPoints: 10020,
+      tasksByDifficulty: { easy: 15, medium: 41, hard: 38, elite: 22, master: 3 },
       estimatedPtsPerHour: 200,
       uniqueBosses: [
         "Chambers of Xeric (CoX)",
@@ -43,7 +42,6 @@ export const ragingEchoesRank1Guide: EfficiencyGuide = {
         "Skotizo",
         "Sarachnis",
         "Wintertodt",
-        "Tempoross",
         "Guardians of the Rift (GOTR)",
       ],
       reasoning:
@@ -53,15 +51,14 @@ export const ragingEchoesRank1Guide: EfficiencyGuide = {
       regionId: "kandarin",
       regionName: "Kandarin",
       tier: "A",
-      totalTasks: 120,
-      totalPoints: 9600,
-      tasksByDifficulty: { easy: 18, medium: 35, hard: 35, elite: 25, master: 7 },
+      totalTasks: 103,
+      totalPoints: 8840,
+      tasksByDifficulty: { easy: 13, medium: 37, hard: 30, elite: 20, master: 3 },
       estimatedPtsPerHour: 180,
       uniqueBosses: [
         "Zulrah",
-        "Demonic Gorillas",
         "Kraken",
-        "Hespori",
+        "Thermonuclear Smoke Devil",
       ],
       reasoning:
         "Kandarin rounds out the optimal trio by filling critical skilling gaps. Seers' Village rooftop agility is the best course until Prifddinas. Catherby has the highest-density fishing spots. Zulrah is a consistent point and GP farm with boosted uniques. Demonic Gorillas unlock zenyte jewelry tasks. The Farming Guild and Hespori provide passive task completions. Kandarin diary tasks are some of the most accessible in the game. Main drawback: fewer elite/master tasks than Morytania or Kourend.",
@@ -70,9 +67,9 @@ export const ragingEchoesRank1Guide: EfficiencyGuide = {
       regionId: "asgarnia",
       regionName: "Asgarnia",
       tier: "A",
-      totalTasks: 100,
-      totalPoints: 8800,
-      tasksByDifficulty: { easy: 12, medium: 28, hard: 28, elite: 24, master: 8 },
+      totalTasks: 95,
+      totalPoints: 9040,
+      tasksByDifficulty: { easy: 8, medium: 32, hard: 30, elite: 22, master: 3 },
       estimatedPtsPerHour: 170,
       uniqueBosses: [
         "General Graardor (Bandos)",
@@ -80,7 +77,7 @@ export const ragingEchoesRank1Guide: EfficiencyGuide = {
         "K'ril Tsutsaroth (Zamorak)",
         "Kree'arra (Armadyl)",
         "Nex",
-        "Corporeal Beast",
+        "Cerberus",
       ],
       reasoning:
         "Asgarnia is the boss density king. GWD alone provides 5 bosses with stacking kill count tasks from easy through master. Corp offers sigil tasks. Warriors' Guild has defender tasks for quick medium/hard points. The downside is that GWD requires significant combat stats and gear before it becomes efficient, making it slower to ramp than Morytania's Barrows. Strong alternative if you plan to focus heavily on PvM over skilling.",
@@ -89,14 +86,14 @@ export const ragingEchoesRank1Guide: EfficiencyGuide = {
       regionId: "desert",
       regionName: "Desert",
       tier: "A",
-      totalTasks: 100,
-      totalPoints: 9000,
-      tasksByDifficulty: { easy: 10, medium: 25, hard: 30, elite: 27, master: 8 },
+      totalTasks: 112,
+      totalPoints: 9840,
+      tasksByDifficulty: { easy: 15, medium: 39, hard: 34, elite: 19, master: 5 },
       estimatedPtsPerHour: 160,
       uniqueBosses: [
         "Tombs of Amascut (ToA)",
         "Kalphite Queen",
-        "Phantom Muspah (DT2 boss access)",
+        "The Leviathan (DT2)",
       ],
       reasoning:
         "ToA is the most scalable raid with invocation levels creating a ladder of tasks from medium through master. Pyramid Plunder is excellent Thieving XP alongside Dodgy Deals. The Desert has solid diary tasks. Main issue: content is concentrated around ToA at high levels, so early-game points are thin. KQ tasks require significant setup. Best as a third region if you want raid variety over skilling breadth.",
@@ -105,12 +102,13 @@ export const ragingEchoesRank1Guide: EfficiencyGuide = {
       regionId: "fremennik",
       regionName: "Fremennik",
       tier: "B",
-      totalTasks: 90,
-      totalPoints: 7800,
-      tasksByDifficulty: { easy: 10, medium: 25, hard: 25, elite: 22, master: 8 },
+      totalTasks: 112,
+      totalPoints: 9780,
+      tasksByDifficulty: { easy: 14, medium: 32, hard: 41, elite: 23, master: 2 },
       estimatedPtsPerHour: 150,
       uniqueBosses: [
         "Vorkath",
+        "Duke Sucellus (DT2)",
         "Dagannoth Kings",
         "Phantom Muspah",
       ],
@@ -121,14 +119,14 @@ export const ragingEchoesRank1Guide: EfficiencyGuide = {
       regionId: "tirannwn",
       regionName: "Tirannwn",
       tier: "B",
-      totalTasks: 70,
-      totalPoints: 6800,
-      tasksByDifficulty: { easy: 6, medium: 16, hard: 20, elite: 20, master: 8 },
+      totalTasks: 89,
+      totalPoints: 9940,
+      tasksByDifficulty: { easy: 8, medium: 18, hard: 34, elite: 25, master: 4 },
       estimatedPtsPerHour: 140,
       uniqueBosses: [
         "The Gauntlet / Corrupted Gauntlet",
         "Zalcano",
-        "Zulrah (shared with Kandarin)",
+        "Zulrah",
       ],
       reasoning:
         "Corrupted Gauntlet is arguably the single best boss in leagues with zero gear requirements and high elite/master task density. Zalcano is easy Mining/Smithing XP and tasks. Prifddinas agility course is the best in game. However, Song of the Elves is a massive quest gate and the region has the fewest total tasks of any choosable region. Elite-heavy distribution means points come late.",
@@ -137,9 +135,9 @@ export const ragingEchoesRank1Guide: EfficiencyGuide = {
       regionId: "wilderness",
       regionName: "Wilderness",
       tier: "C",
-      totalTasks: 80,
-      totalPoints: 6400,
-      tasksByDifficulty: { easy: 12, medium: 22, hard: 22, elite: 18, master: 6 },
+      totalTasks: 95,
+      totalPoints: 9750,
+      tasksByDifficulty: { easy: 9, medium: 26, hard: 31, elite: 26, master: 3 },
       estimatedPtsPerHour: 120,
       uniqueBosses: [
         "Callisto / Artio",
@@ -156,13 +154,15 @@ export const ragingEchoesRank1Guide: EfficiencyGuide = {
       regionId: "varlamore",
       regionName: "Varlamore",
       tier: "C",
-      totalTasks: 50,
-      totalPoints: 4200,
-      tasksByDifficulty: { easy: 6, medium: 14, hard: 14, elite: 12, master: 4 },
+      totalTasks: 111,
+      totalPoints: 9440,
+      tasksByDifficulty: { easy: 12, medium: 40, hard: 39, elite: 15, master: 5 },
       estimatedPtsPerHour: 110,
       uniqueBosses: [
-        "Fortis Colosseum",
+        "Fortis Colosseum (Sol Heredit)",
         "Hueycoatl",
+        "Vardorvis (DT2)",
+        "Moons of Peril",
       ],
       reasoning:
         "Varlamore is the newest region with the smallest task pool. The Colosseum is a high-skill endgame arena that can produce master task completions, but requires near-maxed stats and late-game relics. Hueycoatl is a newer boss but has limited task density. The region simply lacks the content volume to compete with older regions. Only viable if Colosseum master tasks are your main target and you are already maxing other regions.",
@@ -173,7 +173,7 @@ export const ragingEchoesRank1Guide: EfficiencyGuide = {
     primary: ["Morytania", "Kourend", "Kandarin"],
     alternative: ["Morytania", "Kourend", "Asgarnia"],
     mathJustification:
-      "Primary pick (Morytania + Kourend + Kandarin) yields ~430 region-specific tasks worth ~35,200 points. Combined with ~400 general tasks (no region lock) worth ~18,000 points, you have access to ~830 tasks totaling ~53,200 points from tasks alone. With echo boss bonuses, diary completions, and milestone tasks, this exceeds Dragon tier (60,000) with margin. The alternative swapping Kandarin for Asgarnia trades ~20 completable tasks and skilling breadth for GWD boss density (5 additional bosses). This only makes sense if you can sustain 6+ hours/day of GWD grinding. For most players, the primary pick is strictly superior because skilling tasks are faster points/hr than boss KC tasks in the first 30 days.",
+      "Primary pick (Morytania + Kourend + Kandarin) yields ~323 region-specific tasks worth ~29,060 points. Combined with ~484 general tasks (no region lock) worth ~42,010 points, you have access to ~807 tasks totaling ~71,070 points from tasks alone — well above Dragon tier (60,000). The alternative swapping Kandarin for Asgarnia trades ~8 tasks but gains GWD boss density (5 additional bosses). This only makes sense if you can sustain heavy GWD grinding. For most players, the primary pick is strictly superior because skilling tasks are faster points/hr than boss KC tasks in the first 30 days.",
     unlockOrder: [
       "Morytania (90 tasks) - Barrows is immediately farmable with base 60 combat stats. Provides Barrows equipment for all three combat styles, Slayer Tower access for stacking tasks, and the most accessible echo boss. Prioritize this first because Barrows gear accelerates everything else.",
       "Kourend (200 tasks) - Opens the largest task pool. By 200 tasks you have T3-T4 relics making CoX accessible. Wintertodt and GOTR provide passive skilling tasks while you focus combat. Hydra becomes available once Slayer catches up.",
@@ -225,7 +225,7 @@ export const ragingEchoesRank1Guide: EfficiencyGuide = {
       reasoning:
         "Always on task for ALL eligible slayer monsters. This means every monster you kill for any reason (bossing, questing, casual combat) counts as a Slayer task with boosted XP and points. Free task skips/blocks, free rune pouches and herb sacks. The 1,000-15,000 bonus XP per 100th unique kill adds up across hundreds of monster types. This relic turns Slayer from a deliberate grind into a passive system that accelerates everything else.",
       synergyNotes:
-        "Slayer Master + Morytania (Slayer Tower) + Kourend (Hydra, Catacombs) creates the densest Slayer task ecosystem possible. Every boss you farm for KC tasks simultaneously generates Slayer XP and points. Combined with the T3 passive (5x Slayer points, 1/50 superior rate), you will hit 99 Slayer 30-40% faster than with any other T5. Production Master is strong but you already have 12x XP at this point so artisan speed matters less.",
+        "Slayer Master + Morytania (Slayer Tower) + Kourend (Hydra, Catacombs) creates the densest Slayer task ecosystem possible. Every boss you farm for KC tasks simultaneously generates Slayer XP and points. Combined with the T3 passive (5x Slayer points, 1/50 superior rate), you will hit 99 Slayer significantly faster than with any other T5. Production Master is strong but you already have 12x XP at this point so artisan speed matters less.",
     },
     {
       tier: 6,
@@ -234,7 +234,7 @@ export const ragingEchoesRank1Guide: EfficiencyGuide = {
       reasoning:
         "Save your exact position, HP, Prayer, and special attack energy, then teleport back at any time with stats restored. This is the single most powerful bossing relic in RE. Save outside a boss room at full stats, fight until supplies run low, Bank Heist to a bank, resupply, Total Recall back at full stats. This effectively removes travel time from all boss grinds and gives you free stat restoration.",
       synergyNotes:
-        "Total Recall + Bank Heist is the defining combo for rank 1 bossing. Your kills/hr on every boss increases by 15-30% because you never waste time traveling. For CoX and ToB, save at the entrance, bank mid-raid if needed, recall back. For GWD (if Asgarnia), save inside the boss room to skip KC entirely on return trips. Banker's Note is the alternative for players who want field-noted drops, but Bank Heist already solves most banking needs.",
+        "Total Recall + Bank Heist is the defining combo for rank 1 bossing. Your kills/hr on every boss increases significantly because you never waste time traveling. For CoX and ToB, save at the entrance, bank mid-raid if needed, recall back. For GWD (if Asgarnia), save inside the boss room to skip KC entirely on return trips. Banker's Note is the alternative for players who want field-noted drops, but Bank Heist already solves most banking needs.",
     },
     {
       tier: 7,
@@ -250,7 +250,7 @@ export const ragingEchoesRank1Guide: EfficiencyGuide = {
       recommended: "Specialist",
       alternatives: ["Guardian", "Last Stand"],
       reasoning:
-        "All special attacks cost only 20% energy with +100% accuracy. Failed specs restore 10% energy. Kills restore 15% energy. This turns Dragon Claws (normally 50% spec) into a 20% spec with guaranteed accuracy, letting you fire 5 specs before needing a restore. For bossing, this is a 40-60% DPS increase on kill times. Guardian is a strong passive DPS option but Specialist's burst damage is superior for speedkilling bosses (which is what master tasks require: fast kill times).",
+        "All special attacks cost only 20% energy with +100% accuracy. Failed specs restore 10% energy. Kills restore 15% energy. This turns Dragon Claws (normally 50% spec) into a 20% spec with guaranteed accuracy, letting you fire 5 specs before needing a restore. For bossing, this is a massive DPS increase on kill times. Guardian is a strong passive DPS option but Specialist's burst damage is superior for speedkilling bosses (which is what master tasks require: fast kill times).",
       synergyNotes:
         "Specialist + Total Recall (saved at full spec) + Grimoire (thralls + vengeance) creates the ultimate boss killing setup. Save at full spec/HP/prayer outside a boss, spec dump 5 times in rapid succession, use thralls and vengeance for additional DPS, Bank Heist when low, recall back at full spec again. This loop produces the fastest boss kill times in the league and is required for master task speed requirements (e.g., ToB sub-15, CoX sub-20).",
     },
@@ -463,19 +463,19 @@ export const ragingEchoesRank1Guide: EfficiencyGuide = {
         style: "Melee",
         points: 6,
         reasoning:
-          "6 mastery points in Melee unlocks the tier 6 echo effect: 20% chance to generate echo hits that can chain up to 8 times. Combined with Specialist (T8) for 20% spec cost, Dragon Claws become a machine gun of echoing specs. Melee also benefits from the 50% attack speed reduction at tier 5, turning whip from 4-tick to 2-tick. This is the highest sustained DPS in the league and is required for master task speed requirements at ToB and CoX. Melee T4 healing (5% chance to heal 40% of damage) provides sustain that reduces supply consumption during extended boss grinds.",
+          "6 mastery points in Melee unlocks the tier 6 echo effect: chance to generate echo hits that can chain multiple times. Combined with Specialist (T8) for 20% spec cost, Dragon Claws become extremely powerful. Melee also benefits from the attack speed reduction at tier 5. This is the highest sustained DPS in the league and is required for master task speed requirements at ToB and CoX. Melee T4 healing provides sustain that reduces supply consumption during extended boss grinds.",
       },
       {
         style: "Ranged",
         points: 3,
         reasoning:
-          "3 points in Ranged unlocks the 80% attack rate (T3) which turns blowpipe and bowfa into rapid-fire weapons. The T1 minimum hit floor (30% of max) eliminates low hits, and T2 ramping damage (+5% per attack, up to +20%) rewards sustained DPS phases. Ranged is essential for safe-spotting bosses like Zulrah, Vorkath, and for CoX Olm head phase. 3 points is the sweet spot: enough for meaningful DPS improvement without over-investing away from Melee.",
+          "3 points in Ranged unlocks the T3 attack speed effect which turns blowpipe and bowfa into rapid-fire weapons. The T1 minimum hit floor eliminates low hits, and T2 ramping damage rewards sustained DPS phases. Ranged is essential for safe-spotting bosses like Zulrah, Vorkath, and for CoX Olm head phase. 3 points is the sweet spot: enough for meaningful DPS improvement without over-investing away from Melee.",
       },
       {
         style: "Magic",
         points: 1,
         reasoning:
-          "1 point in Magic unlocks the T1 effect: hits above 90% of max deal 50% bonus damage. This is sufficient for Ice Barrage Slayer tasks (the primary Magic use case) where you are AoE-ing groups and high rolls are frequent. Magic is primarily a utility style in RE (freezes, thralls via Grimoire, blood spells for sustain). Investing more than 1 point has diminishing returns because the T2 ramp-up effect (+5% per tick between attacks) is anti-synergistic with AoE barraging where you attack every tick. Save those points for Melee/Ranged.",
+          "1 point in Magic unlocks the T1 effect: high hits deal bonus damage. This is sufficient for Ice Barrage Slayer tasks (the primary Magic use case) where you are AoE-ing groups and high rolls are frequent. Magic is primarily a utility style in RE (freezes, thralls via Grimoire, blood spells for sustain). Investing more than 1 point has diminishing returns because the T2 ramp-up effect is anti-synergistic with AoE barraging where you attack every tick. Save those points for Melee/Ranged.",
       },
     ],
   },
@@ -485,21 +485,21 @@ export const ragingEchoesRank1Guide: EfficiencyGuide = {
       boss: "Echo Barrows Brothers",
       region: "Morytania",
       strategy:
-        "Echo Barrows is the first echo boss most players should attempt. Accessed via echo orbs dropped from regular Barrows runs (roughly 1 in 15 chests). The echo variant features all six brothers simultaneously with enhanced mechanics: Dharok hits harder, Karil has AoE attacks, Verac always hits through prayer. Strategy: prioritize killing Karil and Ahrim first (highest DPS threats), then Dharok (melee pray flick), then clean up the rest. With Total Recall, save at full stats outside the crypt. Use Ice Barrage from Grimoire to freeze brothers and spec dump with Specialist. Specialist's 20% spec cost means 5 Dragon Claws specs per fight, which is enough to burst down 2-3 brothers before they can stack damage. Bank Heist when supplies drop, recall back at full stats for the next attempt. Drops include echo-enhanced Barrows equipment with boosted stats for league use.",
+        "Echo Barrows is the first echo boss most players should attempt. Accessed via echo orbs dropped from regular Barrows runs. The echo variant features all six brothers simultaneously with enhanced mechanics. Strategy: prioritize killing Karil and Ahrim first (highest DPS threats), then Dharok (melee pray flick), then clean up the rest. With Total Recall, save at full stats outside the crypt. Use Ice Barrage from Grimoire to freeze brothers and spec dump with Specialist. Specialist's 20% spec cost means 5 Dragon Claws specs per fight. Bank Heist when supplies drop, recall back at full stats for the next attempt. Drops include echo-enhanced Barrows equipment with boosted stats for league use.",
       kph: 8,
     },
     {
       boss: "Echo Chambers (CoX Echo)",
       region: "Kourend",
       strategy:
-        "Echo Chambers is the echo variant of Chambers of Xeric, accessed via echo orbs from regular CoX completions (roughly 1 in 10 completions). This is a solo-scaled enhanced raid with buffed room mechanics: Olm has faster phase transitions, Tekton hits harder and enrages faster, Vasa heals more aggressively. The key is maximizing DPS uptime with Specialist spec dumps on Olm. Use Grimoire for thralls during the entire raid (Book of the Dead effect), swap to Ancient for Ice Barrage on Shamans room, and Lunar for Vengeance on Olm. Total Recall save point outside the raid entrance; if you die, recall back with full supplies instead of restarting. Melee mastery echo hits can chain during Olm melee hand phase, producing insane burst. Target sub-25 minute solos once geared. Drops include echo-enhanced CoX uniques.",
+        "Echo Chambers is the echo variant of Chambers of Xeric, accessed via echo orbs from regular CoX completions. This is a solo-scaled enhanced raid with buffed room mechanics. The key is maximizing DPS uptime with Specialist spec dumps on Olm. Use Grimoire for thralls during the entire raid (Book of the Dead effect), swap to Ancient for Ice Barrage on Shamans room, and Lunar for Vengeance on Olm. Total Recall save point outside the raid entrance; if you die, recall back with full supplies instead of restarting. Melee mastery echo hits can chain during Olm melee hand phase for high burst. Drops include echo-enhanced CoX uniques.",
       kph: 2,
     },
     {
       boss: "Echo Kraken",
       region: "Kandarin",
       strategy:
-        "Echo Kraken is the Kandarin echo boss, accessed via echo orbs from regular Kraken kills (roughly 1 in 25 kills, improved with boosted drop rates). The echo variant has increased Magic defence, an AoE whirlpool attack, and tentacles that must be killed in a specific order or they regenerate. Strategy: use Ranged mastery (3 points) with a bowfa or blowpipe for consistent DPS against its higher Magic defence. The T1 Ranged minimum hit floor ensures no wasted ticks. Spec dump with Dragon Claws via Specialist when tentacles are down for the burst phase. Grimoire thralls add ~10% extra DPS passively. This is the easiest echo boss of the three optimal regions, making it a good entry point for echo boss mastery point farming. Drops include echo-enhanced trident variants.",
+        "Echo Kraken is the Kandarin echo boss, accessed via echo orbs from regular Kraken kills with boosted drop rates. The echo variant has increased Magic defence, an AoE whirlpool attack, and tentacles that must be killed in a specific order or they regenerate. Strategy: use Ranged mastery (3 points) with a bowfa or blowpipe for consistent DPS against its higher Magic defence. The T1 Ranged minimum hit floor ensures no wasted ticks. Spec dump with Dragon Claws via Specialist when tentacles are down for the burst phase. Grimoire thralls add extra DPS passively. This is the easiest echo boss of the three optimal regions, making it a good entry point for echo boss mastery point farming. Drops include echo-enhanced trident variants.",
       kph: 12,
     },
   ],

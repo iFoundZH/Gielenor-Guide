@@ -9,7 +9,7 @@ export const demonicPactsLeague: LeagueData = {
   startDate: "2026-04-15",
   endDate: "2026-06-10",
   wikiUrl: "https://oldschool.runescape.wiki/w/Demonic_Pacts_League",
-  lastSynced: "2026-04-01",
+  lastSynced: "2026-04-02",
   baseXpMultiplier: 5,
   baseDropMultiplier: 2,
   maxRegions: 3,
@@ -313,6 +313,16 @@ export const demonicPactsLeague: LeagueData = {
         "Leagues XP multiplier is increased from 12x to 16x.",
       ],
       relics: [
+        {
+          id: "relic-t7-1",
+          name: "Reloaded",
+          tier: 7,
+          slot: 7,
+          description: "Choose another relic from any tier below this one.",
+          effects: [
+            "Choose another relic from any tier below this one.",
+          ],
+        },
       ],
     },
     {

@@ -11,6 +11,7 @@
     "sync-wiki": "npx tsx src/lib/wiki-sync.ts",
     "sync-guides": "npx tsx src/lib/wiki-sync-guides.ts",
     "sync-data": "npx tsx src/lib/wiki-sync-data.ts",
+    "compute-guide-stats": "npx tsx src/lib/compute-guide-stats.ts",
     "test": "npx playwright test",
     "test:ui": "npx playwright test --ui"
   },

@@ -1,11 +1,13 @@
 import { RelicTier } from "@/types/league";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
+import type { RelicPowerRating } from "@/lib/relic-metrics";
 
 interface RelicTierDisplayProps {
   relicTier: RelicTier;
   selectedRelicId?: string;
   onSelect?: (relicId: string) => void;
+  powerRatings?: Record<string, RelicPowerRating>;
 }
 
 const tierColors: Record<number, string> = {
@@ -19,7 +21,15 @@ const tierColors: Record<number, string> = {
   8: "text-demon-glow",
 };
 
-export function RelicTierDisplay({ relicTier, selectedRelicId, onSelect }: RelicTierDisplayProps) {
+const AXIS_COLORS: Record<string, string> = {
+  DPS: "bg-demon-glow/20 text-demon-glow",
+  Skill: "bg-osrs-green/20 text-osrs-green",
+  QoL: "bg-osrs-blue/20 text-osrs-blue",
+  Pts: "bg-osrs-gold/20 text-osrs-gold",
+  AFK: "bg-osrs-purple/20 text-osrs-purple",
+};
+
+export function RelicTierDisplay({ relicTier, selectedRelicId, onSelect, powerRatings }: RelicTierDisplayProps) {
   const { tier, passiveEffects, relics } = relicTier;
   const hasRelicChoices = relics.length > 0;
 
@@ -77,6 +87,23 @@ export function RelicTierDisplay({ relicTier, selectedRelicId, onSelect }: Relic
                     </div>
                   ))}
                 </div>
+                {powerRatings?.[relic.id] && (() => {
+                  const pr = powerRatings[relic.id];
+                  const axes: [string, number][] = [
+                    ["DPS", pr.dps], ["Skill", pr.skilling], ["QoL", pr.qol], ["Pts", pr.pointGen], ["AFK", pr.afk],
+                  ];
+                  const visible = axes.filter(([, v]) => v > 0);
+                  if (visible.length === 0) return null;
+                  return (
+                    <div className="mt-3 pt-3 border-t border-osrs-border flex flex-wrap gap-1">
+                      {visible.map(([label, val]) => (
+                        <span key={label} className={`inline-flex items-center gap-1 text-xs font-medium rounded px-1.5 py-0.5 ${AXIS_COLORS[label] || "bg-osrs-darker text-osrs-text"}`}>
+                          {label} {val}
+                        </span>
+                      ))}
+                    </div>
+                  );
+                })()}
                 {relic.synergies && relic.synergies.length > 0 && (
                   <div className="mt-3 pt-3 border-t border-osrs-border flex flex-wrap gap-1">
                     {relic.synergies.map((s, i) => (

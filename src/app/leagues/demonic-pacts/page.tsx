@@ -229,7 +229,7 @@ export default function DemonicPactsOverview() {
                   regions. Each region has unique bosses, skills, and tasks. Misthalin is completely
                   inaccessible — a first for OSRS leagues.
                 </p>
-                <RegionPicker regions={league.regions} maxRegions={league.maxRegions} selectedRegions={[]} />
+                <RegionPicker regions={league.regions} maxRegions={league.maxRegions} selectedRegions={[]} tasks={league.tasks} />
               </div>
             )}
 
