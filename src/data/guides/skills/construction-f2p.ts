@@ -75,5 +75,12 @@ export const constructionF2pGuide: SkillTrainingGuide = {
       description: "Hold 1, and get familiar with the click timings. This eliminates having to switch keys and having to right click.",
       members: false,
     },
+    {
+      name: "Fishing crane repair",
+      levelRange: [30, 99],
+      xpPerHour: null,
+      description: "Repairing fishing cranes in Port Piscarilius is a low-intensity, click-light training method for both Construction and Crafting, available from level 30 in both skills. Each repair grants experienc...",
+      members: false,
+    },
   ],
 };

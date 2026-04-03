@@ -55,13 +55,6 @@ export const slayerF2pGuide: SkillTrainingGuide = {
       members: false,
     },
     {
-      name: "Unlocking new tasks",
-      levelRange: [73, 99],
-      xpPerHour: null,
-      description: "With unlocking, you do not need a quest to access them. Instead, you pay with Slayer points to get these monsters for your Slayer assignment. Be aware that these task unlocks generally apply to hig...",
-      members: false,
-    },
-    {
       name: "Task extension",
       levelRange: [1, 99],
       xpPerHour: null,
@@ -104,13 +97,6 @@ export const slayerF2pGuide: SkillTrainingGuide = {
       members: false,
     },
     {
-      name: "Slayer locations",
-      levelRange: [1, 99],
-      xpPerHour: null,
-      description: "While some Slayer monsters are found in one or multiple habitats, there are dungeons throughout Gielinor where many monsters a Slayer master can assign can be found. |- | Slayer Tower  |Has various...",
-      members: false,
-    },
-    {
       name: "Player-owned houses",
       levelRange: [1, 99],
       xpPerHour: null,
@@ -122,27 +108,6 @@ export const slayerF2pGuide: SkillTrainingGuide = {
       levelRange: [95, 99],
       xpPerHour: null,
       description: "At , portal chambers can be built. The portals can then be constructed and set to teleport to various destinations around Gielinor, covering many of the teleports that the spellbooks have. You need...",
-      members: false,
-    },
-    {
-      name: "Location",
-      levelRange: [90, 99],
-      xpPerHour: null,
-      description: "Scrolls of redirection can be used to teleport to player-owned house portals other than the house's current location. |- |  | Rimmington |",
-      members: false,
-    },
-    {
-      name: "Task summary",
-      levelRange: [200, 99],
-      xpPerHour: null,
-      description: "This is a list of monsters assigned by Duradel, along with the pros and cons of completing the task. This table aims to empower players in choosing their tasks based on the pros and cons of each ta...",
-      members: false,
-    },
-    {
-      name: "Quest experience",
-      levelRange: [18, 99],
-      xpPerHour: null,
-      description: "|- |Natural history quiz(miniquest)|| 1,000||-||- |- |Recipe for Disaster(Dwarf subquest)||1,000||-||- |-",
       members: false,
     },
     {

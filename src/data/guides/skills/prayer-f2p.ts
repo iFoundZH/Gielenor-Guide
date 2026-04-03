@@ -34,13 +34,6 @@ export const prayerF2pGuide: SkillTrainingGuide = {
       members: false,
     },
     {
-      name: "Strategy",
-      levelRange: [1, 99],
-      xpPerHour: null,
-      description: "There are multiple strategies you could use for this method. Any way works, which one is best is for you to decide. Method one: #Run in and collect bones. #Run out to safety and bury the bones. #Re...",
-      members: false,
-    },
-    {
       name: "Chaos Temple",
       levelRange: [1, 99],
       xpPerHour: null,
@@ -59,13 +52,6 @@ export const prayerF2pGuide: SkillTrainingGuide = {
       levelRange: [1, 99],
       xpPerHour: null,
       description: "Big bones are dropped by the following monsters in free-to-play in these areas. *Giant frogs (Lumbridge Swamp) *Hill giants (Edgeville Dungeon or Giants' Plateau) *Moss giants (Varrock Sewers or Cr...",
-      members: false,
-    },
-    {
-      name: "Power-burying and scattering",
-      levelRange: [325, 99],
-      xpPerHour: 116000,
-      description: "The best prayer experience rates for prayer in free-to-play are achieved by burying large numbers of bones and demonic ashes bought from the Grand Exchange. This is a click intensive and expensive ...",
       members: false,
     },
     {

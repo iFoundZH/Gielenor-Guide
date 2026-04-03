@@ -20,13 +20,6 @@ export const smithingF2pGuide: SkillTrainingGuide = {
       members: false,
     },
     {
-      name: "Experience required",
-      levelRange: [18, 29],
-      xpPerHour: null,
-      description: "Experience required: 14,722",
-      members: false,
-    },
-    {
       name: "Ending experience",
       levelRange: [18, 29],
       xpPerHour: null,
@@ -52,13 +45,6 @@ export const smithingF2pGuide: SkillTrainingGuide = {
       levelRange: [33, 48],
       xpPerHour: null,
       description: "Starting experience: 18,287.5",
-      members: false,
-    },
-    {
-      name: "Experience required",
-      levelRange: [33, 48],
-      xpPerHour: null,
-      description: "Experience required: 64,726.5",
       members: false,
     },
     {
@@ -90,13 +76,6 @@ export const smithingF2pGuide: SkillTrainingGuide = {
       members: false,
     },
     {
-      name: "Experience required",
-      levelRange: [48, 68],
-      xpPerHour: null,
-      description: "Experience required: 521,994.5",
-      members: false,
-    },
-    {
       name: "Ending experience 605,030",
       levelRange: [48, 68],
       xpPerHour: null,
@@ -122,13 +101,6 @@ export const smithingF2pGuide: SkillTrainingGuide = {
       levelRange: [68, 88],
       xpPerHour: null,
       description: "Starting experience: 605,037.5",
-      members: false,
-    },
-    {
-      name: "Experience required",
-      levelRange: [68, 88],
-      xpPerHour: null,
-      description: "Experience required: 3,780,750",
       members: false,
     },
     {
@@ -160,13 +132,6 @@ export const smithingF2pGuide: SkillTrainingGuide = {
       members: false,
     },
     {
-      name: "Experience required",
-      levelRange: [87, 88],
-      xpPerHour: null,
-      description: "Experience required: 7,419,818.5",
-      members: false,
-    },
-    {
       name: "Ending experience",
       levelRange: [87, 88],
       xpPerHour: null,
@@ -192,13 +157,6 @@ export const smithingF2pGuide: SkillTrainingGuide = {
       levelRange: [98, 99],
       xpPerHour: null,
       description: "Starting experience: 11,805,787.5",
-      members: false,
-    },
-    {
-      name: "Experience required",
-      levelRange: [98, 99],
-      xpPerHour: null,
-      description: "Experience required: 1,228,643.5",
       members: false,
     },
     {
@@ -230,13 +188,6 @@ export const smithingF2pGuide: SkillTrainingGuide = {
       members: false,
     },
     {
-      name: "Experience required",
-      levelRange: [1, 5],
-      xpPerHour: null,
-      description: "Experience required: 388",
-      members: false,
-    },
-    {
       name: "Ending experience",
       levelRange: [1, 5],
       xpPerHour: null,
@@ -265,13 +216,6 @@ export const smithingF2pGuide: SkillTrainingGuide = {
       members: false,
     },
     {
-      name: "Experience required",
-      levelRange: [5, 9],
-      xpPerHour: null,
-      description: "Experience required: 569",
-      members: false,
-    },
-    {
       name: "Ending experience",
       levelRange: [5, 9],
       xpPerHour: null,
@@ -297,13 +241,6 @@ export const smithingF2pGuide: SkillTrainingGuide = {
       levelRange: [9, 18],
       xpPerHour: null,
       description: "Starting experience: 975",
-      members: false,
-    },
-    {
-      name: "Experience required",
-      levelRange: [9, 18],
-      xpPerHour: null,
-      description: "Experience required: 2,548",
       members: false,
     },
     {
@@ -346,13 +283,6 @@ export const smithingF2pGuide: SkillTrainingGuide = {
       levelRange: [98, 99],
       xpPerHour: null,
       description: "Starting experience: 11,805,787.5",
-      members: false,
-    },
-    {
-      name: "Experience required",
-      levelRange: [98, 99],
-      xpPerHour: null,
-      description: "Experience required: 1,228,643.5",
       members: false,
     },
     {

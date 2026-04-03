@@ -109,7 +109,7 @@ export function calculateGielinorScore(
   };
 }
 
-function calculateBuildSynergy(relics: Relic[], pacts: Pact[], hasMasteries = false): number {
+export function calculateBuildSynergy(relics: Relic[], pacts: Pact[], hasMasteries = false): number {
   let score = 0;
 
   // Base score for having relics selected
@@ -120,12 +120,18 @@ function calculateBuildSynergy(relics: Relic[], pacts: Pact[], hasMasteries = fa
   const hasCombatPower = pacts.some((p) => p.category === "combat") || hasMasteries;
 
   // Demonic Pacts synergies
-  // Endless Harvest + Woodsman: gathering auto-banks + instant fletching/doubled hunter
-  if (relicIds.has("relic-t1-1") && relicIds.has("relic-t2-1")) score += 60;
+  // Endless Harvest + Woodsman: gathering auto-banks + hunter to bank + instant fletching
+  if (relicIds.has("relic-t1-1") && relicIds.has("relic-t2-2")) score += 60;
+  // Endless Harvest + Hotfoot: gathering auto-banks + auto-cook/smelt
+  if (relicIds.has("relic-t1-1") && relicIds.has("relic-t2-1")) score += 50;
   // Evil Eye (boss teleports) + any combat pact
   if (relicIds.has("relic-t3-1") && pacts.some((p) => p.category === "combat")) score += 50;
   // Evil Eye + Conniving Clues: boss teleports + clue farming
   if (relicIds.has("relic-t3-1") && relicIds.has("relic-t4-1")) score += 60;
+  // Nature's Accord + Abundance: fairy teleports + skill boost + farming dominance
+  if (relicIds.has("relic-t5-1") && relicIds.has("relic-t1-3")) score += 50;
+  // Larcenist + Hotfoot: 100% success thieving + 100% success agility
+  if (relicIds.has("relic-t5-2") && relicIds.has("relic-t2-1")) score += 50;
   // Culling Spree (slayer relic) + Melee Might or Ranged Fury or Magic Surge
   if (relicIds.has("relic-t6-1") && (pactIds.has("pact-melee-might") || pactIds.has("pact-ranged-fury") || pactIds.has("pact-magic-surge"))) score += 70;
   // Minion + Glass Cannon: companion deals damage while you're fragile
@@ -158,7 +164,7 @@ function calculateBuildSynergy(relics: Relic[], pacts: Pact[], hasMasteries = fa
   return Math.min(500, score);
 }
 
-function calculateRiskScore(pacts: Pact[]): number {
+export function calculateRiskScore(pacts: Pact[]): number {
   let score = 0;
 
   // More pacts = more risk = more score

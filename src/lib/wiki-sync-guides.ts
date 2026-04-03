@@ -103,6 +103,9 @@ function parseTrainingMethods(wikitext: string, members: boolean): ParsedTrainin
       for (const bullet of bullets.slice(0, 5)) {
         const text = stripWikiMarkup(bullet.replace(/^\*\s*/, ""));
         if (text.length < 5) continue;
+        // Skip garbage bullet entries: table fragments, cost/value labels, formulaic text
+        if (/^(experience required|per jug|per grape|value per|cost per|modifier|the value of|hunterLvl|to pass |using the |wear |use a |check a |delay |click |lay |walk )/i.test(text)) continue;
+        if (/^\d[\d,]*$/.test(text.trim())) continue; // Pure numbers
         const xpPerHour = extractXpRate(text);
         const name = text.split(/[-–:.]/).at(0)?.trim() || text.slice(0, 60);
 
@@ -138,8 +141,10 @@ function parseTrainingMethods(wikitext: string, members: boolean): ParsedTrainin
       // Clean title: strip any residual = signs from sub-headers
       const title = sectionStarts[i].title.replace(/^=+\s*/, "").replace(/\s*=+$/, "").trim();
 
-      // Skip meta/navigation sections
-      if (/^(see also|references|external links|navigation|notes|equipment|recommended|general|contents|changes|trivia|gallery)$/i.test(title)) continue;
+      // Skip meta/navigation sections and common garbage entries from wiki sub-content
+      if (/^(see also|references|external links|navigation|notes|equipment|recommended|general|contents|changes|trivia|gallery|strategies|strategy|tips|methods|overview|introduction|comparison|table|requirements|supplies|inventory|useful items|recommended skills|summary|preparation|planning to die|logging out|bringing noted|reward|members|free-to-play|experience|calculator)$/i.test(title)) continue;
+      // Skip titles that look like wiki table fragments, obstacle requirements, or step instructions
+      if (/^(to pass |using the |wear |use a |check |click |delay |lay |walk |the value of|hunterLvl|experience required|per jug|per grape|value per|cost per|modifier)/i.test(title)) continue;
       if (title.length < 3 || title.length > 80) continue;
 
       // Try to extract a level from section body (e.g., "requires level 60" or {{SCP|Skill|60}})
@@ -157,8 +162,8 @@ function parseTrainingMethods(wikitext: string, members: boolean): ParsedTrainin
         .join(" ");
       const description = stripWikiMarkup(sectionBody);
       if (description.length < 10) continue;
-      // Skip if description is still wiki table junk
-      if (/class\s*=\s*"|wikitable|rowspan|colspan/i.test(description)) continue;
+      // Skip if description is still wiki table junk or raw markup
+      if (/class\s*=\s*"|wikitable|rowspan|colspan|\|-\s*\||data-sort/i.test(description)) continue;
 
       function extractXpRateFallback(text: string): number | null {
         const patterns = [

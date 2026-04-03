@@ -191,14 +191,22 @@ function parseQuestFromWikitext(name: string, wikitext: string, knownQuestNames:
     }
   }
 
-  // Find the Details/Requirements section (but NOT "Required for completing" which lists downstream quests)
-  const detailsSection = wikitext.match(/==\s*Details\s*==([\s\S]*?)(?=\n==(?!=))/i);
+  // Find the Requirements section (but NOT "Required for completing" which lists downstream quests)
   const reqSection = wikitext.match(/==\s*Requirements?\s*==([\s\S]*?)(?=\n==(?!=))/i);
-  // Combine quest details template + Details section + Requirements section for skill/combat extraction
-  const reqScope = (questDetails ?? "") + (detailsSection?.[1] ?? "") + (reqSection?.[1] ?? "");
+  // Only use the |requirements= param from Quest details template (not the entire template,
+  // which contains descriptions/items/kills that can mention skills in non-requirement contexts).
+  // The old approach used the full template + Details section, which caused fabricated skill
+  // requirements (e.g., Sailing) from incidental {{SCP|Skill|Level}} mentions in quest text.
+  let questDetailsReqs = "";
+  if (questDetails) {
+    const reqParam = extractInfoboxParam(questDetails, "requirements");
+    if (reqParam) questDetailsReqs = reqParam;
+  }
+  const reqScope = questDetailsReqs + (reqSection?.[1] ?? "");
 
-  // Detect combat requirement
-  if (/ability to defeat|combat level|must be able to kill|enemies? up to|\{\{SCP\|Combat/i.test(reqScope)) {
+  // Detect combat requirement (check both narrow scope + quest details template for combat keywords)
+  const combatScope = reqScope + (questDetails ?? "");
+  if (/ability to defeat|combat level|must be able to kill|enemies? up to|\{\{SCP\|Combat/i.test(combatScope)) {
     combatRequired = true;
   }
 
@@ -220,10 +228,10 @@ function parseQuestFromWikitext(name: string, wikitext: string, knownQuestNames:
     }
   }
 
-  // Extract quest requirements: look for known quest names in details+requirements scope only
+  // Extract quest requirements: look for known quest names in requirements scope only
   // (excludes "Required for completing" which lists downstream quests)
   const questRequirements: string[] = [];
-  const questReqScope = (questDetails ?? "") + (detailsSection?.[1] ?? "") + (reqSection?.[1] ?? "");
+  const questReqScope = questDetailsReqs + (reqSection?.[1] ?? "");
   const questLinkPattern = /\[\[([^\]|]+?)(?:\|[^\]]+)?\]\]/g;
   let questLinkMatch;
   while ((questLinkMatch = questLinkPattern.exec(questReqScope)) !== null) {
@@ -804,7 +812,43 @@ function mergeBosses(wikiBosses: ParsedBoss[]): ParsedBoss[] {
     return wikiBosses;
   }
 
-  return wikiBosses;
+  // Preserve hand-curated boss entries that exist in the current file but not in wiki data
+  const existingPath = path.join(DATA_DIR, "osrs-bosses.ts");
+  if (!fs.existsSync(existingPath)) return wikiBosses;
+
+  const existingSrc = fs.readFileSync(existingPath, "utf8");
+  const wikiIds = new Set(wikiBosses.map((b) => b.id));
+  const existingBosses: ParsedBoss[] = [];
+
+  // Parse existing boss entries to preserve ones not in wiki sync
+  const entryPattern = /\{\s*id:\s*"([^"]+)",\s*name:\s*"([^"]+)",\s*region:\s*"([^"]+)",\s*combatLevel:\s*(\d+|null),\s*skillRequirements:\s*(\[.*?\]),\s*questRequirements:\s*(\[.*?\]),\s*hitpoints:\s*(\d+|null),\s*attackStyles:\s*(\[.*?\]),\s*members:\s*(true|false),\s*category:\s*(\[.*?\]),\s*notableDrops:\s*(\[.*?\]),\s*wikiUrl:\s*"([^"]+)"/g;
+  let match;
+  while ((match = entryPattern.exec(existingSrc)) !== null) {
+    const id = match[1];
+    if (!wikiIds.has(id)) {
+      // This boss exists in our data but not in wiki sync — preserve it
+      existingBosses.push({
+        id,
+        name: match[2],
+        region: match[3],
+        combatLevel: match[4] === "null" ? null : parseInt(match[4]),
+        skillRequirements: JSON.parse(match[5].replace(/skill:/g, '"skill":').replace(/level:/g, '"level":').replace(/'/g, '"')),
+        questRequirements: JSON.parse(match[6].replace(/'/g, '"')),
+        hitpoints: match[7] === "null" ? null : parseInt(match[7]),
+        attackStyles: JSON.parse(match[8].replace(/'/g, '"')),
+        members: match[9] === "true",
+        category: JSON.parse(match[10].replace(/'/g, '"')),
+        notableDrops: JSON.parse(match[11].replace(/'/g, '"')),
+        wikiUrl: match[12],
+      });
+    }
+  }
+
+  if (existingBosses.length > 0) {
+    console.log(`  [merge] Preserving ${existingBosses.length} hand-curated boss entries: ${existingBosses.map((b) => b.name).join(", ")}`);
+  }
+
+  return [...wikiBosses, ...existingBosses];
 }
 
 function generateBossesFile(bosses: ParsedBoss[]): string {

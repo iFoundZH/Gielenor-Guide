@@ -62,13 +62,6 @@ export const miningF2pGuide: SkillTrainingGuide = {
       members: false,
     },
     {
-      name: "Experience required",
-      levelRange: [15, 99],
-      xpPerHour: null,
-      description: "Experience required: 13,032,020",
-      members: false,
-    },
-    {
       name: "Iron ore required",
       levelRange: [15, 99],
       xpPerHour: null,
@@ -97,13 +90,6 @@ export const miningF2pGuide: SkillTrainingGuide = {
       members: false,
     },
     {
-      name: "Experience required",
-      levelRange: [70, 85],
-      xpPerHour: null,
-      description: "Experience required: 1,935,487",
-      members: false,
-    },
-    {
       name: "Adamantite ore required",
       levelRange: [70, 85],
       xpPerHour: null,
@@ -122,13 +108,6 @@ export const miningF2pGuide: SkillTrainingGuide = {
       levelRange: [85, 99],
       xpPerHour: null,
       description: "Starting experience: 3,258,610",
-      members: false,
-    },
-    {
-      name: "Experience required",
-      levelRange: [85, 99],
-      xpPerHour: null,
-      description: "Experience required: 9,775,821",
       members: false,
     },
     {

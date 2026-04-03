@@ -20,13 +20,6 @@ export const woodcuttingF2pGuide: SkillTrainingGuide = {
       members: false,
     },
     {
-      name: "Experience required",
-      levelRange: [1, 15],
-      xpPerHour: null,
-      description: "Experience required: 2,411",
-      members: false,
-    },
-    {
       name: "Logs required",
       levelRange: [1, 15],
       xpPerHour: null,

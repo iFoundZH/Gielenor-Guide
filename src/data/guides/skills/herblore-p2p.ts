@@ -6,38 +6,10 @@ export const herbloreP2pGuide: SkillTrainingGuide = {
   wikiUrl: "https://oldschool.runescape.wiki/w/Pay-to-play_Herblore_training",
   methods: [
     {
-      name: "Quest experience rewards",
-      levelRange: [3, 99],
-      xpPerHour: null,
-      description: "|- |Druidic Ritual||250|| - || - |- |Jungle Potion||775|||| - |-",
-      members: true,
-    },
-    {
-      name: "Starting off",
-      levelRange: [3, 99],
-      xpPerHour: null,
-      description: "Completing Jungle Potion, Recruitment Drive and The Dig Site quests will get the player from level 3 to 19. Here are some quests that grant Herblore experience which have little or no additional re...",
-      members: true,
-    },
-    {
       name: "Making potions",
       levelRange: [1, 99],
       xpPerHour: null,
       description: "For more in depth calculations and variations about the cost per experience, see Calculator:Herblore/Potions.  The most efficient way to gain Herblore experience is to make potions by combining bas...",
-      members: true,
-    },
-    {
-      name: "Making barbarian mixes",
-      levelRange: [1, 99],
-      xpPerHour: null,
-      description: "Barbarian mixes are generally not made as they are rarely traded and may have low value. It is not recommended to make barbarian mixes unless planning to use them. This calculator assumes buying 4 ...",
-      members: true,
-    },
-    {
-      name: "Making tar",
-      levelRange: [1, 99],
-      xpPerHour: null,
-      description: "An alternative, potentially cheaper method of training Herblore is making tar. This requires fewer clicks than potion making, since twice as many actions are performed before banking and the durati...",
       members: true,
     },
     {

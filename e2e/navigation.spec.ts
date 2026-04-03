@@ -37,10 +37,12 @@ test.describe("Navigation", () => {
       "/leagues/demonic-pacts",
       "/leagues/demonic-pacts/planner",
       "/leagues/demonic-pacts/tasks",
+      "/leagues/demonic-pacts/path",
       "/leagues/demonic-pacts/guide",
       "/leagues/raging-echoes",
       "/leagues/raging-echoes/planner",
       "/leagues/raging-echoes/tasks",
+      "/leagues/raging-echoes/path",
       "/leagues/raging-echoes/guide",
     ];
 

@@ -288,12 +288,12 @@ const LOCATION_KEYWORDS: [string, string][] = [
   ["stranglewood", "varlamore"],
   ["vardorvis", "varlamore"],
 
-  // Zanaris / Other
-  ["zanaris", "zanaris"],
-  ["entrana", "zanaris"],
-  ["ape atoll", "zanaris"],
-  ["fairy ring", "zanaris"],
-  ["cosmic altar", "zanaris"],
+  // Zanaris / Other — Zanaris accessible everywhere in DP, map to kandarin as default
+  ["zanaris", "kandarin"],
+  ["entrana", "kandarin"],
+  ["ape atoll", "karamja"],
+  ["fairy ring", "kandarin"],
+  ["cosmic altar", "kandarin"],
 ];
 
 /**

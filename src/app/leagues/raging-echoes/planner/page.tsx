@@ -14,6 +14,7 @@ import { GielinorScoreCard } from "@/components/league/GielinorScoreCard";
 import { BuildAnalysisPanel } from "@/components/league/BuildAnalysisPanel";
 import { analyzeBuild } from "@/lib/build-analysis";
 import { computeAllPowerRatings } from "@/lib/relic-metrics";
+import { computeAllImpacts } from "@/lib/selection-impact";
 import type { LeagueBuild } from "@/types/league";
 import { ragingEchoesRank1Guide } from "@/data/guides/efficiency/raging-echoes-rank1";
 import Link from "next/link";
@@ -113,6 +114,7 @@ export default function RagingEchoesPlanner() {
   const gielinorScore = useMemo(() => calculateGielinorScore(build, league), [build, league]);
   const buildAnalysis = useMemo(() => analyzeBuild(build, league), [build, league]);
   const powerRatings = useMemo(() => computeAllPowerRatings(allRelics, league), [allRelics, league]);
+  const impacts = useMemo(() => computeAllImpacts(build, league, gielinorScore), [build, league, gielinorScore]);
   const relicTiersWithChoices = league.relicTiers.filter((t) => t.relics.length > 0).length;
 
   const masteryPointsUsed = build.pacts.filter((id) => id.startsWith("re-mastery-")).length;
@@ -342,6 +344,7 @@ export default function RagingEchoesPlanner() {
               onToggle={toggleRegion}
               tasks={league.tasks}
               regionAnalysis={ragingEchoesRank1Guide.regionAnalysis}
+              impacts={impacts.regions}
             />
           </CollapsiblePlannerSection>
 
@@ -365,6 +368,7 @@ export default function RagingEchoesPlanner() {
                   selectedRelicId={build.relics.find((id) => rt.relics.some((r) => r.id === id))}
                   onSelect={toggleRelic}
                   powerRatings={powerRatings}
+                  impacts={impacts.relics}
                 />
               ))}
             </div>

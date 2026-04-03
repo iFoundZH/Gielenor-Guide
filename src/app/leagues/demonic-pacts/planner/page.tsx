@@ -14,6 +14,7 @@ import { GielinorScoreCard } from "@/components/league/GielinorScoreCard";
 import { BuildAnalysisPanel } from "@/components/league/BuildAnalysisPanel";
 import { analyzeBuild } from "@/lib/build-analysis";
 import { computeAllPowerRatings } from "@/lib/relic-metrics";
+import { computeAllImpacts } from "@/lib/selection-impact";
 import type { LeagueBuild } from "@/types/league";
 import { demonicPactsRank1Guide } from "@/data/guides/efficiency/demonic-pacts-rank1";
 import Link from "next/link";
@@ -103,6 +104,7 @@ export default function BuildPlanner() {
   const gielinorScore = useMemo(() => calculateGielinorScore(build, league), [build, league]);
   const buildAnalysis = useMemo(() => analyzeBuild(build, league), [build, league]);
   const powerRatings = useMemo(() => computeAllPowerRatings(allRelics, league), [allRelics, league]);
+  const impacts = useMemo(() => computeAllImpacts(build, league, gielinorScore), [build, league, gielinorScore]);
 
   const regionsComplete = build.regions.length === league.maxRegions;
   const relicsComplete = selectedRelics.length === relicTiersWithChoices;
@@ -320,6 +322,7 @@ export default function BuildPlanner() {
               onToggle={toggleRegion}
               tasks={league.tasks}
               regionAnalysis={demonicPactsRank1Guide.regionAnalysis}
+              impacts={impacts.regions}
             />
           </CollapsiblePlannerSection>
 
@@ -343,6 +346,7 @@ export default function BuildPlanner() {
                   selectedRelicId={build.relics.find((id) => rt.relics.some((r) => r.id === id))}
                   onSelect={toggleRelic}
                   powerRatings={powerRatings}
+                  impacts={impacts.relics}
                 />
               ))}
             </div>
@@ -365,7 +369,7 @@ export default function BuildPlanner() {
           >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {league.pacts.map((pact) => (
-                <PactCard key={pact.id} pact={pact} selected={build.pacts.includes(pact.id)} onToggle={togglePact} />
+                <PactCard key={pact.id} pact={pact} selected={build.pacts.includes(pact.id)} onToggle={togglePact} impact={impacts.pacts[pact.id]} />
               ))}
             </div>
           </CollapsiblePlannerSection>

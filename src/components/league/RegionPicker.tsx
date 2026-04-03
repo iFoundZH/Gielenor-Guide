@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/Badge";
 import { RegionDetailPanel } from "@/components/league/RegionDetailPanel";
 import { computeRegionStats } from "@/lib/region-stats";
 import { REGION_BOSSES } from "@/lib/build-analysis";
+import type { RegionImpact } from "@/lib/selection-impact";
 
 interface RegionPickerProps {
   regions: Region[];
@@ -16,9 +17,10 @@ interface RegionPickerProps {
   onToggle?: (regionId: string) => void;
   tasks?: LeagueTask[];
   regionAnalysis?: RegionAnalysis[];
+  impacts?: Record<string, RegionImpact>;
 }
 
-export function RegionPicker({ regions, maxRegions, selectedRegions, onToggle, tasks, regionAnalysis }: RegionPickerProps) {
+export function RegionPicker({ regions, maxRegions, selectedRegions, onToggle, tasks, regionAnalysis, impacts }: RegionPickerProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const choosableRegions = regions.filter((r) => r.type === "choosable");
@@ -53,6 +55,7 @@ export function RegionPicker({ regions, maxRegions, selectedRegions, onToggle, t
           onToggleExpand={() => toggleExpand(region.id)}
           tasks={tasks}
           regionAnalysis={regionAnalysis}
+          impact={status === "available" ? impacts?.[region.id] : undefined}
         />
       );
 
@@ -121,6 +124,7 @@ function RegionCard({
   onToggleExpand,
   tasks,
   regionAnalysis,
+  impact,
 }: {
   region: Region;
   status: "locked-in" | "selected" | "available" | "disabled" | "inaccessible";
@@ -130,6 +134,7 @@ function RegionCard({
   onToggleExpand: () => void;
   tasks?: LeagueTask[];
   regionAnalysis?: RegionAnalysis[];
+  impact?: RegionImpact;
 }) {
   const borderClass =
     status === "selected" ? "ring-2 ring-osrs-gold border-osrs-gold" :
@@ -180,7 +185,9 @@ function RegionCard({
           )}
         </div>
       </div>
-      <p className="text-xs text-osrs-text-dim mb-2">{region.description}</p>
+      {region.description && (
+        <p className="text-sm text-osrs-text-dim mb-2 leading-relaxed">{region.description}</p>
+      )}
 
       {/* Compact stat line */}
       {hasDetailData && (bossCount != null || analysis) && (
@@ -203,16 +210,41 @@ function RegionCard({
         </div>
       )}
 
-      <div className="flex flex-wrap gap-1">
-        {region.keyContent.slice(0, 4).map((content, i) => (
-          <span key={i} className="text-xs bg-osrs-darker/50 rounded px-1.5 py-0.5 text-osrs-text-dim">
-            {content}
-          </span>
-        ))}
-        {region.keyContent.length > 4 && (
-          <span className="text-xs text-osrs-text-dim">+{region.keyContent.length - 4} more</span>
-        )}
-      </div>
+      {/* Impact indicators for unselected available regions */}
+      {impact && (
+        <div className="flex flex-wrap items-center gap-1 mb-2">
+          {impact.pointsDelta > 0 && (
+            <Badge variant="gold">+{impact.pointsDelta.toLocaleString()} pts</Badge>
+          )}
+          {impact.bossNames.length > 0 && (
+            <Badge variant="default">+{impact.bossNames.length} bosses</Badge>
+          )}
+          {impact.relicFitScore > 60 && (
+            <Badge variant="green">Fits relics</Badge>
+          )}
+          {impact.contentOverlapPercent > 50 && (
+            <span className="text-xs px-2 py-0.5 rounded-full bg-osrs-gold/10 text-osrs-gold border border-osrs-gold/20">
+              {impact.contentOverlapPercent}% overlap
+            </span>
+          )}
+          {impact.newSynergies.map((s) => (
+            <Badge key={s} variant="green">{s}</Badge>
+          ))}
+        </div>
+      )}
+
+      {region.keyContent.length > 0 && (
+        <div className="flex flex-wrap gap-1">
+          {region.keyContent.slice(0, 6).map((content, i) => (
+            <span key={i} className="text-xs bg-osrs-darker/50 rounded px-1.5 py-0.5 text-osrs-text-dim">
+              {content}
+            </span>
+          ))}
+          {region.keyContent.length > 6 && (
+            <span className="text-xs text-osrs-text-dim">+{region.keyContent.length - 6} more</span>
+          )}
+        </div>
+      )}
       {region.echoBoss && (
         <div className="mt-2 text-xs text-demon-ember">
           Echo Boss: {region.echoBoss}

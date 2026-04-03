@@ -22,10 +22,12 @@ async function globalSetup() {
     "/leagues/demonic-pacts/planner",
     "/leagues/demonic-pacts/guide",
     "/leagues/demonic-pacts/tasks",
+    "/leagues/demonic-pacts/path",
     "/leagues/raging-echoes",
     "/leagues/raging-echoes/planner",
     "/leagues/raging-echoes/guide",
     "/leagues/raging-echoes/tasks",
+    "/leagues/raging-echoes/path",
     "/data-status",
   ];
 

@@ -1,11 +1,13 @@
 import { Pact } from "@/types/league";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
+import type { PactImpact } from "@/lib/selection-impact";
 
 interface PactCardProps {
   pact: Pact;
   selected?: boolean;
   onToggle?: (pactId: string) => void;
+  impact?: PactImpact;
 }
 
 const categoryColors: Record<string, "gold" | "red" | "green" | "blue" | "purple"> = {
@@ -30,7 +32,7 @@ const tierRiskLabels: Record<number, { label: string; variant: "green" | "gold" 
   3: { label: "High Risk", variant: "red" },
 };
 
-export function PactCard({ pact, selected, onToggle }: PactCardProps) {
+export function PactCard({ pact, selected, onToggle, impact }: PactCardProps) {
   const risk = tierRiskLabels[pact.tier] || tierRiskLabels[1];
   const riskBorder = tierRiskColors[pact.tier] || tierRiskColors[1];
 
@@ -66,6 +68,31 @@ export function PactCard({ pact, selected, onToggle }: PactCardProps) {
           <span className="text-demon-glow">{pact.penalty}</span>
         </div>
       </div>
+
+      {/* Impact indicators for unselected pacts */}
+      {!selected && impact && (() => {
+        const hasContent = impact.gielinorScoreDelta > 0 || impact.riskDelta > 0 || impact.dangerousCombos.length > 0 || impact.newSynergies.length > 0 || impact.relicSynergies.length > 0;
+        if (!hasContent) return null;
+        return (
+          <div className="mt-3 pt-3 border-t border-osrs-border flex flex-wrap gap-1">
+            {impact.gielinorScoreDelta > 0 && (
+              <Badge variant="gold">GS +{impact.gielinorScoreDelta}</Badge>
+            )}
+            {impact.riskDelta > 0 && (
+              <Badge variant="purple">Risk +{impact.riskDelta}</Badge>
+            )}
+            {impact.dangerousCombos.map((c) => (
+              <Badge key={c} variant="red">{c}</Badge>
+            ))}
+            {impact.newSynergies.map((s) => (
+              <Badge key={s} variant="green">{s}</Badge>
+            ))}
+            {impact.relicSynergies.map((s) => (
+              <Badge key={s} variant="blue">+ {s}</Badge>
+            ))}
+          </div>
+        );
+      })()}
     </Card>
   );
 }

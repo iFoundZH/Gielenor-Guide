@@ -2,12 +2,14 @@ import { RelicTier } from "@/types/league";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import type { RelicPowerRating } from "@/lib/relic-metrics";
+import type { RelicImpact } from "@/lib/selection-impact";
 
 interface RelicTierDisplayProps {
   relicTier: RelicTier;
   selectedRelicId?: string;
   onSelect?: (relicId: string) => void;
   powerRatings?: Record<string, RelicPowerRating>;
+  impacts?: Record<string, RelicImpact>;
 }
 
 const tierColors: Record<number, string> = {
@@ -29,7 +31,7 @@ const AXIS_COLORS: Record<string, string> = {
   AFK: "bg-osrs-purple/20 text-osrs-purple",
 };
 
-export function RelicTierDisplay({ relicTier, selectedRelicId, onSelect, powerRatings }: RelicTierDisplayProps) {
+export function RelicTierDisplay({ relicTier, selectedRelicId, onSelect, powerRatings, impacts }: RelicTierDisplayProps) {
   const { tier, passiveEffects, relics } = relicTier;
   const hasRelicChoices = relics.length > 0;
 
@@ -100,6 +102,35 @@ export function RelicTierDisplay({ relicTier, selectedRelicId, onSelect, powerRa
                         <span key={label} className={`inline-flex items-center gap-1 text-xs font-medium rounded px-1.5 py-0.5 ${AXIS_COLORS[label] || "bg-osrs-darker text-osrs-text"}`}>
                           {label} {val}
                         </span>
+                      ))}
+                    </div>
+                  );
+                })()}
+                {!isSelected && impacts?.[relic.id] && (() => {
+                  const impact = impacts[relic.id];
+                  const hasContent = impact.gielinorScoreDelta > 0 || impact.afkDelta !== 0 || impact.regionFitScore > 60 || impact.newSynergies.length > 0 || impact.pactSynergies.length > 0;
+                  if (!hasContent) return null;
+                  return (
+                    <div className="mt-2 flex flex-wrap gap-1">
+                      {impact.gielinorScoreDelta > 0 && (
+                        <Badge variant="gold">GS +{impact.gielinorScoreDelta}</Badge>
+                      )}
+                      {impact.afkDelta > 0 && (
+                        <Badge variant="purple">AFK +{impact.afkDelta}</Badge>
+                      )}
+                      {impact.afkDelta < 0 && (
+                        <span className="inline-flex items-center text-xs font-medium rounded-full px-2 py-0.5 bg-osrs-border text-osrs-text-dim">
+                          AFK {impact.afkDelta}
+                        </span>
+                      )}
+                      {impact.regionFitScore > 60 && (
+                        <Badge variant="green">Fits your regions</Badge>
+                      )}
+                      {impact.newSynergies.map((s) => (
+                        <Badge key={s} variant="green">{s}</Badge>
+                      ))}
+                      {impact.pactSynergies.map((s) => (
+                        <Badge key={s} variant="blue">+ {s}</Badge>
                       ))}
                     </div>
                   );

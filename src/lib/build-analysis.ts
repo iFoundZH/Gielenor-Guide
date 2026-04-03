@@ -182,7 +182,7 @@ export const REGION_BOSSES: Record<string, { name: string; difficulty: "mid" | "
 };
 
 // Tags for what each relic focuses on
-const RELIC_TAGS: Record<string, string[]> = {
+export const RELIC_TAGS: Record<string, string[]> = {
   // DP relics
   "relic-t1-1": ["gathering", "fishing", "woodcutting", "mining", "banking"],
   "relic-t1-2": ["gathering", "agility", "strength", "early-game"],
@@ -352,7 +352,7 @@ function analyzeBuildBalance(relics: Relic[], pacts: Pact[], hasMasteries = fals
 
 // ─── Synergies ──────────────────────────────────────────────────────────
 
-function findActiveSynergies(relics: Relic[], pacts: Pact[], hasMasteries = false): Synergy[] {
+export function findActiveSynergies(relics: Relic[], pacts: Pact[], hasMasteries = false): Synergy[] {
   const synergies: Synergy[] = [];
   const relicIds = new Set(relics.map((r) => r.id));
   const pactIds = new Set(pacts.map((p) => p.id));
