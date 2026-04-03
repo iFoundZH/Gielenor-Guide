@@ -832,13 +832,13 @@ function mergeBosses(wikiBosses: ParsedBoss[]): ParsedBoss[] {
         name: match[2],
         region: match[3],
         combatLevel: match[4] === "null" ? null : parseInt(match[4]),
-        skillRequirements: JSON.parse(match[5].replace(/skill:/g, '"skill":').replace(/level:/g, '"level":').replace(/'/g, '"')),
-        questRequirements: JSON.parse(match[6].replace(/'/g, '"')),
+        skillRequirements: JSON.parse(match[5].replace(/skill:/g, '"skill":').replace(/level:/g, '"level":')),
+        questRequirements: JSON.parse(match[6]),
         hitpoints: match[7] === "null" ? null : parseInt(match[7]),
-        attackStyles: JSON.parse(match[8].replace(/'/g, '"')),
+        attackStyles: JSON.parse(match[8]),
         members: match[9] === "true",
-        category: JSON.parse(match[10].replace(/'/g, '"')),
-        notableDrops: JSON.parse(match[11].replace(/'/g, '"')),
+        category: JSON.parse(match[10]),
+        notableDrops: JSON.parse(match[11]),
         wikiUrl: match[12],
       });
     }
