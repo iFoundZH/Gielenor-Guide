@@ -105,8 +105,8 @@ test.describe("DP Planner - Strategy Builds", () => {
   test("PvM Powerhouse archetype with Evil Eye + Culling Spree + combat pact", async ({ page }) => {
     await selectRelic(page, "Evil Eye");
     await selectRelic(page, "Culling Spree");
-    await page.locator("text=Melee Might").first().evaluate(el => (el as HTMLElement).click());
-    await expect(page.locator("text=PvM Powerhouse")).toBeVisible();
+    await page.locator("#pacts h4:has-text('Melee Might')").evaluate(el => (el as HTMLElement).click());
+    await expect(page.locator("#analysis >> text=PvM Powerhouse")).toBeVisible();
   });
 
   test("Demonlord archetype with Minion + Glass Cannon + Berserker's Oath", async ({ page }) => {

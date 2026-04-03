@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { ProgressBar } from "@/components/ui/ProgressBar";
-import type { PathStage } from "@/types/optimal-path";
+import type { PathStage, TaskCluster } from "@/types/optimal-path";
 import type { TaskDifficulty } from "@/types/league";
 
 interface PathStageCardProps {
@@ -13,7 +13,10 @@ interface PathStageCardProps {
   goalColor: string;
 }
 
-const DIFFICULTY_COLORS: Record<TaskDifficulty, "green" | "blue" | "gold" | "purple" | "red"> = {
+const DIFFICULTY_COLORS: Record<
+  TaskDifficulty,
+  "green" | "blue" | "gold" | "purple" | "red"
+> = {
   easy: "green",
   medium: "blue",
   hard: "gold",
@@ -21,15 +24,79 @@ const DIFFICULTY_COLORS: Record<TaskDifficulty, "green" | "blue" | "gold" | "pur
   master: "red",
 };
 
-export function PathStageCard({ stage, goalPoints, goalColor }: PathStageCardProps) {
+function formatTime(minutes: number): string {
+  if (minutes < 60) return `${minutes}m`;
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  return m > 0 ? `${h}h ${m}m` : `${h}h`;
+}
+
+function ClusterCard({ cluster }: { cluster: TaskCluster }) {
   const [expanded, setExpanded] = useState(false);
 
-  const milestoneIcon = stage.milestone.type === "relic-unlock" ? "🔓" : "🏆";
+  const difficulties = (
+    Object.keys(cluster.tasksByDifficulty) as TaskDifficulty[]
+  ).filter((d) => cluster.tasksByDifficulty[d] > 0);
 
-  // Group tasks by category for the expanded view
-  const categories = Object.entries(stage.tasksByCategory).sort(
-    (a, b) => b[1] - a[1]
+  return (
+    <div className="border border-osrs-border/40 rounded-lg bg-osrs-darker/30">
+      <button
+        onClick={() => setExpanded(!expanded)}
+        className="w-full text-left px-3 py-2 flex items-center justify-between gap-2 hover:bg-osrs-dark/30 transition-colors rounded-lg"
+      >
+        <div className="min-w-0">
+          <div className="text-sm font-medium text-osrs-text truncate">
+            {cluster.label}
+          </div>
+          <div className="flex flex-wrap gap-1 mt-1">
+            {difficulties.map((d) => (
+              <Badge key={d} variant={DIFFICULTY_COLORS[d]} size="sm">
+                {cluster.tasksByDifficulty[d]} {d}
+              </Badge>
+            ))}
+          </div>
+        </div>
+        <div className="text-right shrink-0">
+          <div className="text-sm font-bold text-osrs-gold">
+            {cluster.totalPoints.toLocaleString()} pts
+          </div>
+          <div className="text-xs text-osrs-text-dim">
+            {cluster.tasks.length} task{cluster.tasks.length !== 1 ? "s" : ""}
+            {cluster.estimatedMinutes > 0 &&
+              ` · ~${formatTime(cluster.estimatedMinutes)}`}
+          </div>
+        </div>
+      </button>
+
+      {expanded && (
+        <div className="px-3 pb-2 space-y-1 border-t border-osrs-border/20 pt-2">
+          {cluster.tasks.map((task) => (
+            <div
+              key={task.id}
+              className="flex items-center justify-between text-xs px-2 py-1 bg-osrs-darker/50 rounded"
+            >
+              <span className="text-osrs-text truncate mr-2">{task.name}</span>
+              <Badge
+                variant={DIFFICULTY_COLORS[task.difficulty]}
+                size="sm"
+              >
+                {task.points} pts
+              </Badge>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   );
+}
+
+export function PathStageCard({
+  stage,
+  goalPoints,
+  goalColor,
+}: PathStageCardProps) {
+  const milestoneIcon =
+    stage.milestone.type === "relic-unlock" ? "\u{1F513}" : "\u{1F3C6}";
 
   return (
     <Card className="relative">
@@ -48,11 +115,16 @@ export function PathStageCard({ stage, goalPoints, goalColor }: PathStageCardPro
           </div>
           <div>
             <h4 className="text-sm font-bold text-osrs-text">
-              {milestoneIcon} {stage.milestone.label}
+              {stage.name}
+              <span className="font-normal text-osrs-text-dim ml-2">
+                {milestoneIcon} {stage.milestone.label}
+              </span>
             </h4>
             <p className="text-xs text-osrs-text-dim">
               {stage.tasks.length} tasks &middot;{" "}
-              {stage.stagePoints.toLocaleString()} pts this stage
+              {stage.stagePoints.toLocaleString()} pts
+              {stage.estimatedMinutes > 0 &&
+                ` · ~${formatTime(stage.estimatedMinutes)}`}
             </p>
           </div>
         </div>
@@ -86,52 +158,11 @@ export function PathStageCard({ stage, goalPoints, goalColor }: PathStageCardPro
         </div>
       )}
 
-      {/* Difficulty distribution */}
-      <div className="flex flex-wrap gap-1.5 mt-3">
-        {(Object.keys(stage.tasksByDifficulty) as TaskDifficulty[])
-          .filter((d) => stage.tasksByDifficulty[d] > 0)
-          .map((d) => (
-            <Badge key={d} variant={DIFFICULTY_COLORS[d]} size="sm">
-              {stage.tasksByDifficulty[d]} {d}
-            </Badge>
-          ))}
-      </div>
-
-      {/* Expand/collapse task list */}
-      {stage.tasks.length > 0 && (
-        <button
-          onClick={() => setExpanded(!expanded)}
-          className="mt-3 text-xs text-osrs-gold hover:underline"
-        >
-          {expanded ? "Hide tasks" : `Show ${stage.tasks.length} tasks`}
-        </button>
-      )}
-
-      {expanded && (
-        <div className="mt-3 space-y-3 max-h-96 overflow-y-auto">
-          {categories.map(([category, count]) => (
-            <div key={category}>
-              <h5 className="text-xs font-bold text-osrs-text-dim mb-1">
-                {category} ({count})
-              </h5>
-              <div className="space-y-1">
-                {stage.tasks
-                  .filter((t) => t.category === category)
-                  .map((task) => (
-                    <div
-                      key={task.id}
-                      className="flex items-center justify-between text-xs px-2 py-1 bg-osrs-darker/50 rounded"
-                    >
-                      <span className="text-osrs-text">{task.name}</span>
-                      <div className="flex items-center gap-2 shrink-0">
-                        <Badge variant={DIFFICULTY_COLORS[task.difficulty]} size="sm">
-                          {task.points} pts
-                        </Badge>
-                      </div>
-                    </div>
-                  ))}
-              </div>
-            </div>
+      {/* Task clusters */}
+      {stage.clusters.length > 0 && (
+        <div className="mt-3 space-y-2">
+          {stage.clusters.map((cluster, i) => (
+            <ClusterCard key={`${cluster.label}-${i}`} cluster={cluster} />
           ))}
         </div>
       )}

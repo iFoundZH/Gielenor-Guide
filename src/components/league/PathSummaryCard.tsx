@@ -14,13 +14,23 @@ interface PathSummaryCardProps {
   hasImportData: boolean;
 }
 
-const DIFFICULTY_COLORS: Record<TaskDifficulty, "green" | "blue" | "gold" | "purple" | "red"> = {
+const DIFFICULTY_COLORS: Record<
+  TaskDifficulty,
+  "green" | "blue" | "gold" | "purple" | "red"
+> = {
   easy: "green",
   medium: "blue",
   hard: "gold",
   elite: "purple",
   master: "red",
 };
+
+function formatTime(minutes: number): string {
+  if (minutes < 60) return `${minutes}m`;
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  return m > 0 ? `${h}h ${m}m` : `${h}h`;
+}
 
 export function PathSummaryCard({
   result,
@@ -42,13 +52,22 @@ export function PathSummaryCard({
           </h3>
           <div className="flex flex-wrap gap-2 mb-3">
             <Badge variant="gold">{result.totalTasks} tasks</Badge>
-            <Badge variant="gold">{result.totalPoints.toLocaleString()} pts</Badge>
+            <Badge variant="gold">
+              {result.totalPoints.toLocaleString()} pts
+            </Badge>
             <Badge variant="default">{result.stages.length} stages</Badge>
+            {result.totalEstimatedMinutes > 0 && (
+              <Badge variant="default">
+                ~{formatTime(result.totalEstimatedMinutes)}
+              </Badge>
+            )}
           </div>
 
           {/* Difficulty breakdown */}
           <div className="flex flex-wrap gap-1.5">
-            {(Object.keys(result.difficultyBreakdown) as TaskDifficulty[])
+            {(
+              Object.keys(result.difficultyBreakdown) as TaskDifficulty[]
+            )
               .filter((d) => result.difficultyBreakdown[d] > 0)
               .map((d) => (
                 <Badge key={d} variant={DIFFICULTY_COLORS[d]} size="sm">
@@ -107,7 +126,8 @@ export function PathSummaryCard({
           </p>
           <p className="text-xs text-osrs-text-dim mt-1">
             Unlock more regions or complete additional tasks to reach this goal.
-            The path below shows the maximum progress achievable with current selections.
+            The path below shows the maximum progress achievable with current
+            selections.
           </p>
         </div>
       )}

@@ -14,12 +14,27 @@ export interface PathMilestone {
   passiveEffects: string[];
 }
 
+/** A cluster of related tasks grouped by activity context (category + region). */
+export interface TaskCluster {
+  label: string;
+  category: string;
+  region?: string;
+  regionName?: string;
+  tasks: LeagueTask[];
+  totalPoints: number;
+  estimatedMinutes: number;
+  tasksByDifficulty: Record<TaskDifficulty, number>;
+}
+
 export interface PathStage {
   stageNumber: number;
+  name: string;
   milestone: PathMilestone;
+  clusters: TaskCluster[];
   tasks: LeagueTask[];
   stagePoints: number;
   cumulativePoints: number;
+  estimatedMinutes: number;
   tasksByDifficulty: Record<TaskDifficulty, number>;
   tasksByCategory: Record<string, number>;
 }
@@ -29,6 +44,7 @@ export interface OptimalPathResult {
   stages: PathStage[];
   totalTasks: number;
   totalPoints: number;
+  totalEstimatedMinutes: number;
   isAchievable: boolean;
   pointsShortfall: number;
   difficultyBreakdown: Record<TaskDifficulty, number>;
@@ -42,4 +58,6 @@ export interface RegionRecommendation {
   accessiblePoints: number;
   accessibleTasks: number;
   rank: number;
+  hasEchoBoss: boolean;
+  efficiencyScore: number;
 }

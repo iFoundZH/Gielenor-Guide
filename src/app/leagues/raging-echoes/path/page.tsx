@@ -145,13 +145,16 @@ export default function OptimalPathPage() {
             <div className="mb-6">
               <Card>
                 <h3 className="text-sm font-bold text-osrs-gold mb-2">
-                  Recommended Region Order (by accessible task points)
+                  Recommended Regions
                 </h3>
-                <div className="space-y-1">
+                <div className="space-y-1.5">
                   {result.recommendedRegions.slice(0, 5).map((rec) => (
                     <div key={rec.regionId} className="flex items-center justify-between text-sm">
                       <span className="text-osrs-text">
                         #{rec.rank} {rec.regionName}
+                        {rec.hasEchoBoss && (
+                          <span className="ml-1.5 text-xs text-purple-400">echo boss</span>
+                        )}
                       </span>
                       <span className="text-osrs-text-dim text-xs">
                         {rec.accessibleTasks} tasks &middot; {rec.accessiblePoints.toLocaleString()} pts

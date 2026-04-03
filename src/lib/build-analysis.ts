@@ -139,10 +139,11 @@ export const REGION_BOSSES: Record<string, { name: string; difficulty: "mid" | "
     { name: "Commander Zilyana (Sara)", difficulty: "high" },
     { name: "K'ril Tsutsaroth (Zammy)", difficulty: "high" },
     { name: "Kree'arra (Arma)", difficulty: "high" },
+    { name: "Nex", difficulty: "endgame" },
+    { name: "Corporeal Beast", difficulty: "endgame" },
   ],
   fremennik: [
     { name: "Vorkath", difficulty: "high" },
-    { name: "Nex", difficulty: "endgame" },
     { name: "Dagannoth Kings", difficulty: "mid" },
   ],
   kandarin: [
@@ -166,7 +167,6 @@ export const REGION_BOSSES: Record<string, { name: string; difficulty: "mid" | "
     { name: "Callisto / Artio", difficulty: "high" },
     { name: "Venenatis / Spindel", difficulty: "high" },
     { name: "Vet'ion / Calvar'ion", difficulty: "high" },
-    { name: "Corporeal Beast", difficulty: "endgame" },
   ],
   kebos: [
     { name: "Chambers of Xeric", difficulty: "endgame" },
@@ -192,7 +192,11 @@ export const RELIC_TAGS: Record<string, string[]> = {
   "relic-t3-1": ["combat", "bossing", "teleport", "utility"],
   "relic-t4-1": ["clues", "utility", "teleport"],
   "relic-t6-1": ["combat", "slayer", "clues", "utility"],
-  "relic-t8-1": ["combat", "bossing", "utility", "auto-loot"],
+  "relic-t5-1": ["farming", "teleport", "utility"],                          // Nature's Accord
+  "relic-t5-2": ["thieving", "utility"],                                     // Larcenist
+  "relic-t7-1": ["combat", "utility"],                                       // Reloaded
+  "relic-t8-1": ["combat", "bossing", "utility", "auto-loot"],              // Minion
+  "relic-t8-2": ["combat", "utility", "restoration"],                        // Flask of Fervour
   // RE relics (real wiki names)
   "re-t1-1": ["gathering", "mining", "banking", "production"],       // Power Miner
   "re-t1-2": ["gathering", "woodcutting", "banking", "firemaking"],  // Lumberjack

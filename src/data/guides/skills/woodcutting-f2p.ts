@@ -6,59 +6,43 @@ export const woodcuttingF2pGuide: SkillTrainingGuide = {
   wikiUrl: "https://oldschool.runescape.wiki/w/Free-to-play_Woodcutting_training",
   methods: [
     {
-      name: "Levels 1–99",
-      levelRange: [1, 99],
-      xpPerHour: null,
-      description: "",
-      members: false,
-    },
-    {
-      name: "Starting experience",
+      name: "Regular trees",
       levelRange: [1, 15],
       xpPerHour: null,
-      description: "Starting experience: 0",
-      members: false,
-    },
-    {
-      name: "Logs required",
-      levelRange: [1, 15],
-      xpPerHour: null,
-      description: "Logs required: 97 (2,425 experience)",
-      members: false,
-    },
-    {
-      name: "Profit",
-      levelRange: [1, 15],
-      xpPerHour: null,
-      description: "Profit:",
+      description:
+        "Cut regular trees near Lumbridge or the Grand Exchange for 25 experience per log. Use the best axe available and upgrade to a steel axe at level 6 and mithril at level 21 for faster cutting speed.",
       members: false,
     },
     {
       name: "/60/99: Oak trees",
       levelRange: [15, 30],
       xpPerHour: null,
-      description: "At level 15, it is recommended to start cutting oak trees, which grant 37.5 experience per log. Oak trees are found throughout Gielinor. There are several oak tree spots: there are trees south-west...",
+      description:
+        "At level 15, it is recommended to start cutting oak trees, which grant 37.5 experience per log. Oak trees are found throughout Gielinor. There are several oak tree spots: there are trees south-west...",
       members: false,
     },
     {
       name: "99: Willow trees",
       levelRange: [30, 60],
       xpPerHour: null,
-      description: "At level 30, players can cut willow trees, which grant 67.5 experience per log. If dropping logs, oak trees are higher experience rates until level 60, however because willow logs are closer to the...",
+      description:
+        "At level 30, players can cut willow trees, which grant 67.5 experience per log. If dropping logs, oak trees are higher experience rates until level 60, however because willow logs are closer to the...",
       members: false,
     },
     {
       name: "Maple trees",
       levelRange: [45, 99],
       xpPerHour: 36000,
-      description: "At level 45, players can cut maple trees, which grant 100 experience per log. Experience rates are about 35% lower than willow trees (when not using tick manipulation), however maples are easier to...",
+      description:
+        "At level 45, players can cut maple trees, which grant 100 experience per log. Experience rates are about 35% lower than willow trees (when not using tick manipulation), however maples are easier to...",
       members: false,
     },
     {
       name: "Yew trees",
       levelRange: [60, 99],
       xpPerHour: null,
-      description: "At level 60, players can cut yew trees, which grant 175 experience per log. While yew logs earn a profit, it is recommended to cut willow or maple trees for experience and use the time saved to ear...",
+      description:
+        "At level 60, players can cut yew trees, which grant 175 experience per log. While yew logs earn a profit, it is recommended to cut willow or maple trees for experience and use the time saved to ear...",
       members: false,
     },
   ],
