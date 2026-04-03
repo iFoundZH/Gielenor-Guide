@@ -2,11 +2,11 @@
 
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
-import type { OptimalPathResult } from "@/types/optimal-path";
+import type { ProgressionResult } from "@/types/optimal-path";
 import type { TaskDifficulty } from "@/types/league";
 
-interface PathSummaryCardProps {
-  result: OptimalPathResult;
+interface ProgressionSummaryCardProps {
+  result: ProgressionResult;
   mode: "import" | "standalone";
   onModeChange: (mode: "import" | "standalone") => void;
   excludeCompleted: boolean;
@@ -25,21 +25,14 @@ const DIFFICULTY_COLORS: Record<
   master: "red",
 };
 
-function formatTime(minutes: number): string {
-  if (minutes < 60) return `${minutes}m`;
-  const h = Math.floor(minutes / 60);
-  const m = minutes % 60;
-  return m > 0 ? `${h}h ${m}m` : `${h}h`;
-}
-
-export function PathSummaryCard({
+export function ProgressionSummaryCard({
   result,
   mode,
   onModeChange,
   excludeCompleted,
   onExcludeCompletedChange,
   hasImportData,
-}: PathSummaryCardProps) {
+}: ProgressionSummaryCardProps) {
   return (
     <Card>
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
@@ -48,19 +41,14 @@ export function PathSummaryCard({
             className="text-lg font-bold text-osrs-gold mb-2"
             style={{ fontFamily: "var(--font-runescape)" }}
           >
-            Path Summary
+            Progression Summary
           </h3>
           <div className="flex flex-wrap gap-2 mb-3">
             <Badge variant="gold">{result.totalTasks} tasks</Badge>
             <Badge variant="gold">
               {result.totalPoints.toLocaleString()} pts
             </Badge>
-            <Badge variant="default">{result.stages.length} stages</Badge>
-            {result.totalEstimatedMinutes > 0 && (
-              <Badge variant="default">
-                ~{formatTime(result.totalEstimatedMinutes)}
-              </Badge>
-            )}
+            <Badge variant="default">{result.phases.length} phases</Badge>
           </div>
 
           {/* Difficulty breakdown */}
@@ -117,6 +105,19 @@ export function PathSummaryCard({
         </div>
       </div>
 
+      {/* Info banner when relic thresholds are not available */}
+      {!result.hasRelicThresholds && (
+        <div className="mt-4 p-3 bg-osrs-blue/10 border border-osrs-blue/30 rounded-lg">
+          <p className="text-sm text-osrs-blue font-medium">
+            Relic unlock thresholds not yet available
+          </p>
+          <p className="text-xs text-osrs-text-dim mt-1">
+            Phases are based on reward tiers. This will update to relic-tier
+            milestones once league data is available from the wiki.
+          </p>
+        </div>
+      )}
+
       {/* Shortfall warning */}
       {!result.isAchievable && (
         <div className="mt-4 p-3 bg-demon-glow/10 border border-demon-glow/30 rounded-lg">
@@ -126,7 +127,7 @@ export function PathSummaryCard({
           </p>
           <p className="text-xs text-osrs-text-dim mt-1">
             Unlock more regions or complete additional tasks to reach this goal.
-            The path below shows the maximum progress achievable with current
+            The guide below shows the maximum progress achievable with current
             selections.
           </p>
         </div>

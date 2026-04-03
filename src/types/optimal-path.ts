@@ -1,4 +1,4 @@
-import type { LeagueTask, TaskDifficulty } from "./league";
+import type { LeagueTask, TaskDifficulty, Relic } from "./league";
 
 export interface PathGoal {
   type: "reward-tier" | "all-relics";
@@ -7,49 +7,46 @@ export interface PathGoal {
   color: string;
 }
 
-export interface PathMilestone {
-  type: "relic-unlock" | "reward-tier";
-  pointsRequired: number;
-  label: string;
-  passiveEffects: string[];
-}
-
-/** A cluster of related tasks grouped by activity context (category + region). */
-export interface TaskCluster {
-  label: string;
+export interface CategoryFocusEntry {
   category: string;
-  region?: string;
-  regionName?: string;
-  tasks: LeagueTask[];
-  totalPoints: number;
-  estimatedMinutes: number;
-  tasksByDifficulty: Record<TaskDifficulty, number>;
+  count: number;
+  points: number;
 }
 
-export interface PathStage {
-  stageNumber: number;
+export interface RewardTierMilestone {
   name: string;
-  milestone: PathMilestone;
-  clusters: TaskCluster[];
-  tasks: LeagueTask[];
-  stagePoints: number;
-  cumulativePoints: number;
-  estimatedMinutes: number;
-  tasksByDifficulty: Record<TaskDifficulty, number>;
-  tasksByCategory: Record<string, number>;
+  pointsRequired: number;
+  color: string;
 }
 
-export interface OptimalPathResult {
+export interface ProgressionPhase {
+  phaseNumber: number;
+  name: string;
+  startPoints: number;
+  endPoints: number;
+  targetRelicTier: number | null;
+  passiveEffects: string[];
+  relicChoices: Relic[];
+  highlightedTasks: LeagueTask[];
+  allTasks: LeagueTask[];
+  categoryFocus: CategoryFocusEntry[];
+  tasksByDifficulty: Record<TaskDifficulty, number>;
+  totalPoints: number;
+  cumulativePoints: number;
+  rewardTiersCrossed: RewardTierMilestone[];
+}
+
+export interface ProgressionResult {
   goal: PathGoal;
-  stages: PathStage[];
+  phases: ProgressionPhase[];
   totalTasks: number;
   totalPoints: number;
-  totalEstimatedMinutes: number;
   isAchievable: boolean;
   pointsShortfall: number;
   difficultyBreakdown: Record<TaskDifficulty, number>;
   regionIds: string[];
   recommendedRegions: RegionRecommendation[];
+  hasRelicThresholds: boolean;
 }
 
 export interface RegionRecommendation {

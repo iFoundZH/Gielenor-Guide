@@ -1,12 +1,12 @@
 import { test, expect } from "@playwright/test";
 
-test.describe("Optimal Path - Demonic Pacts", () => {
+test.describe("Progression Guide - Demonic Pacts", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/leagues/demonic-pacts/path");
   });
 
   test("page loads with title and goal selector", async ({ page }) => {
-    await expect(page.locator("h1")).toContainText("Optimal Path Calculator");
+    await expect(page.locator("h1")).toContainText("Progression Guide");
     await expect(page.getByText("Select Your Goal")).toBeVisible();
   });
 
@@ -16,13 +16,13 @@ test.describe("Optimal Path - Demonic Pacts", () => {
     await expect(page.getByText("Dragon Tier")).toBeVisible();
   });
 
-  test("selecting a goal renders stages", async ({ page }) => {
+  test("selecting a goal renders progression phases", async ({ page }) => {
     // Click the Bronze tier goal (lowest, most achievable)
     await page.getByText("Bronze Tier").click();
     // Summary should appear
-    await expect(page.getByText("Path Summary")).toBeVisible();
-    // Stage header should appear
-    await expect(page.getByText("Task Stages")).toBeVisible();
+    await expect(page.getByText("Progression Summary")).toBeVisible();
+    // Phases heading should appear (DP uses reward tier fallback)
+    await expect(page.getByText("Progression Phases")).toBeVisible();
   });
 
   test("standalone mode shows region picker", async ({ page }) => {
@@ -37,6 +37,11 @@ test.describe("Optimal Path - Demonic Pacts", () => {
     // Dragon tier is 56,000 pts, DP only has 43 placeholder tasks (~3,890 pts)
     await page.getByText("Dragon Tier").click();
     await expect(page.getByText(/Goal exceeds accessible points/)).toBeVisible();
+  });
+
+  test("DP shows info banner about missing relic thresholds", async ({ page }) => {
+    await page.getByText("Bronze Tier").click();
+    await expect(page.getByText(/Relic unlock thresholds not yet available/)).toBeVisible();
   });
 
   test("import mode disabled without planner data", async ({ page }) => {
@@ -73,13 +78,13 @@ test.describe("Optimal Path - Demonic Pacts", () => {
     await importButton.click();
 
     // Summary should show — and region picker should NOT be visible in import mode
-    await expect(page.getByText("Path Summary")).toBeVisible();
+    await expect(page.getByText("Progression Summary")).toBeVisible();
   });
 
   test("breadcrumbs show correct path", async ({ page }) => {
     await expect(page.locator("a >> text=Home").first()).toBeVisible();
     await expect(page.locator("a >> text=Demonic Pacts").first()).toBeVisible();
-    await expect(page.getByText("Optimal Path", { exact: true }).first()).toBeVisible();
+    await expect(page.getByText("Progression Guide", { exact: true }).first()).toBeVisible();
   });
 
   test("exclude completed tasks toggle works", async ({ page }) => {
@@ -95,17 +100,33 @@ test.describe("Optimal Path - Demonic Pacts", () => {
     await toggle.click();
 
     // Summary should still be visible (path recalculated)
-    await expect(page.getByText("Path Summary")).toBeVisible();
+    await expect(page.getByText("Progression Summary")).toBeVisible();
+  });
+
+  test("key tasks section visible after goal selection", async ({ page }) => {
+    await page.getByText("Bronze Tier").click();
+    // Wait for phases to render, then check for key tasks
+    await expect(page.getByText("Key Tasks").first()).toBeVisible();
+  });
+
+  test("full task list expandable on click", async ({ page }) => {
+    await page.getByText("Bronze Tier").click();
+    // Find and click the "Show all" button
+    const showAllButton = page.getByText(/Show all \d+ tasks/).first();
+    await expect(showAllButton).toBeVisible();
+    await showAllButton.click();
+    // After expanding, the button text should change to "Hide"
+    await expect(page.getByText("Hide full task list").first()).toBeVisible();
   });
 });
 
-test.describe("Optimal Path - Raging Echoes", () => {
+test.describe("Progression Guide - Raging Echoes", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/leagues/raging-echoes/path");
   });
 
   test("page loads with title and goal selector", async ({ page }) => {
-    await expect(page.locator("h1")).toContainText("Optimal Path Calculator");
+    await expect(page.locator("h1")).toContainText("Progression Guide");
     await expect(page.getByText("Select Your Goal")).toBeVisible();
   });
 
@@ -115,12 +136,18 @@ test.describe("Optimal Path - Raging Echoes", () => {
     await expect(page.getByText("All Relics Unlocked")).toBeVisible();
   });
 
-  test("selecting a goal renders stages with relic milestones", async ({ page }) => {
+  test("selecting all-relics goal renders relic progression phases", async ({ page }) => {
     // Click the All Relics goal
     await page.getByText("All Relics Unlocked").click();
-    await expect(page.getByText("Path Summary")).toBeVisible();
-    // Should show relic unlock milestones
-    await expect(page.getByText(/Relic Unlock/).first()).toBeVisible();
+    await expect(page.getByText("Progression Summary")).toBeVisible();
+    // Should show "Relic Progression" heading (RE has relic thresholds)
+    await expect(page.getByText("Relic Progression")).toBeVisible();
+  });
+
+  test("RE phases show relic choices when available", async ({ page }) => {
+    await page.getByText("All Relics Unlocked").click();
+    // RE has relic tiers with choices — "Relic Choices" heading should appear
+    await expect(page.getByText("Relic Choices").first()).toBeVisible();
   });
 
   test("standalone mode shows region picker for RE", async ({ page }) => {

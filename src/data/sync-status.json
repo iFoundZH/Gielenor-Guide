@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-03T00:06:31.346Z",
+  "generatedAt": "2026-04-03T18:00:17.910Z",
   "leagues": {
     "demonic-pacts": {
       "taskCount": 43,
@@ -11,7 +11,7 @@
         "master": 4
       },
       "totalPoints": 3890,
-      "relicCount": 13,
+      "relicCount": 14,
       "relicTierCount": 8,
       "regionCount": 11,
       "pactCount": 6,

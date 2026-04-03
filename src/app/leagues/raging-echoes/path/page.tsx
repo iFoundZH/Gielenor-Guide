@@ -5,14 +5,14 @@ import Link from "next/link";
 import { ragingEchoesLeague } from "@/data/raging-echoes";
 import { Card } from "@/components/ui/Card";
 import { PathGoalSelector } from "@/components/league/PathGoalSelector";
-import { PathSummaryCard } from "@/components/league/PathSummaryCard";
-import { PathStageCard } from "@/components/league/PathStageCard";
+import { ProgressionSummaryCard } from "@/components/league/ProgressionSummaryCard";
+import { ProgressionPhaseCard } from "@/components/league/ProgressionPhaseCard";
 import { RegionPicker } from "@/components/league/RegionPicker";
-import { buildGoals, computeOptimalPath } from "@/lib/optimal-path";
+import { buildGoals, computeProgression } from "@/lib/optimal-path";
 import type { PathGoal } from "@/types/optimal-path";
 import type { LeagueBuild } from "@/types/league";
 
-export default function OptimalPathPage() {
+export default function ProgressionGuidePage() {
   const league = ragingEchoesLeague;
   const goals = useMemo(() => buildGoals(league), [league]);
 
@@ -63,7 +63,7 @@ export default function OptimalPathPage() {
 
   const result = useMemo(() => {
     if (!selectedGoal) return null;
-    return computeOptimalPath(
+    return computeProgression(
       league,
       selectedRegions,
       selectedGoal,
@@ -71,8 +71,11 @@ export default function OptimalPathPage() {
     );
   }, [league, selectedRegions, selectedGoal, excludeCompleted, completedTaskIds]);
 
-  // RE has maxRegions=3 with region unlocks via task thresholds
   const showRegionPicker = mode === "standalone" && league.maxRegions > 0;
+
+  const phasesHeading = result?.hasRelicThresholds
+    ? `Relic Progression (${result.phases.length})`
+    : `Progression Phases (${result?.phases.length ?? 0})`;
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10">
@@ -82,17 +85,17 @@ export default function OptimalPathPage() {
         <span>/</span>
         <Link href="/leagues/raging-echoes" className="hover:text-osrs-gold">Raging Echoes</Link>
         <span>/</span>
-        <span className="text-osrs-gold">Optimal Path</span>
+        <span className="text-osrs-gold">Progression Guide</span>
       </div>
 
       <h1
         className="text-3xl font-bold text-osrs-gold text-glow-gold mb-2"
         style={{ fontFamily: "var(--font-runescape)" }}
       >
-        Optimal Path Calculator
+        Progression Guide
       </h1>
       <p className="text-osrs-text-dim mb-8">
-        Compute the most efficient task ordering to reach your league goal.
+        A relic-tier progression guide to reach your league goal.
       </p>
 
       {/* Goal selector */}
@@ -105,7 +108,7 @@ export default function OptimalPathPage() {
           {/* Summary + controls */}
           {result && (
             <div className="mb-6">
-              <PathSummaryCard
+              <ProgressionSummaryCard
                 result={result}
                 mode={mode}
                 onModeChange={setMode}
@@ -166,19 +169,19 @@ export default function OptimalPathPage() {
             </div>
           )}
 
-          {/* Stages */}
-          {result && result.stages.length > 0 && (
+          {/* Progression phases */}
+          {result && result.phases.length > 0 && (
             <div className="space-y-4">
               <h2
                 className="text-xl font-bold text-osrs-gold"
                 style={{ fontFamily: "var(--font-runescape)" }}
               >
-                Task Stages ({result.stages.length})
+                {phasesHeading}
               </h2>
-              {result.stages.map((stage) => (
-                <PathStageCard
-                  key={stage.stageNumber}
-                  stage={stage}
+              {result.phases.map((phase) => (
+                <ProgressionPhaseCard
+                  key={phase.phaseNumber}
+                  phase={phase}
                   goalPoints={selectedGoal.targetPoints}
                   goalColor={selectedGoal.color}
                 />
@@ -186,10 +189,10 @@ export default function OptimalPathPage() {
             </div>
           )}
 
-          {result && result.stages.length === 0 && (
+          {result && result.phases.length === 0 && (
             <Card>
               <p className="text-center text-osrs-text-dim py-4">
-                No tasks available. Select regions to see your path.
+                No tasks available. Select regions to see your progression guide.
               </p>
             </Card>
           )}
