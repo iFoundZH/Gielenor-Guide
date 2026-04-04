@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-03T18:00:17.910Z",
+  "generatedAt": "2026-04-04T07:06:38.372Z",
   "leagues": {
     "demonic-pacts": {
       "taskCount": 43,
@@ -17,7 +17,7 @@
       "pactCount": 6,
       "rewardTierCount": 7,
       "maxRegions": 3,
-      "lastSynced": "2026-04-03"
+      "lastSynced": "2026-04-04"
     },
     "raging-echoes": {
       "taskCount": 1589,
@@ -35,7 +35,7 @@
       "pactCount": 0,
       "rewardTierCount": 7,
       "maxRegions": 3,
-      "lastSynced": "2026-04-03"
+      "lastSynced": "2026-04-04"
     }
   },
   "guides": {
