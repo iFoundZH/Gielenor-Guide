@@ -24,14 +24,6 @@ const DIFFICULTY_COLORS: Record<
   master: "red",
 };
 
-const DIFFICULTY_ORDER: TaskDifficulty[] = [
-  "easy",
-  "medium",
-  "hard",
-  "elite",
-  "master",
-];
-
 export function ProgressionPhaseCard({
   phase,
   goalPoints,
@@ -213,38 +205,41 @@ export function ProgressionPhaseCard({
 
           {showAllTasks && (
             <div className="mt-2 space-y-3">
-              {DIFFICULTY_ORDER.filter(
-                (d) => phase.tasksByDifficulty[d] > 0
-              ).map((difficulty) => {
-                const tasks = phase.allTasks.filter(
-                  (t) => t.difficulty === difficulty
-                );
-                return (
-                  <div key={difficulty}>
-                    <div className="flex items-center gap-2 mb-1">
-                      <Badge variant={DIFFICULTY_COLORS[difficulty]} size="sm">
-                        {difficulty}
-                      </Badge>
-                      <span className="text-xs text-osrs-text-dim">
-                        {tasks.length} task{tasks.length !== 1 ? "s" : ""}
-                      </span>
-                    </div>
-                    <div className="space-y-0.5">
-                      {tasks.map((task) => (
-                        <div
-                          key={task.id}
-                          className="flex items-center justify-between text-xs px-2 py-0.5 text-osrs-text-dim"
-                        >
-                          <span className="truncate mr-2">{task.name}</span>
-                          <span className="text-osrs-gold shrink-0">
+              {phase.categoryGroups.map((group) => (
+                <div key={group.category}>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs font-bold text-osrs-text uppercase tracking-wider">
+                      {group.category}
+                    </span>
+                    <span className="text-xs text-osrs-text-dim">
+                      {group.tasks.length} task
+                      {group.tasks.length !== 1 ? "s" : ""} &middot;{" "}
+                      {group.totalPoints.toLocaleString()} pts
+                    </span>
+                  </div>
+                  <div className="space-y-0.5">
+                    {group.tasks.map((task) => (
+                      <div
+                        key={task.id}
+                        className="flex items-center justify-between text-xs px-2 py-0.5 text-osrs-text-dim"
+                      >
+                        <span className="truncate mr-2">{task.name}</span>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <Badge
+                            variant={DIFFICULTY_COLORS[task.difficulty]}
+                            size="sm"
+                          >
+                            {task.difficulty}
+                          </Badge>
+                          <span className="text-osrs-gold">
                             {task.points} pts
                           </span>
                         </div>
-                      ))}
-                    </div>
+                      </div>
+                    ))}
                   </div>
-                );
-              })}
+                </div>
+              ))}
             </div>
           )}
         </div>

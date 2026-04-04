@@ -109,11 +109,11 @@ export function ProgressionSummaryCard({
       {!result.hasRelicThresholds && (
         <div className="mt-4 p-3 bg-osrs-blue/10 border border-osrs-blue/30 rounded-lg">
           <p className="text-sm text-osrs-blue font-medium">
-            Relic unlock thresholds not yet available
+            Phases are organized by task difficulty
           </p>
           <p className="text-xs text-osrs-text-dim mt-1">
-            Phases are based on reward tiers. This will update to relic-tier
-            milestones once league data is available from the wiki.
+            This will update to relic-tier milestones once league data is
+            available from the wiki.
           </p>
         </div>
       )}

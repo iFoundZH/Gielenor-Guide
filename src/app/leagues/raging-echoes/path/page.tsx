@@ -75,7 +75,7 @@ export default function ProgressionGuidePage() {
 
   const phasesHeading = result?.hasRelicThresholds
     ? `Relic Progression (${result.phases.length})`
-    : `Progression Phases (${result?.phases.length ?? 0})`;
+    : `Difficulty Progression (${result?.phases.length ?? 0})`;
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10">

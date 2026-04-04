@@ -5,6 +5,7 @@ import type {
   ProgressionResult,
   RegionRecommendation,
   CategoryFocusEntry,
+  CategoryGroup,
   RewardTierMilestone,
 } from "@/types/optimal-path";
 
@@ -161,26 +162,54 @@ function sortByPriority(
 // ---------------------------------------------------------------------------
 
 /**
- * Pick a representative sample of key tasks for a phase.
- * Up to 4 easy, 3 medium, 2 hard, 1 elite — max 10 total.
- * Tasks are already sorted by region priority so starting-region tasks come first.
+ * Pick a category-representative sample of key tasks for a phase (max 10).
+ *
+ * Groups tasks by category, sorts categories by total points descending,
+ * then round-robin picks 1 task per category. Fills remaining slots with
+ * 2nd picks. Ensures breadth across Combat, Skilling, Quests, Clues, etc.
  */
 function pickHighlightedTasks(tasks: LeagueTask[]): LeagueTask[] {
-  const limits: Record<TaskDifficulty, number> = {
-    easy: 4,
-    medium: 3,
-    hard: 2,
-    elite: 1,
-    master: 0,
-  };
-  const counts: Record<TaskDifficulty, number> = emptyDifficultyBreakdown();
-  const highlighted: LeagueTask[] = [];
+  if (tasks.length === 0) return [];
 
-  for (const task of tasks) {
-    if (counts[task.difficulty] < limits[task.difficulty]) {
-      highlighted.push(task);
-      counts[task.difficulty]++;
-      if (highlighted.length >= 10) break;
+  const MAX = 10;
+
+  // Group by category, sort each group by points desc
+  const byCategory = new Map<string, LeagueTask[]>();
+  for (const t of tasks) {
+    const list = byCategory.get(t.category);
+    if (list) list.push(t);
+    else byCategory.set(t.category, [t]);
+  }
+
+  // Sort categories by total points descending
+  const categories = [...byCategory.entries()]
+    .map(([cat, catTasks]) => ({
+      category: cat,
+      tasks: catTasks,
+      totalPoints: catTasks.reduce((s, t) => s + t.points, 0),
+    }))
+    .sort((a, b) => b.totalPoints - a.totalPoints);
+
+  const highlighted: LeagueTask[] = [];
+  const usedIds = new Set<string>();
+
+  // Round-robin: 1st pick from each category
+  for (const { tasks: catTasks } of categories) {
+    if (highlighted.length >= MAX) break;
+    const pick = catTasks.find((t) => !usedIds.has(t.id));
+    if (pick) {
+      highlighted.push(pick);
+      usedIds.add(pick.id);
+    }
+  }
+
+  // Fill remaining slots with 2nd picks
+  for (const { tasks: catTasks } of categories) {
+    if (highlighted.length >= MAX) break;
+    const pick = catTasks.find((t) => !usedIds.has(t.id));
+    if (pick) {
+      highlighted.push(pick);
+      usedIds.add(pick.id);
     }
   }
 
@@ -209,6 +238,35 @@ function computeCategoryFocus(tasks: LeagueTask[]): CategoryFocusEntry[] {
 }
 
 // ---------------------------------------------------------------------------
+// Internal: Category groups (tasks grouped by category, sorted by difficulty)
+// ---------------------------------------------------------------------------
+
+function buildCategoryGroups(tasks: LeagueTask[]): CategoryGroup[] {
+  const map = new Map<string, LeagueTask[]>();
+  for (const t of tasks) {
+    const list = map.get(t.category);
+    if (list) list.push(t);
+    else map.set(t.category, [t]);
+  }
+
+  return [...map.entries()]
+    .map(([category, catTasks]) => {
+      // Sort tasks within category by difficulty
+      catTasks.sort(
+        (a, b) =>
+          DIFFICULTY_ORDER.indexOf(a.difficulty) -
+          DIFFICULTY_ORDER.indexOf(b.difficulty)
+      );
+      return {
+        category,
+        tasks: catTasks,
+        totalPoints: catTasks.reduce((s, t) => s + t.points, 0),
+      };
+    })
+    .sort((a, b) => b.totalPoints - a.totalPoints);
+}
+
+// ---------------------------------------------------------------------------
 // Internal: Phase boundary computation
 // ---------------------------------------------------------------------------
 
@@ -221,13 +279,17 @@ interface PhaseBoundary {
 }
 
 /**
- * Build phase boundaries from relic tiers (preferred) or reward tiers (fallback).
- * Returns boundaries sorted ascending by endPoints, deduplicated.
+ * Build phase boundaries from relic tiers (preferred) or difficulty tiers (fallback).
+ * Returns boundaries sorted ascending by endPoints, deduplicated, plus a strategy flag.
  */
 function buildPhaseBoundaries(
   league: LeagueData,
   targetPoints: number
-): { boundaries: PhaseBoundary[]; hasRelicThresholds: boolean } {
+): {
+  boundaries: PhaseBoundary[];
+  hasRelicThresholds: boolean;
+  phaseStrategy: "points" | "difficulty";
+} {
   // Check if relic tiers have pointsToUnlock values
   const relicTiersWithPoints = league.relicTiers.filter(
     (t) => t.pointsToUnlock != null && t.pointsToUnlock > 0
@@ -266,41 +328,21 @@ function buildPhaseBoundaries(
         name: "Goal Reached",
       });
     }
-  } else {
-    // Fallback: use reward tiers as boundaries
-    for (const tier of league.rewardTiers) {
-      if (tier.pointsRequired <= targetPoints) {
-        boundaries.push({
-          endPoints: tier.pointsRequired,
-          relicTier: null,
-          passiveEffects: [],
-          relicChoices: [],
-          name: `${tier.name} Trophy`,
-        });
-      }
-    }
-    // Ensure the exact goal is a boundary
-    if (!boundaries.some((b) => b.endPoints === targetPoints)) {
-      boundaries.push({
-        endPoints: targetPoints,
-        relicTier: null,
-        passiveEffects: [],
-        relicChoices: [],
-        name: "Goal Reached",
-      });
-    }
-    boundaries.sort((a, b) => a.endPoints - b.endPoints);
+
+    // Deduplicate by endPoints (keep first)
+    const seen = new Set<number>();
+    const deduped = boundaries.filter((b) => {
+      if (seen.has(b.endPoints)) return false;
+      seen.add(b.endPoints);
+      return true;
+    });
+
+    return { boundaries: deduped, hasRelicThresholds, phaseStrategy: "points" };
   }
 
-  // Deduplicate by endPoints (keep first)
-  const seen = new Set<number>();
-  const deduped = boundaries.filter((b) => {
-    if (seen.has(b.endPoints)) return false;
-    seen.add(b.endPoints);
-    return true;
-  });
-
-  return { boundaries: deduped, hasRelicThresholds };
+  // Fallback: difficulty-tier strategy (no point boundaries needed here —
+  // phases are built by partitioning tasks by difficulty in computeProgression)
+  return { boundaries: [], hasRelicThresholds: false, phaseStrategy: "difficulty" };
 }
 
 // ---------------------------------------------------------------------------
@@ -324,18 +366,83 @@ function findRewardTiersCrossed(
 }
 
 // ---------------------------------------------------------------------------
+// Internal: Difficulty-tier phase names
+// ---------------------------------------------------------------------------
+
+const DIFFICULTY_PHASE_NAMES: Record<TaskDifficulty, string> = {
+  easy: "Getting Started",
+  medium: "Building Momentum",
+  hard: "Advanced Challenges",
+  elite: "Late Game",
+  master: "Endgame Goals",
+};
+
+// ---------------------------------------------------------------------------
+// Internal: Build phases by difficulty partitioning
+// ---------------------------------------------------------------------------
+
+function buildDifficultyPhases(
+  sorted: LeagueTask[],
+  league: LeagueData,
+  targetPoints: number
+): ProgressionPhase[] {
+  const phases: ProgressionPhase[] = [];
+  let cumulativePoints = 0;
+
+  for (const difficulty of DIFFICULTY_ORDER) {
+    const tierTasks = sorted.filter((t) => t.difficulty === difficulty);
+    if (tierTasks.length === 0) continue;
+
+    // Respect goal target — only include tasks up to the point goal is exceeded
+    const phaseTasks: LeagueTask[] = [];
+    let phasePoints = 0;
+    for (const task of tierTasks) {
+      phaseTasks.push(task);
+      phasePoints += task.points;
+      if (cumulativePoints + phasePoints >= targetPoints) break;
+    }
+
+    const startPoints = cumulativePoints;
+    cumulativePoints += phasePoints;
+
+    phases.push({
+      phaseNumber: phases.length + 1,
+      name: DIFFICULTY_PHASE_NAMES[difficulty],
+      startPoints,
+      endPoints: cumulativePoints,
+      targetRelicTier: null,
+      passiveEffects: [],
+      relicChoices: [],
+      highlightedTasks: pickHighlightedTasks(phaseTasks),
+      allTasks: phaseTasks,
+      categoryGroups: buildCategoryGroups(phaseTasks),
+      categoryFocus: computeCategoryFocus(phaseTasks),
+      tasksByDifficulty: countDifficulty(phaseTasks),
+      totalPoints: phasePoints,
+      cumulativePoints,
+      rewardTiersCrossed: findRewardTiersCrossed(league, startPoints, cumulativePoints),
+    });
+
+    if (cumulativePoints >= targetPoints) break;
+  }
+
+  return phases;
+}
+
+// ---------------------------------------------------------------------------
 // Public: Main algorithm
 // ---------------------------------------------------------------------------
 
 /**
- * Compute a progression guide organized by relic-tier milestones.
+ * Compute a progression guide organized by relic-tier milestones (RE)
+ * or difficulty tiers (DP / fallback).
  *
  * Algorithm:
  *   1. Filter to accessible tasks (by region + exclusions)
  *   2. Sort by composite priority (difficulty -> region -> category -> name)
- *   3. Build phase boundaries from relic tiers (or reward tiers as fallback)
- *   4. Greedily assign sorted tasks to phases until each boundary is met
- *   5. Compute highlighted tasks, category focus, reward tiers crossed per phase
+ *   3. Determine strategy: relic-tier boundaries or difficulty-tier partitioning
+ *   4. Build phases accordingly
+ *   5. Compute highlighted tasks, category groups, reward tiers crossed per phase
  */
 export function computeProgression(
   league: LeagueData,
@@ -360,57 +467,66 @@ export function computeProgression(
     ? 0
     : goal.targetPoints - totalAccessiblePoints;
 
-  const { boundaries, hasRelicThresholds } = buildPhaseBoundaries(
-    league,
-    goal.targetPoints
-  );
+  const { boundaries, hasRelicThresholds, phaseStrategy } =
+    buildPhaseBoundaries(league, goal.targetPoints);
 
-  // Build phases from boundaries
-  const phases: ProgressionPhase[] = [];
-  let taskIndex = 0;
-  let cumulativePoints = 0;
+  let phases: ProgressionPhase[];
 
-  for (let i = 0; i < boundaries.length; i++) {
-    const boundary = boundaries[i];
-    const startPoints = i === 0 ? 0 : boundaries[i - 1].endPoints;
-    const phaseTasks: LeagueTask[] = [];
-    let phasePoints = 0;
+  if (phaseStrategy === "difficulty") {
+    // Difficulty-tier partitioning (DP / no relic thresholds)
+    phases = buildDifficultyPhases(sorted, league, goal.targetPoints);
+  } else {
+    // Relic-tier boundaries (RE / has pointsToUnlock)
+    phases = [];
+    let taskIndex = 0;
+    let cumulativePoints = 0;
 
-    // Add tasks until we reach this boundary or run out
-    while (
-      taskIndex < sorted.length &&
-      cumulativePoints + phasePoints < boundary.endPoints
-    ) {
-      phaseTasks.push(sorted[taskIndex]);
-      phasePoints += sorted[taskIndex].points;
-      taskIndex++;
+    for (let i = 0; i < boundaries.length; i++) {
+      const boundary = boundaries[i];
+      const startPoints = i === 0 ? 0 : boundaries[i - 1].endPoints;
+      const phaseTasks: LeagueTask[] = [];
+      let phasePoints = 0;
+
+      while (
+        taskIndex < sorted.length &&
+        cumulativePoints + phasePoints < boundary.endPoints
+      ) {
+        phaseTasks.push(sorted[taskIndex]);
+        phasePoints += sorted[taskIndex].points;
+        taskIndex++;
+      }
+
+      cumulativePoints += phasePoints;
+
+      if (phaseTasks.length === 0) continue;
+
+      const phaseName =
+        i === 0 && hasRelicThresholds
+          ? `Start \u2192 ${boundary.name}`
+          : boundary.name;
+
+      phases.push({
+        phaseNumber: phases.length + 1,
+        name: phaseName,
+        startPoints,
+        endPoints: boundary.endPoints,
+        targetRelicTier: boundary.relicTier,
+        passiveEffects: boundary.passiveEffects,
+        relicChoices: boundary.relicChoices,
+        highlightedTasks: pickHighlightedTasks(phaseTasks),
+        allTasks: phaseTasks,
+        categoryGroups: buildCategoryGroups(phaseTasks),
+        categoryFocus: computeCategoryFocus(phaseTasks),
+        tasksByDifficulty: countDifficulty(phaseTasks),
+        totalPoints: phasePoints,
+        cumulativePoints,
+        rewardTiersCrossed: findRewardTiersCrossed(
+          league,
+          startPoints,
+          boundary.endPoints
+        ),
+      });
     }
-
-    cumulativePoints += phasePoints;
-
-    // Skip empty phases
-    if (phaseTasks.length === 0) continue;
-
-    const phaseName = i === 0 && hasRelicThresholds
-      ? `Start \u2192 ${boundary.name}`
-      : boundary.name;
-
-    phases.push({
-      phaseNumber: phases.length + 1,
-      name: phaseName,
-      startPoints,
-      endPoints: boundary.endPoints,
-      targetRelicTier: boundary.relicTier,
-      passiveEffects: boundary.passiveEffects,
-      relicChoices: boundary.relicChoices,
-      highlightedTasks: pickHighlightedTasks(phaseTasks),
-      allTasks: phaseTasks,
-      categoryFocus: computeCategoryFocus(phaseTasks),
-      tasksByDifficulty: countDifficulty(phaseTasks),
-      totalPoints: phasePoints,
-      cumulativePoints,
-      rewardTiersCrossed: findRewardTiersCrossed(league, startPoints, boundary.endPoints),
-    });
   }
 
   // Overall difficulty breakdown
@@ -425,7 +541,7 @@ export function computeProgression(
     goal,
     phases,
     totalTasks: phases.reduce((s, p) => s + p.allTasks.length, 0),
-    totalPoints: cumulativePoints,
+    totalPoints: phases.reduce((s, p) => s + p.totalPoints, 0),
     isAchievable,
     pointsShortfall,
     difficultyBreakdown,

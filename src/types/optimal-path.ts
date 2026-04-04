@@ -13,6 +13,12 @@ export interface CategoryFocusEntry {
   points: number;
 }
 
+export interface CategoryGroup {
+  category: string;
+  tasks: LeagueTask[];
+  totalPoints: number;
+}
+
 export interface RewardTierMilestone {
   name: string;
   pointsRequired: number;
@@ -29,6 +35,7 @@ export interface ProgressionPhase {
   relicChoices: Relic[];
   highlightedTasks: LeagueTask[];
   allTasks: LeagueTask[];
+  categoryGroups: CategoryGroup[];
   categoryFocus: CategoryFocusEntry[];
   tasksByDifficulty: Record<TaskDifficulty, number>;
   totalPoints: number;

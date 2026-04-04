@@ -16,13 +16,13 @@ test.describe("Progression Guide - Demonic Pacts", () => {
     await expect(page.getByText("Dragon Tier")).toBeVisible();
   });
 
-  test("selecting a goal renders progression phases", async ({ page }) => {
+  test("selecting a goal renders difficulty progression phases", async ({ page }) => {
     // Click the Bronze tier goal (lowest, most achievable)
     await page.getByText("Bronze Tier").click();
     // Summary should appear
     await expect(page.getByText("Progression Summary")).toBeVisible();
-    // Phases heading should appear (DP uses reward tier fallback)
-    await expect(page.getByText("Progression Phases")).toBeVisible();
+    // Phases heading should appear (DP uses difficulty-tier strategy)
+    await expect(page.getByText("Difficulty Progression")).toBeVisible();
   });
 
   test("standalone mode shows region picker", async ({ page }) => {
@@ -39,9 +39,9 @@ test.describe("Progression Guide - Demonic Pacts", () => {
     await expect(page.getByText(/Goal exceeds accessible points/)).toBeVisible();
   });
 
-  test("DP shows info banner about missing relic thresholds", async ({ page }) => {
+  test("DP shows info banner about difficulty-based phases", async ({ page }) => {
     await page.getByText("Bronze Tier").click();
-    await expect(page.getByText(/Relic unlock thresholds not yet available/)).toBeVisible();
+    await expect(page.getByText(/Phases are organized by task difficulty/)).toBeVisible();
   });
 
   test("import mode disabled without planner data", async ({ page }) => {
@@ -103,13 +103,19 @@ test.describe("Progression Guide - Demonic Pacts", () => {
     await expect(page.getByText("Progression Summary")).toBeVisible();
   });
 
+  test("DP Bronze tier creates difficulty phases", async ({ page }) => {
+    await page.getByText("Bronze Tier").click();
+    // Should have difficulty-based phase names
+    await expect(page.getByText("Getting Started").first()).toBeVisible();
+  });
+
   test("key tasks section visible after goal selection", async ({ page }) => {
     await page.getByText("Bronze Tier").click();
     // Wait for phases to render, then check for key tasks
     await expect(page.getByText("Key Tasks").first()).toBeVisible();
   });
 
-  test("full task list expandable on click", async ({ page }) => {
+  test("full task list expandable with category headers", async ({ page }) => {
     await page.getByText("Bronze Tier").click();
     // Find and click the "Show all" button
     const showAllButton = page.getByText(/Show all \d+ tasks/).first();
@@ -117,6 +123,10 @@ test.describe("Progression Guide - Demonic Pacts", () => {
     await showAllButton.click();
     // After expanding, the button text should change to "Hide"
     await expect(page.getByText("Hide full task list").first()).toBeVisible();
+    // Category headers should be visible (tasks are grouped by category)
+    // DP tasks have categories like "Combat", "Skilling", etc.
+    const categoryHeaders = page.locator(".uppercase.tracking-wider").filter({ hasText: /\w+/ });
+    await expect(categoryHeaders.first()).toBeVisible();
   });
 });
 
