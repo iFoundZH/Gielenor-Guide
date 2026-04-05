@@ -19,16 +19,16 @@ test.describe("Progression Guide - Demonic Pacts", () => {
   test("selecting a goal renders difficulty progression phases", async ({ page }) => {
     // Click the Bronze tier goal (lowest, most achievable)
     await page.getByText("Bronze Tier").click();
-    // Summary should appear
-    await expect(page.getByText("Progression Summary")).toBeVisible();
     // Phases heading should appear (DP uses difficulty-tier strategy)
     await expect(page.getByText("Difficulty Progression")).toBeVisible();
   });
 
   test("standalone mode shows region picker", async ({ page }) => {
     await page.getByText("Bronze Tier").click();
+    // Settings dropdown contains mode toggle — open it
+    await page.locator("button[title='Settings']").click();
     // The standalone mode button should be active by default
-    await expect(page.getByText("Configure Manually")).toBeVisible();
+    await expect(page.getByText("Manual")).toBeVisible();
     // Region picker should be visible
     await expect(page.getByText("Select Regions")).toBeVisible();
   });
@@ -41,12 +41,14 @@ test.describe("Progression Guide - Demonic Pacts", () => {
 
   test("DP shows info banner about difficulty-based phases", async ({ page }) => {
     await page.getByText("Bronze Tier").click();
-    await expect(page.getByText(/Phases are organized by task difficulty/)).toBeVisible();
+    await expect(page.getByText(/Phases organized by difficulty/)).toBeVisible();
   });
 
   test("import mode disabled without planner data", async ({ page }) => {
     await page.getByText("Bronze Tier").click();
-    const importButton = page.getByText("Import from Planner");
+    // Open settings dropdown
+    await page.locator("button[title='Settings']").click();
+    const importButton = page.getByText("Import", { exact: true });
     // Should be disabled (opacity class) when no localStorage data exists
     await expect(importButton).toBeVisible();
   });
@@ -73,12 +75,13 @@ test.describe("Progression Guide - Demonic Pacts", () => {
     await page.reload();
     await page.getByText("Bronze Tier").click();
 
-    // Import button should now be enabled
-    const importButton = page.getByText("Import from Planner");
+    // Open settings and click Import
+    await page.locator("button[title='Settings']").click();
+    const importButton = page.getByText("Import", { exact: true });
     await importButton.click();
 
-    // Summary should show — and region picker should NOT be visible in import mode
-    await expect(page.getByText("Progression Summary")).toBeVisible();
+    // Phases should render — and region picker should NOT be visible in import mode
+    await expect(page.getByText("Difficulty Progression")).toBeVisible();
   });
 
   test("breadcrumbs show correct path", async ({ page }) => {
@@ -95,12 +98,13 @@ test.describe("Progression Guide - Demonic Pacts", () => {
     await page.reload();
     await page.getByText("Bronze Tier").click();
 
-    // Toggle on exclude completed
+    // Open settings dropdown and toggle exclude completed
+    await page.locator("button[title='Settings']").click();
     const toggle = page.getByText("Exclude completed tasks");
     await toggle.click();
 
-    // Summary should still be visible (path recalculated)
-    await expect(page.getByText("Progression Summary")).toBeVisible();
+    // Phases should still be visible (path recalculated)
+    await expect(page.getByText("Difficulty Progression")).toBeVisible();
   });
 
   test("DP Bronze tier creates difficulty phases", async ({ page }) => {
@@ -149,7 +153,6 @@ test.describe("Progression Guide - Raging Echoes", () => {
   test("selecting all-relics goal renders relic progression phases", async ({ page }) => {
     // Click the All Relics goal
     await page.getByText("All Relics Unlocked").click();
-    await expect(page.getByText("Progression Summary")).toBeVisible();
     // Should show "Relic Progression" heading (RE has relic thresholds)
     await expect(page.getByText("Relic Progression")).toBeVisible();
   });

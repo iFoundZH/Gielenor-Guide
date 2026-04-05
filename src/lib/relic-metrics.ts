@@ -104,18 +104,20 @@ export interface RelicPowerRating {
 }
 
 // Static lookup keyed by relic ID — derived from analyzing each relic's effects
-const POWER_RATINGS: Record<string, Omit<RelicPowerRating, "relicId" | "relicName" | "afk" | "total">> = {
+export const POWER_RATINGS: Record<string, Omit<RelicPowerRating, "relicId" | "relicName" | "afk" | "total">> = {
   // DP relics
   "relic-t1-1": { dps: 0, skilling: 8, qol: 7, pointGen: 7 },  // Endless Harvest — auto-bank gathering, 2x resources
   "relic-t1-2": { dps: 0, skilling: 6, qol: 5, pointGen: 5 },  // Barbarian Gathering — knapsack, agility+strength
   "relic-t1-3": { dps: 2, skilling: 7, qol: 6, pointGen: 6 },  // Abundance — +10 all skills, coin gen
   "relic-t2-1": { dps: 0, skilling: 7, qol: 7, pointGen: 6 },  // Hotfoot — agility XP while running, auto-cook/smelt, 100% success agility+cooking
-  "relic-t2-2": { dps: 0, skilling: 8, qol: 6, pointGen: 7 },  // Woodsman — hunter traps to bank, auto-burn logs, instant fletching, 2x hunter loot
+  "relic-t2-2": { dps: 0, skilling: 7, qol: 6, pointGen: 6 },  // Friendly Forager — herb pouch, batch herblore, 4-dose pots
+  "relic-t2-3": { dps: 0, skilling: 8, qol: 6, pointGen: 7 },  // Woodsman — hunter traps to bank, auto-burn logs, instant fletching, 2x hunter loot
   "relic-t3-1": { dps: 3, skilling: 0, qol: 9, pointGen: 6 },  // Evil Eye — boss teleports
   "relic-t4-1": { dps: 0, skilling: 0, qol: 7, pointGen: 5 },  // Conniving Clues — clue contracts, teleport steps
   "relic-t5-1": { dps: 0, skilling: 8, qol: 8, pointGen: 7 },  // Nature's Accord — fairy mushroom teleports, 10x farming yield, auto-note, plants never die
   "relic-t5-2": { dps: 0, skilling: 7, qol: 8, pointGen: 6 },  // Larcenist — 100% thieving success, auto-pickpocket, noted loot, 10x coin pouches
-  "relic-t6-1": { dps: 4, skilling: 0, qol: 7, pointGen: 8 },  // Culling Spree — pick slayer tasks, superiors chain
+  "relic-t6-1": { dps: 2, skilling: 0, qol: 8, pointGen: 4 },  // Grimoire — arcane grimoire, spellbook swap, book of the dead
+  "relic-t6-2": { dps: 4, skilling: 0, qol: 7, pointGen: 8 },  // Culling Spree — pick slayer tasks, superiors chain
   "relic-t7-1": { dps: 0, skilling: 0, qol: 5, pointGen: 3 },  // Reloaded — pick another relic
   "relic-t8-1": { dps: 7, skilling: 0, qol: 5, pointGen: 6 },  // Minion — combat companion, auto-loot
   "relic-t8-2": { dps: 6, skilling: 0, qol: 4, pointGen: 5 },  // Flask of Fervour — full restore, AoE damage

@@ -121,7 +121,7 @@ export function calculateBuildSynergy(relics: Relic[], pacts: Pact[], hasMasteri
 
   // Demonic Pacts synergies
   // Endless Harvest + Woodsman: gathering auto-banks + hunter to bank + instant fletching
-  if (relicIds.has("relic-t1-1") && relicIds.has("relic-t2-2")) score += 60;
+  if (relicIds.has("relic-t1-1") && relicIds.has("relic-t2-3")) score += 60;
   // Endless Harvest + Hotfoot: gathering auto-banks + auto-cook/smelt
   if (relicIds.has("relic-t1-1") && relicIds.has("relic-t2-1")) score += 50;
   // Evil Eye (boss teleports) + any combat pact
@@ -133,7 +133,7 @@ export function calculateBuildSynergy(relics: Relic[], pacts: Pact[], hasMasteri
   // Larcenist + Hotfoot: 100% success thieving + 100% success agility
   if (relicIds.has("relic-t5-2") && relicIds.has("relic-t2-1")) score += 50;
   // Culling Spree (slayer relic) + Melee Might or Ranged Fury or Magic Surge
-  if (relicIds.has("relic-t6-1") && (pactIds.has("pact-melee-might") || pactIds.has("pact-ranged-fury") || pactIds.has("pact-magic-surge"))) score += 70;
+  if (relicIds.has("relic-t6-2") && (pactIds.has("pact-melee-might") || pactIds.has("pact-ranged-fury") || pactIds.has("pact-magic-surge"))) score += 70;
   // Minion + Glass Cannon: companion deals damage while you're fragile
   if (relicIds.has("relic-t8-1") && pactIds.has("pact-glass-cannon")) score += 80;
   // Minion + Vampiric Touch: companion attacks while you lifesteal

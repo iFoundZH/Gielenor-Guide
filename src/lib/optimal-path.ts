@@ -8,6 +8,7 @@ import type {
   CategoryGroup,
   RewardTierMilestone,
 } from "@/types/optimal-path";
+import { POWER_RATINGS } from "@/lib/relic-metrics";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -549,4 +550,91 @@ export function computeProgression(
     recommendedRegions: recommendations,
     hasRelicThresholds,
   };
+}
+
+// ---------------------------------------------------------------------------
+// Public: Relic synergy extraction
+// ---------------------------------------------------------------------------
+
+interface SynergyPair {
+  relicA: string;
+  relicB: string;
+  description: string;
+}
+
+/** All known synergy pairs, extracted from player-score.ts calculateBuildSynergy. */
+const SYNERGY_PAIRS: SynergyPair[] = [
+  // DP synergies
+  { relicA: "relic-t1-1", relicB: "relic-t2-3", description: "Gathering auto-banks + instant fletching" },
+  { relicA: "relic-t1-1", relicB: "relic-t2-1", description: "Gathering auto-banks + auto-cook/smelt" },
+  { relicA: "relic-t3-1", relicB: "relic-t4-1", description: "Boss teleports + clue farming" },
+  { relicA: "relic-t5-1", relicB: "relic-t1-3", description: "Fairy teleports + skill boost + farming" },
+  { relicA: "relic-t5-2", relicB: "relic-t2-1", description: "100% thieving + 100% agility success" },
+  // RE synergies
+  { relicA: "re-t1-1", relicB: "re-t5-2", description: "Auto-bank ores + batch-process all" },
+  { relicA: "re-t1-3", relicB: "re-t5-3", description: "Enhanced hunting + always on task" },
+  { relicA: "re-t3-1", relicB: "re-t5-1", description: "Clue teleports + 10x drops + max rewards" },
+  { relicA: "re-t2-3", relicB: "re-t4-1", description: "Thieving empire + free alchemy" },
+  { relicA: "re-t6-1", relicB: "re-t8-1", description: "Save location/stats + cheap specs" },
+  { relicA: "re-t2-2", relicB: "re-t5-2", description: "Auto herbs + batch potions" },
+  { relicA: "re-t1-2", relicB: "re-t7-3", description: "Auto wood processing + auto farming" },
+];
+
+/**
+ * Given a set of selected relic IDs, compute which relics in the league
+ * have synergies with the selected set.
+ * Returns Map<relicId, descriptions[]> for relics that synergize with at least one selected relic.
+ */
+export function computeRelicSynergies(
+  selectedRelicIds: string[]
+): Map<string, string[]> {
+  const selected = new Set(selectedRelicIds);
+  const result = new Map<string, string[]>();
+
+  for (const pair of SYNERGY_PAIRS) {
+    const aSelected = selected.has(pair.relicA);
+    const bSelected = selected.has(pair.relicB);
+
+    // If one side is selected, flag the other side as having a synergy
+    if (aSelected && !bSelected) {
+      const existing = result.get(pair.relicB) ?? [];
+      existing.push(pair.description);
+      result.set(pair.relicB, existing);
+    } else if (bSelected && !aSelected) {
+      const existing = result.get(pair.relicA) ?? [];
+      existing.push(pair.description);
+      result.set(pair.relicA, existing);
+    }
+    // If both selected, flag both for display
+    if (aSelected && bSelected) {
+      for (const id of [pair.relicA, pair.relicB]) {
+        const existing = result.get(id) ?? [];
+        existing.push(pair.description);
+        result.set(id, existing);
+      }
+    }
+  }
+
+  return result;
+}
+
+/**
+ * Get the top 2 power axes for a relic (e.g., "Skilling", "QoL").
+ */
+export function getRelicBoostCategories(relicId: string): string[] {
+  const base = POWER_RATINGS[relicId];
+  if (!base) return [];
+
+  const axes: { name: string; value: number }[] = [
+    { name: "DPS", value: base.dps },
+    { name: "Skilling", value: base.skilling },
+    { name: "QoL", value: base.qol },
+    { name: "Points", value: base.pointGen },
+  ];
+
+  return axes
+    .filter((a) => a.value > 0)
+    .sort((a, b) => b.value - a.value)
+    .slice(0, 2)
+    .map((a) => a.name);
 }

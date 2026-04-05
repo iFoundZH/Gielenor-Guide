@@ -188,10 +188,12 @@ export const RELIC_TAGS: Record<string, string[]> = {
   "relic-t1-2": ["gathering", "agility", "strength", "early-game"],
   "relic-t1-3": ["skilling", "money", "all-skills", "production"],
   "relic-t2-1": ["agility", "production", "cooking", "mining", "gathering"],  // Hotfoot
-  "relic-t2-2": ["production", "fletching", "firemaking", "hunter", "gathering"],  // Woodsman
+  "relic-t2-2": ["herblore", "gathering", "production"],  // Friendly Forager
+  "relic-t2-3": ["production", "fletching", "firemaking", "hunter", "gathering"],  // Woodsman
   "relic-t3-1": ["combat", "bossing", "teleport", "utility"],
   "relic-t4-1": ["clues", "utility", "teleport"],
-  "relic-t6-1": ["combat", "slayer", "clues", "utility"],
+  "relic-t6-1": ["combat", "magic", "utility"],  // Grimoire
+  "relic-t6-2": ["combat", "slayer", "clues", "utility"],  // Culling Spree
   "relic-t5-1": ["farming", "teleport", "utility"],                          // Nature's Accord
   "relic-t5-2": ["thieving", "utility"],                                     // Larcenist
   "relic-t7-1": ["combat", "utility"],                                       // Reloaded
@@ -363,7 +365,7 @@ export function findActiveSynergies(relics: Relic[], pacts: Pact[], hasMasteries
   const hasCombatPower = pacts.some((p) => p.category === "combat") || hasMasteries;
 
   // DP synergies
-  if (relicIds.has("relic-t1-1") && relicIds.has("relic-t2-2")) {
+  if (relicIds.has("relic-t1-1") && relicIds.has("relic-t2-3")) {
     synergies.push({
       name: "Gathering Pipeline",
       description: "Resources auto-bank from Endless Harvest, then Woodsman doubles Hunter loot and provides instant Fletching. Seeds from traps fuel farming loop.",
@@ -379,7 +381,7 @@ export function findActiveSynergies(relics: Relic[], pacts: Pact[], hasMasteries
       components: ["Evil Eye", ...pacts.filter((p) => p.category === "combat").map((p) => p.name)],
     });
   }
-  if (relicIds.has("relic-t6-1") && (pactIds.has("pact-melee-might") || pactIds.has("pact-ranged-fury") || pactIds.has("pact-magic-surge"))) {
+  if (relicIds.has("relic-t6-2") && (pactIds.has("pact-melee-might") || pactIds.has("pact-ranged-fury") || pactIds.has("pact-magic-surge"))) {
     synergies.push({
       name: "Slayer Machine",
       description: "Culling Spree's configurable tasks + combat pact damage boost = rapid task completions. Passive slayer helm frees a gear slot.",
@@ -419,7 +421,7 @@ export function findActiveSynergies(relics: Relic[], pacts: Pact[], hasMasteries
       components: ["Glass Cannon", "Vampiric Touch"],
     });
   }
-  if (relicIds.has("relic-t6-1") && relicIds.has("relic-t8-1")) {
+  if (relicIds.has("relic-t6-2") && relicIds.has("relic-t8-1")) {
     synergies.push({
       name: "Slayer Companion",
       description: "Culling Spree picks optimal tasks while Minion helps kill and auto-loots. Superiors chain-spawning generates massive clue scrolls.",
@@ -529,7 +531,7 @@ function findMissedSynergies(
   const hasCombatPower = selectedPacts.some((p) => p.category === "combat") || hasMasteries;
 
   // DP missed synergies
-  if (relicIds.has("relic-t1-1") && !relicIds.has("relic-t2-2")) {
+  if (relicIds.has("relic-t1-1") && !relicIds.has("relic-t2-3")) {
     missed.push({
       name: "Gathering Pipeline",
       description: "Add Woodsman (T2) to double Hunter loot and auto-process gathered resources. Your Endless Harvest would feed perfectly into it.",
@@ -553,7 +555,7 @@ function findMissedSynergies(
       components: ["Glass Cannon", "Vampiric Touch (not selected)"],
     });
   }
-  if (relicIds.has("relic-t6-1") && !selectedPacts.some((p) => p.category === "combat")) {
+  if (relicIds.has("relic-t6-2") && !selectedPacts.some((p) => p.category === "combat")) {
     missed.push({
       name: "Slayer Machine",
       description: "You have Culling Spree for optimized Slayer but no combat pacts to boost kill speed. A combat pact would complete this combo.",
@@ -834,10 +836,10 @@ function classifyArchetype(relics: Relic[], pacts: Pact[], build: LeagueBuild, h
   if (relicIds.has("relic-t8-1") && pactIds.has("pact-glass-cannon") && pactIds.has("pact-berserker")) {
     return { name: "Demonlord", description: "Maximum risk, maximum power. You've gone all-in on damage with no safety net. True demon energy.", icon: "👹" };
   }
-  if (relicIds.has("relic-t6-1") && combatPacts >= 1 && relicIds.has("relic-t3-1")) {
+  if (relicIds.has("relic-t6-2") && combatPacts >= 1 && relicIds.has("relic-t3-1")) {
     return { name: "PvM Powerhouse", description: "Built to kill. Boss teleports, optimized Slayer, and combat pacts make you a boss-farming machine.", icon: "⚔️" };
   }
-  if (relicIds.has("relic-t1-1") && relicIds.has("relic-t2-2")) {
+  if (relicIds.has("relic-t1-1") && relicIds.has("relic-t2-3")) {
     return { name: "Gathering Lord", description: "Resources flow endlessly. Auto-banking, doubled outputs, and instant processing create a resource empire.", icon: "⛏️" };
   }
   if (relicIds.has("relic-t1-3") && relics.length >= 2) {

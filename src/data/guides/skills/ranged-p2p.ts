@@ -30,7 +30,7 @@ export const rangedP2pGuide: SkillTrainingGuide = {
       name: "Gemstone Crab near Tal Teklan in Varlamore has unlimited Hitpoints and only m...",
       levelRange: [1, 45],
       xpPerHour: null,
-      description: "Gemstone Crab near Tal Teklan in Varlamore has unlimited Hitpoints and only moves every 9 minutes, thus making it a very afk alternative. Multiple people can attack this crab, removing the risk of ...",
+      description: "Gemstone Crab near Tal Teklan in Varlamore has unlimited Hitpoints and only moves every 10 minutes, thus making it a very afk alternative. Multiple people can attack this crab, removing the risk of...",
       members: true,
     },
     {

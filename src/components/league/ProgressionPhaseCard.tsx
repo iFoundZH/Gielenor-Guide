@@ -4,13 +4,18 @@ import { useState } from "react";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { ProgressBar } from "@/components/ui/ProgressBar";
+import { getRelicBoostCategories } from "@/lib/optimal-path";
 import type { ProgressionPhase } from "@/types/optimal-path";
 import type { TaskDifficulty } from "@/types/league";
 
-interface ProgressionPhaseCardProps {
+export interface ProgressionPhaseCardProps {
   phase: ProgressionPhase;
   goalPoints: number;
   goalColor: string;
+  phaseIntensity: number;
+  selectedRelicId?: string;
+  synergies: Map<string, string[]>;
+  onRelicSelect?: (relicId: string | null) => void;
 }
 
 const DIFFICULTY_COLORS: Record<
@@ -24,50 +29,52 @@ const DIFFICULTY_COLORS: Record<
   master: "red",
 };
 
+function getIntensityClass(intensity: number): {
+  header: string;
+  border: string;
+} {
+  if (intensity < 0.34) return { header: "phase-header--early", border: "" };
+  if (intensity < 0.67) return { header: "phase-header--mid", border: "border-osrs-gold/30" };
+  return { header: "phase-header--late", border: "border-glow-red" };
+}
+
 export function ProgressionPhaseCard({
   phase,
   goalPoints,
   goalColor,
+  phaseIntensity,
+  selectedRelicId,
+  synergies,
+  onRelicSelect,
 }: ProgressionPhaseCardProps) {
   const [showAllTasks, setShowAllTasks] = useState(false);
+  const { header: headerClass, border: borderClass } = getIntensityClass(phaseIntensity);
 
   return (
-    <Card className="relative">
-      {/* Phase header — numbered circle + title (GettingStartedSection pattern) */}
-      <div className="flex items-start gap-4">
-        <div
-          className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm"
-          style={{
-            backgroundColor: `${goalColor}20`,
-            color: goalColor,
-            border: `1px solid ${goalColor}40`,
-          }}
-        >
-          {phase.phaseNumber}
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
-            <div>
-              <h4
-                className="font-bold text-osrs-text"
-                style={{ fontFamily: "var(--font-runescape)" }}
-              >
-                Phase {phase.phaseNumber}: {phase.name}
-              </h4>
-              <p className="text-xs text-osrs-text-dim">
-                {phase.allTasks.length} tasks &middot;{" "}
-                {phase.totalPoints.toLocaleString()} pts needed
-                <span className="mx-1">&middot;</span>
-                {phase.startPoints.toLocaleString()} &rarr;{" "}
-                {phase.endPoints.toLocaleString()} pts
-              </p>
+    <Card className={`relative ${borderClass}`}>
+      {/* Phase header with escalation gradient */}
+      <div className={`-m-4 mb-0 p-4 rounded-t-xl ${headerClass}`}>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+          <div>
+            <h4
+              className="font-bold text-osrs-text"
+              style={{ fontFamily: "var(--font-runescape)" }}
+            >
+              {phase.name}
+            </h4>
+            <p className="text-xs text-osrs-text-dim">
+              {phase.allTasks.length} tasks &middot;{" "}
+              {phase.totalPoints.toLocaleString()} pts needed
+              <span className="mx-1">&middot;</span>
+              {phase.startPoints.toLocaleString()} &rarr;{" "}
+              {phase.endPoints.toLocaleString()} pts
+            </p>
+          </div>
+          <div className="text-right shrink-0">
+            <div className="text-sm font-bold text-osrs-gold">
+              {phase.cumulativePoints.toLocaleString()} pts
             </div>
-            <div className="text-right shrink-0">
-              <div className="text-sm font-bold text-osrs-gold">
-                {phase.cumulativePoints.toLocaleString()} pts
-              </div>
-              <div className="text-xs text-osrs-text-dim">cumulative</div>
-            </div>
+            <div className="text-xs text-osrs-text-dim">cumulative</div>
           </div>
         </div>
       </div>
@@ -83,26 +90,71 @@ export function ProgressionPhaseCard({
         />
       </div>
 
-      {/* Relic choices */}
+      {/* Interactive relic selector */}
       {phase.relicChoices.length > 0 && (
         <div className="mt-4">
           <h5 className="text-xs font-bold text-osrs-gold mb-2 uppercase tracking-wider">
             Relic Choices
           </h5>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            {phase.relicChoices.map((relic) => (
-              <div
-                key={relic.id}
-                className="border border-osrs-border/40 rounded-lg bg-osrs-darker/30 p-2.5"
-              >
-                <div className="text-sm font-medium text-osrs-text">
-                  {relic.name}
-                </div>
-                <p className="text-xs text-osrs-text-dim mt-0.5 line-clamp-2">
-                  {relic.description}
-                </p>
-              </div>
-            ))}
+            {phase.relicChoices.map((relic) => {
+              const isSelected = selectedRelicId === relic.id;
+              const isDimmed = !!selectedRelicId && !isSelected;
+              const hasSynergy = synergies.has(relic.id);
+              const synergyDescs = synergies.get(relic.id);
+              const boostCategories = getRelicBoostCategories(relic.id);
+
+              let cardClass = "border border-osrs-border/40 rounded-lg bg-osrs-darker/30 p-2.5 text-left transition-all";
+              if (isSelected) cardClass += " relic-card--selected";
+              else if (isDimmed) cardClass += " relic-card--dimmed";
+              if (hasSynergy && !isSelected) cardClass += " relic-card--synergy";
+
+              return (
+                <button
+                  key={relic.id}
+                  onClick={() => onRelicSelect?.(isSelected ? null : relic.id)}
+                  className={cardClass}
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium text-osrs-text">
+                      {relic.name}
+                    </span>
+                    {isSelected && (
+                      <span className="text-xs text-osrs-gold">&#x2714;</span>
+                    )}
+                    {hasSynergy && (
+                      <Badge variant="purple" size="sm">Synergy</Badge>
+                    )}
+                  </div>
+                  <p className="text-xs text-osrs-text-dim mt-0.5 line-clamp-2">
+                    {relic.description}
+                  </p>
+                  {/* Boost category tags */}
+                  {boostCategories.length > 0 && (
+                    <div className="flex gap-1 mt-1.5">
+                      {boostCategories.map((cat) => (
+                        <span
+                          key={cat}
+                          className={`text-[10px] px-1.5 py-0.5 rounded-full border ${
+                            isSelected
+                              ? "border-osrs-gold/40 text-osrs-gold bg-osrs-gold/10"
+                              : "border-osrs-border/40 text-osrs-text-dim"
+                          }`}
+                        >
+                          {cat}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  {/* Synergy descriptions tooltip */}
+                  {hasSynergy && synergyDescs && (
+                    <p className="text-[10px] text-osrs-purple mt-1 italic">
+                      {synergyDescs.join(" / ")}
+                    </p>
+                  )}
+                </button>
+              );
+            })}
           </div>
         </div>
       )}

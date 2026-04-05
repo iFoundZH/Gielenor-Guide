@@ -141,3 +141,133 @@ select {
 .tooltip:hover::after {
   opacity: 1;
 }
+
+/* ─── Timeline Spine ─────────────────────────────────────────────────── */
+
+.timeline-spine {
+  position: absolute;
+  left: 23px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(
+    to bottom,
+    var(--color-osrs-blue) 0%,
+    var(--color-osrs-green) 30%,
+    var(--color-osrs-gold) 60%,
+    var(--color-demon-glow) 100%
+  );
+  z-index: 0;
+}
+
+.timeline-node {
+  position: absolute;
+  left: 0;
+  top: 0.5rem;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.875rem;
+  color: var(--color-osrs-text-dim);
+  background: var(--color-osrs-darker);
+  border: 2px solid var(--color-osrs-border);
+  z-index: 1;
+  transition: all 0.3s ease;
+}
+
+.timeline-node--filled {
+  background: var(--color-osrs-gold);
+  color: var(--color-osrs-darker);
+  border-color: var(--color-osrs-gold);
+  box-shadow: 0 0 12px rgba(245, 200, 66, 0.4);
+}
+
+@keyframes node-pulse {
+  0%, 100% { box-shadow: 0 0 0px rgba(255, 68, 68, 0); }
+  50% { box-shadow: 0 0 14px rgba(255, 68, 68, 0.3); }
+}
+.timeline-node--pulse {
+  animation: node-pulse 2.5s ease-in-out infinite;
+}
+
+/* ─── Phase Header Escalation ────────────────────────────────────────── */
+
+.phase-header--early {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, transparent 100%);
+}
+.phase-header--mid {
+  background: linear-gradient(135deg, rgba(245, 200, 66, 0.1) 0%, transparent 100%);
+}
+.phase-header--late {
+  background: linear-gradient(135deg, rgba(255, 68, 68, 0.1) 0%, rgba(255, 107, 53, 0.05) 100%);
+}
+
+/* ─── Relic Card States ──────────────────────────────────────────────── */
+
+.relic-card--selected {
+  border-color: var(--color-osrs-gold) !important;
+  box-shadow: 0 0 10px rgba(245, 200, 66, 0.25), inset 0 0 6px rgba(245, 200, 66, 0.05);
+}
+
+.relic-card--dimmed {
+  opacity: 0.4;
+  transition: opacity 0.2s ease;
+}
+
+@keyframes synergy-pulse {
+  0%, 100% { box-shadow: 0 0 0px rgba(168, 85, 247, 0); }
+  50% { box-shadow: 0 0 10px rgba(168, 85, 247, 0.3); }
+}
+.relic-card--synergy {
+  border-color: var(--color-osrs-purple) !important;
+  animation: synergy-pulse 2s ease-in-out infinite;
+}
+
+/* ─── Timeline Flash (region toggle feedback) ────────────────────────── */
+
+@keyframes timeline-flash-anim {
+  0% { filter: brightness(1); }
+  50% { filter: brightness(2) drop-shadow(0 0 8px rgba(245, 200, 66, 0.6)); }
+  100% { filter: brightness(1); }
+}
+.timeline-flash {
+  animation: timeline-flash-anim 0.3s ease-out;
+}
+
+/* ─── Progress Ring ──────────────────────────────────────────────────── */
+
+.progress-ring-bg {
+  stroke: var(--color-osrs-border);
+  fill: none;
+}
+.progress-ring-fill {
+  fill: none;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.5s ease;
+}
+
+/* ─── Goal Bar ───────────────────────────────────────────────────────── */
+
+.goal-bar {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* ─── Mobile Timeline ────────────────────────────────────────────────── */
+
+@media (max-width: 639px) {
+  .timeline-spine { display: none; }
+  .timeline-node {
+    position: relative;
+    left: auto;
+    top: auto;
+    width: 28px;
+    height: 28px;
+    font-size: 0.75rem;
+    flex-shrink: 0;
+  }
+}
