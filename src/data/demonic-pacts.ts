@@ -9,7 +9,7 @@ export const demonicPactsLeague: LeagueData = {
   startDate: "2026-04-15",
   endDate: "2026-06-10",
   wikiUrl: "https://oldschool.runescape.wiki/w/Demonic_Pacts_League",
-  lastSynced: "2026-04-03",
+  lastSynced: "2026-04-05",
   baseXpMultiplier: 5,
   baseDropMultiplier: 2,
   maxRegions: 3,
@@ -331,6 +331,18 @@ export const demonicPactsLeague: LeagueData = {
       relics: [
         {
           id: "relic-t6-1",
+          name: "Grimoire",
+          tier: 6,
+          slot: 6,
+          description: "arcane grimoire",
+          effects: [
+            "Grants the arcane grimoire",
+            "The grimoire can be used to freely swap between spellbooks.",
+            "The grimoire acts as a book of the dead.",
+          ],
+        },
+        {
+          id: "relic-t6-2",
           name: "Culling Spree",
           tier: 6,
           slot: 6,
