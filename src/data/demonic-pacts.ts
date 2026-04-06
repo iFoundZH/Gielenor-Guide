@@ -9,7 +9,7 @@ export const demonicPactsLeague: LeagueData = {
   startDate: "2026-04-15",
   endDate: "2026-06-10",
   wikiUrl: "https://oldschool.runescape.wiki/w/Demonic_Pacts_League",
-  lastSynced: "2026-04-05",
+  lastSynced: "2026-04-06",
   baseXpMultiplier: 5,
   baseDropMultiplier: 2,
   maxRegions: 3,
