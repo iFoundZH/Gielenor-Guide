@@ -1146,7 +1146,7 @@ export const mainQuestGuide: OptimalQuestGuide = {
       questPoints: 0,
       cumulativeQP: 211,
       xpRewards: [{ skill: "construction", xp: 3650 }],
-      notes: "Complete every camp improvement and claim your reward from Peter, clean the fossils, and add them to the paleontology floor in the Varrock Museum. Use the  on .",
+      notes: "View the bulletin board and complete every camp improvement then claim your reward from Peter. Clean the fossils and add them to the paleontology floor (in the basement) of the Varrock Museum. Click a small display to add them to it. Use the  on .",
     },
     {
       order: 144,
