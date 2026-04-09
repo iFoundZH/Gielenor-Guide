@@ -1,23 +1,23 @@
 {
-  "generatedAt": "2026-04-05T20:13:45.727Z",
+  "generatedAt": "2026-04-09T07:43:19.107Z",
   "leagues": {
     "demonic-pacts": {
-      "taskCount": 43,
+      "taskCount": 75,
       "taskBreakdown": {
-        "easy": 15,
-        "medium": 10,
-        "hard": 8,
-        "elite": 6,
-        "master": 4
+        "easy": 9,
+        "medium": 8,
+        "hard": 24,
+        "elite": 29,
+        "master": 5
       },
-      "totalPoints": 3890,
-      "relicCount": 16,
+      "totalPoints": 10050,
+      "relicCount": 19,
       "relicTierCount": 8,
       "regionCount": 11,
       "pactCount": 6,
       "rewardTierCount": 7,
       "maxRegions": 3,
-      "lastSynced": "2026-04-05"
+      "lastSynced": "2026-04-09"
     },
     "raging-echoes": {
       "taskCount": 1589,
@@ -35,7 +35,7 @@
       "pactCount": 0,
       "rewardTierCount": 7,
       "maxRegions": 3,
-      "lastSynced": "2026-04-05"
+      "lastSynced": "2026-04-09"
     }
   },
   "guides": {
