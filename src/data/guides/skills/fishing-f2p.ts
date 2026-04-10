@@ -30,7 +30,7 @@ export const fishingF2pGuide: SkillTrainingGuide = {
       name: "Method #2",
       levelRange: [20, 40],
       xpPerHour: null,
-      description: "Method #2: Fly fish at Barbarian Village, bank raw fish at Ferox Enclave (57 Woodcutting needed for waka canoe, canoe from Barbarian Village to Ferox Enclave for banking, and canoe back to Barbaria...",
+      description: "Method #2: Fly fish at Barbarian Village or Lumbridge, bank raw fish at Ferox Enclave (57 Woodcutting needed for waka canoe, canoe from Barbarian Village or Lumbridge to Ferox Enclave for banking, ...",
       members: false,
     },
     {

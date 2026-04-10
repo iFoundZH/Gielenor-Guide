@@ -30,7 +30,7 @@ export const attackF2pGuide: SkillTrainingGuide = {
       name: "Nightmare Zone",
       levelRange: [70, 99],
       xpPerHour: null,
-      description: "Since Dharok's potential is dependent on having high max , it becomes optimal at . Otherwise, the combination of Obsidian Armour, a Berserker Necklace, and the Toktz-Xil-Ak is optimal.",
+      description: "Since Dharok's potential is dependent on having high max , it becomes optimal at . Otherwise, the full Blood Moon Armour + Dual Macuahuitl, or the combination of Obsidian Armour, a Berserker Neckla...",
       members: false,
     },
     {
