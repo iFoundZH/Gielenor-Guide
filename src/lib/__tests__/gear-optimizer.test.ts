@@ -10,9 +10,11 @@
  * - Optimizer returns valid DPS results
  */
 import { describe, it, expect } from "vitest";
-import { optimizeGear } from "@/lib/gear-optimizer";
+import { optimizeGear, optimizeBuild } from "@/lib/gear-optimizer";
 import { getItem } from "@/data/items";
 import { getBoss } from "@/data/boss-presets";
+import { validateSelection } from "@/data/pacts";
+import { PACT_POINT_LIMIT } from "@/types/dps";
 import type { PlayerConfig, OptimizerConfig, BuildLoadout } from "@/types/dps";
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -273,4 +275,92 @@ describe("optimizer boss-specific", () => {
     const hasAntiDemon = weaponIds.some(id => id === "arclight" || id === "echo-tecpatl");
     expect(hasAntiDemon).toBe(true);
   });
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+// PACT BEAM SEARCH (via optimizeBuild)
+// ═══════════════════════════════════════════════════════════════════════
+
+describe("pact beam search optimization", () => {
+  it("fills all 40 pact points when activePacts is empty (auto)", () => {
+    const config: OptimizerConfig = {
+      player: defaultPlayer({ activePacts: [] }),
+      target: custom,
+      lockedSlots: {},
+      topN: 3,
+    };
+    const results = optimizeBuild(config);
+    expect(results.length).toBeGreaterThan(0);
+
+    // Best result should have optimized pacts filling the full 40-point budget
+    const best = results[0];
+    expect(best.optimizedConfig?.activePacts).toBeDefined();
+    expect(best.optimizedConfig!.activePacts!.length).toBe(PACT_POINT_LIMIT);
+  }, 30_000);
+
+  it("optimized pacts form a valid connected tree", () => {
+    const config: OptimizerConfig = {
+      player: defaultPlayer({ activePacts: [] }),
+      target: custom,
+      lockedSlots: {},
+      topN: 1,
+    };
+    const results = optimizeBuild(config);
+    const pacts = results[0].optimizedConfig?.activePacts ?? [];
+    const sel = new Set(pacts);
+    const { valid, error } = validateSelection(sel);
+    expect(valid).toBe(true);
+    if (error) throw new Error(error);
+  }, 30_000);
+
+  it("optimized pacts produce higher DPS than no pacts", () => {
+    const config: OptimizerConfig = {
+      player: defaultPlayer({ activePacts: [] }),
+      target: custom,
+      lockedSlots: {},
+      topN: 1,
+    };
+    const results = optimizeBuild(config);
+
+    // Compare: same gear, no pacts
+    const noPactConfig: OptimizerConfig = {
+      player: defaultPlayer({ activePacts: ["node1"] }), // minimal pacts — not auto
+      target: custom,
+      lockedSlots: {},
+      topN: 1,
+    };
+    const noPactResults = optimizeGear(noPactConfig);
+
+    expect(results[0].result.dps).toBeGreaterThan(noPactResults[0].result.dps);
+  }, 30_000);
+
+  it("works for ranged style", () => {
+    const config: OptimizerConfig = {
+      player: defaultPlayer({
+        combatStyle: "ranged", attackStyle: "auto", potion: "auto", prayerType: "auto",
+        activePacts: [],
+      }),
+      target: custom,
+      lockedSlots: {},
+      topN: 1,
+    };
+    const results = optimizeBuild(config);
+    expect(results.length).toBeGreaterThan(0);
+    expect(results[0].optimizedConfig?.activePacts?.length).toBe(PACT_POINT_LIMIT);
+  }, 30_000);
+
+  it("works for magic style", () => {
+    const config: OptimizerConfig = {
+      player: defaultPlayer({
+        combatStyle: "magic", attackStyle: "auto", potion: "auto", prayerType: "auto",
+        activePacts: [],
+      }),
+      target: custom,
+      lockedSlots: {},
+      topN: 1,
+    };
+    const results = optimizeBuild(config);
+    expect(results.length).toBeGreaterThan(0);
+    expect(results[0].optimizedConfig?.activePacts?.length).toBe(PACT_POINT_LIMIT);
+  }, 30_000);
 });

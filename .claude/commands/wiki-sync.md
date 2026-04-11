@@ -1,28 +1,25 @@
-Sync data from the OSRS Wiki. Run the appropriate sync script(s) based on what needs updating.
+Sync equipment data from the OSRS Wiki.
+
+## Available sync
+
+- **Equipment data**: `npm run sync:items` — fetches item stats from the OSRS Wiki API via `scripts/sync-items.py` (requires Python 3). Outputs to `src/data/equipment-db.json`.
 
 ## Steps
 
-1. Determine what to sync based on user request:
-   - **League data** (tasks, relics, pacts, regions): `npm run sync-wiki`
-   - **Game guides** (skills, ironman, quests, diaries, CAs): `npm run sync-guides`
-   - **Quest/boss database**: `npm run sync-data`
-   - **All**: Run all three in sequence
+1. Run `npm run sync:items` to pull the latest equipment data from the wiki.
 
-2. Use the `--merge` flag when you want to preserve hand-curated data (tasks, pacts, rewards, region descriptions) that the wiki doesn't have. Without `--merge`, wiki data overwrites everything.
+2. After syncing, review what changed: check `src/data/equipment-db.json` for new or modified items.
 
-3. After syncing, run `git diff src/data/` to review what changed.
+3. Run `npm run test:unit` to verify data integrity tests still pass (especially `data-integrity.test.ts`).
 
-4. If task data changed significantly, run `npm run compute-guide-stats` to recompute region statistics.
+4. Run `npm run build` to confirm the build succeeds.
 
-5. Verify the build still works: `npm run build`
+5. Run `npm run test` to confirm E2E tests pass.
 
-6. Run tests to confirm nothing broke: `npm run test`
+## Notes
 
-## Common scenarios
-
-- **New league announced**: Run `npm run sync-wiki` to pull new league page data
-- **Wiki updated task lists**: Run `npm run sync-wiki -- --merge` to get new tasks while keeping curated pacts/rewards
-- **Quest/boss data stale**: Run `npm run sync-data -- --merge`
-- **Skill guides updated**: Run `npm run sync-guides`
+- The sync script fetches all equippable items with their combat stats (attack/defence bonuses, strength, prayer, speed).
+- `equipment-db.json` is the raw wiki source; `items.ts` contains the curated subset used by the DPS calculator.
+- If new echo items or pact-related equipment is added to the game, manually update `items.ts` after syncing.
 
 $ARGUMENTS

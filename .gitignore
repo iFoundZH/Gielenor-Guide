@@ -27,3 +27,6 @@ npm-debug.log*
 *.tsbuildinfo
 next-env.d.ts
 test-results/
+
+# hook logs
+logs/

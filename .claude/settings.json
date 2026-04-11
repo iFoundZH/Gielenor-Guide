@@ -5,22 +5,29 @@
       "Bash(npm run build)",
       "Bash(npm run lint)",
       "Bash(npm run test*)",
-      "Bash(npm run sync-*)",
-      "Bash(npm run compute-*)",
+      "Bash(npm run sync:*)",
       "Bash(npx playwright*)",
       "Bash(npx tsx*)",
+      "Bash(npx tsc*)",
       "Bash(git *)",
       "Bash(ls *)",
       "Bash(mkdir *)",
-      "Bash(gh *)"
+      "Bash(gh *)",
+      "Bash(npm audit*)"
     ],
     "deny": [
       "Bash(rm -rf *)",
       "Bash(git push --force*)",
       "Bash(git push --no-verify*)",
+      "Bash(git push -f *)",
       "Bash(git reset --hard*)",
       "Bash(git checkout -- .)",
-      "Bash(git clean -f*)"
+      "Bash(git clean -f*)",
+      "Bash(chmod 777*)",
+      "Bash(chmod -R 777*)",
+      "Bash(npm publish*)",
+      "Bash(curl*|*bash*)",
+      "Bash(wget*|*sh*)"
     ]
   },
   "hooks": {
@@ -31,6 +38,19 @@
           {
             "type": "command",
             "command": "filepath=\"$CLAUDE_FILE_PATH\"; if [ -n \"$filepath\" ] && echo \"$filepath\" | grep -qE '\\.(env|pem|key|secret)'; then echo 'BLOCK: Refusing to write to sensitive file'; exit 1; fi"
+          },
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/scan-secrets.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/guard-tool.sh"
           }
         ]
       }

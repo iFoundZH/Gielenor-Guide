@@ -101,26 +101,45 @@ export function optimizeBuild(config: OptimizerConfig): OptimizerResult[] {
     }
   }
 
-  // Phase 4: Pact greedy search (if activePacts is empty = auto)
-  if (player.activePacts.length === 0 && heap.length > 0) {
-    const best = heap.reduce((a, b) => a.result.dps > b.result.dps ? a : b);
-    const bestCombo = topCombos[0]?.combo;
-    if (bestCombo) {
-      const resolved = resolvePlayer(player, bestCombo);
-      const optimizedPacts = optimizePactsGreedy(resolved, best.loadout, target);
-      if (optimizedPacts.length > 0) {
-        // Re-run gear optimizer with optimized pacts
-        const pactPlayer = { ...resolved, activePacts: optimizedPacts };
+  // Phase 4: Comprehensive pact optimization via beam search (if activePacts empty = auto)
+  if (player.activePacts.length === 0) {
+    // Run beam search for top 2 config combos — different potions/prayers may favour different pacts
+    const numPactCombos = Math.min(2, topCombos.length);
+    for (let ci = 0; ci < numPactCombos; ci++) {
+      const combo = topCombos[ci].combo;
+      const resolved = resolvePlayer(player, combo);
+      const pactConfigs = optimizePactsBeam(resolved, target, lockedSlots);
+      for (const pacts of pactConfigs) {
+        const pactPlayer = { ...resolved, activePacts: pacts };
         const pactResults = optimizeGear({
-          player: pactPlayer,
-          target,
-          lockedSlots,
-          topN,
+          player: pactPlayer, target, lockedSlots, topN,
         });
-        const optConfig = { ...buildOptimizedConfig(player, bestCombo), activePacts: optimizedPacts };
+        const optConfig = { ...buildOptimizedConfig(player, combo), activePacts: pacts };
         for (const r of pactResults) {
           r.optimizedConfig = optConfig;
           insertIntoHeap(heap, r, topN);
+        }
+      }
+    }
+
+    // Iterative refinement: re-optimise pacts against the best gear found so far
+    if (heap.length > 0) {
+      const best = heap.reduce((a, b) => (a.result.dps > b.result.dps ? a : b));
+      const bestCombo = topCombos[0]?.combo;
+      if (bestCombo) {
+        const resolved = resolvePlayer(player, bestCombo);
+        // Fixed-loadout beam search is fast (no gear estimation per candidate)
+        const refinedPacts = optimizePactsBeam(resolved, target, lockedSlots, best.loadout);
+        for (const pacts of refinedPacts.slice(0, 2)) {
+          const pactPlayer = { ...resolved, activePacts: pacts };
+          const pactResults = optimizeGear({
+            player: pactPlayer, target, lockedSlots, topN,
+          });
+          const optConfig = { ...buildOptimizedConfig(player, bestCombo), activePacts: pacts };
+          for (const r of pactResults) {
+            r.optimizedConfig = optConfig;
+            insertIntoHeap(heap, r, topN);
+          }
         }
       }
     }
@@ -239,58 +258,98 @@ function quickRankCombos(
   return results;
 }
 
-function optimizePactsGreedy(
+/**
+ * Beam-search pact optimizer.
+ *
+ * Unlike simple greedy, this keeps the top BEAM_WIDTH partial solutions at
+ * every expansion step so it can see past "transit" nodes (defence / regen)
+ * that don't directly improve DPS but unlock powerful capstones.
+ *
+ * Always fills all 40 points — no early stopping.
+ *
+ * @param fixedLoadout — when supplied, evaluates against that specific gear
+ *   (fast). Otherwise estimates with top-3 weapons + greedy fill (thorough).
+ * @returns Up to NUM_RESULTS distinct 40-node pact configurations, best first.
+ */
+function optimizePactsBeam(
   player: PlayerConfig,
-  loadout: BuildLoadout,
   target: BossPreset,
-): string[] {
+  lockedSlots: Partial<BuildLoadout>,
+  fixedLoadout?: BuildLoadout,
+): string[][] {
+  const BEAM_WIDTH = 12;
+  const NUM_RESULTS = 5;
   const allNodes = getAllNodes();
-  const selected = new Set<string>();
-  let currentDps = calculateDps({
-    player: { ...player, activePacts: [] },
-    loadout,
-    target,
-  }).dps;
-
-  // Must start with root
   const ROOT = "node1";
-  selected.add(ROOT);
-  const withRoot = calculateDps({
-    player: { ...player, activePacts: [ROOT] },
-    loadout,
-    target,
-  }).dps;
-  if (withRoot > currentDps) currentDps = withRoot;
+  const style = player.combatStyle;
 
-  // Greedy: add best frontier node until budget or no improvement
-  for (let i = 1; i < PACT_POINT_LIMIT; i++) {
-    let bestNode: string | null = null;
-    let bestGain = 0;
+  // --- Quick gear estimation resources (skip when fixedLoadout given) ------
+  let slotItems: SlotItemMap | null = null;
+  let quickWeapons: { weapon: Item; shield: Item | null }[] = [];
 
-    for (const node of allNodes) {
-      if (selected.has(node.id)) continue;
-      if (!canSelectNode(node.id, selected)) continue;
+  if (!fixedLoadout) {
+    slotItems = getSlotCandidates(style, player.regions, lockedSlots);
+    for (const slot of Object.keys(slotItems) as EquipmentSlot[]) {
+      if (lockedSlots[slot]) continue;
+      slotItems[slot] = pruneDominated(slotItems[slot], style);
+    }
+    const scores = slotItems.weapon.map(w => ({ w, s: offensiveScore(w, style) }));
+    scores.sort((a, b) => b.s - a.s);
+    quickWeapons = scores.slice(0, 3).map(({ w }) => ({
+      weapon: w,
+      shield: w.isTwoHanded ? null : (slotItems!.shield[0] ?? null),
+    }));
+  }
 
-      const trial = [...selected, node.id];
-      const trialDps = calculateDps({
-        player: { ...player, activePacts: trial },
-        loadout,
-        target,
-      }).dps;
+  /** Estimate DPS for a pact set. */
+  function evalDps(pacts: string[]): number {
+    const p = { ...player, activePacts: pacts };
+    if (fixedLoadout) {
+      return calculateDps({ player: p, loadout: fixedLoadout, target }).dps;
+    }
+    let best = 0;
+    for (const { weapon, shield } of quickWeapons) {
+      const loadout = buildBestLoadout(slotItems!, weapon, shield, lockedSlots);
+      const dps = calculateDps({ player: p, loadout, target }).dps;
+      if (dps > best) best = dps;
+    }
+    return best;
+  }
 
-      const gain = trialDps - currentDps;
-      if (gain > bestGain) {
-        bestGain = gain;
-        bestNode = node.id;
+  // --- Beam search ---------------------------------------------------------
+  interface BeamEntry { selected: Set<string>; dps: number }
+  let beam: BeamEntry[] = [{ selected: new Set([ROOT]), dps: evalDps([ROOT]) }];
+
+  for (let step = 1; step < PACT_POINT_LIMIT; step++) {
+    const next = new Map<string, BeamEntry>();
+
+    for (const entry of beam) {
+      for (const node of allNodes) {
+        if (entry.selected.has(node.id)) continue;
+        if (!canSelectNode(node.id, entry.selected)) continue;
+
+        const sel = new Set(entry.selected);
+        sel.add(node.id);
+
+        const pacts = [...sel].sort(); // sorted for deterministic key + DPS doesn't depend on order
+        const dps = evalDps(pacts);
+        const key = pacts.join(",");
+
+        const prev = next.get(key);
+        if (!prev || dps > prev.dps) {
+          next.set(key, { selected: sel, dps });
+        }
       }
     }
 
-    if (!bestNode || bestGain <= 0) break;
-    selected.add(bestNode);
-    currentDps += bestGain;
+    if (next.size === 0) break; // no more reachable nodes
+
+    const sorted = [...next.values()].sort((a, b) => b.dps - a.dps);
+    beam = sorted.slice(0, BEAM_WIDTH);
   }
 
-  return [...selected];
+  beam.sort((a, b) => b.dps - a.dps);
+  return beam.slice(0, NUM_RESULTS).map(e => [...e.selected]);
 }
 
 // ═══════════════════════════════════════════════════════════════════════
