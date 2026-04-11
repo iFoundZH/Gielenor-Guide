@@ -27,6 +27,27 @@ export const runecraftP2pGuide: SkillTrainingGuide = {
       members: true,
     },
     {
+      name: "Essence runner methods",
+      levelRange: [23, 99],
+      xpPerHour: null,
+      description: "Crafting runes using essence runners is the fastest way to train Runecraft. This method is very expensive, so it is only recommended for wealthy players who wish to gain experience as fast as possi...",
+      members: true,
+    },
+    {
+      name: "/99: Lava runes with runners",
+      levelRange: [23, 90],
+      xpPerHour: 320000,
+      description: "Crafting lava runes with essence runners offers the fastest experience from level 23 to 90. The fastest method is to have four runners run the essence while the runecrafter stands at the altar. Hav...",
+      members: true,
+    },
+    {
+      name: "Aether runes with runners",
+      levelRange: [90, 99],
+      xpPerHour: null,
+      description: "",
+      members: true,
+    },
+    {
       name: "Guardians of the Rift",
       levelRange: [27, 99],
       xpPerHour: null,

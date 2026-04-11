@@ -14666,7 +14666,7 @@ export const ragingEchoesLeague: LeagueData = {
   startDate: "2024-11-27",
   endDate: "2025-01-22",
   wikiUrl: "https://oldschool.runescape.wiki/w/Raging_Echoes_League",
-  lastSynced: "2026-04-05",
+  lastSynced: "2026-04-11",
   baseXpMultiplier: 5,
   baseDropMultiplier: 2,
   maxRegions: 3,

@@ -818,7 +818,7 @@ export const ironmanQuestGuide: OptimalQuestGuide = {
       questPoints: 2,
       cumulativeQP: 162,
       xpRewards: [{ skill: "thieving", xp: 4500 }],
-      notes: "When in the Varrock Sewers, complete the following Rag and Bone Man II tasks:\n\n\nAfter completing this quest you can start growing your adult cat into a wily cat, which is the best cat for catching hellrats.",
+      notes: "The rat poison required for this quest can be obtained from the Clock Tower dungeon if you didn't pick up an extra one during Clock Tower. Making it yourself is not required to complete the quest.\nWhen in the Varrock Sewers, complete the following Rag and Bone Man II tasks:\n\n\nAfter completing thi...",
     },
     {
       order: 103,
