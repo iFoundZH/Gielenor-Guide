@@ -20,9 +20,7 @@ export interface AggregatedPactEffects {
 
   // Ranged echo system
   rangedRegenEchoChance: number;
-  bowEchoNeverMiss: boolean;
   crossbowEchoReprocChance: number;
-  thrownMaxhitEchoes: number;
   rangedEchoCyclical: boolean;
 
   // Ranged weapon mods
@@ -51,10 +49,6 @@ export interface AggregatedPactEffects {
   airSpellDamagePerPrayer: number;
   waterSpellDamageHighHp: boolean;
   earthScaleDefenceStat: number;
-  smokeCountsAsAir: boolean;
-  iceCountsAsWater: boolean;
-  bloodCountsAsFire: boolean;
-  shadowCountsAsEarth: boolean;
 
   // General
   offhandStatBoost: boolean;
@@ -69,9 +63,7 @@ const EMPTY: AggregatedPactEffects = {
   magicDamagePercent: 0,
   regenAmmoChance: 0,
   rangedRegenEchoChance: 0,
-  bowEchoNeverMiss: false,
   crossbowEchoReprocChance: 0,
-  thrownMaxhitEchoes: 0,
   rangedEchoCyclical: false,
   bowFastHits: false,
   crossbowSlowBigHits: false,
@@ -92,10 +84,6 @@ const EMPTY: AggregatedPactEffects = {
   airSpellDamagePerPrayer: 0,
   waterSpellDamageHighHp: false,
   earthScaleDefenceStat: 0,
-  smokeCountsAsAir: false,
-  iceCountsAsWater: false,
-  bloodCountsAsFire: false,
-  shadowCountsAsEarth: false,
   offhandStatBoost: false,
   maxAccuracyRollFromRange: false,
   defenceBoost: 0,
@@ -132,14 +120,8 @@ export function aggregatePactEffects(nodeIds: string[]): AggregatedPactEffects {
         case "talent_ranged_regen_echo_chance":
           pe.rangedRegenEchoChance += eff.value as number;
           break;
-        case "talent_bow_always_pass_accuracy":
-          pe.bowEchoNeverMiss = true;
-          break;
         case "talent_crossbow_echo_reproc_chance":
           pe.crossbowEchoReprocChance += eff.value as number;
-          break;
-        case "talent_thrown_maxhit_echoes":
-          pe.thrownMaxhitEchoes += eff.value as number;
           break;
         case "talent_ranged_echo_cyclical":
           pe.rangedEchoCyclical = true;
@@ -200,18 +182,6 @@ export function aggregatePactEffects(nodeIds: string[]): AggregatedPactEffects {
           break;
         case "talent_earth_scale_defence_stat":
           pe.earthScaleDefenceStat += eff.value as number;
-          break;
-        case "talent_smoke_counts_as_air":
-          pe.smokeCountsAsAir = true;
-          break;
-        case "talent_ice_counts_as_water":
-          pe.iceCountsAsWater = true;
-          break;
-        case "talent_blood_counts_as_fire":
-          pe.bloodCountsAsFire = true;
-          break;
-        case "talent_shadow_counts_as_earth":
-          pe.shadowCountsAsEarth = true;
           break;
         case "talent_offhand_stat_boost":
           pe.offhandStatBoost = true;

@@ -168,40 +168,6 @@ export interface PactNode {
   position: { x: number; y: number };
 }
 
-/* ── Legacy Pact Types (DPS engine compatibility) ─────────────────────── */
-
-export type PactModifierType =
-  | "accuracy-percent"
-  | "damage-percent"
-  | "speed-ticks"
-  | "max-hit-flat"
-  | "strength-percent"
-  | "echo-percent"
-  | "echo-never-miss"
-  | "always-max"
-  | "double-roll"
-  | "bonus-hit-percent"
-  | "blindbag-percent"
-  | "min-hit-per-tile"
-  | "flat-dps"
-  | "custom";
-
-export interface PactModifier {
-  type: PactModifierType;
-  value: number;
-  condition?: string;
-}
-
-export interface LegacyPactNode {
-  id: string;
-  name: string;
-  description: string;
-  category: string;
-  dpsRelevant: boolean;
-  modifiers: PactModifier[];
-  prerequisites?: string[];
-}
-
 /* ── Boss Presets ─────────────────────────────────────────────────────── */
 
 export interface BossPreset {

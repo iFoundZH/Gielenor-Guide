@@ -63,7 +63,7 @@ export const PACT_NODES: PactNode[] = [
     position: { x: 500, y: 300 } },
 
   { id: "node3", name: "True Shot", description: "Bow Ranged echoes never miss", branch: "ranged", size: "node_major",
-    effects: [{ type: "talent_bow_always_pass_accuracy", value: true }],
+    effects: [{ type: "talent_bow_always_pass_accuracy", value: true, unsupported: true }],
     linkedNodes: ["node2", "node20"],
     position: { x: 400, y: 260 } },
 
@@ -73,7 +73,7 @@ export const PACT_NODES: PactNode[] = [
     position: { x: 500, y: 240 } },
 
   { id: "node5", name: "Thrown Echo", description: "Thrown: echoes have 20% chance to max hit", branch: "ranged", size: "node_major",
-    effects: [{ type: "talent_thrown_maxhit_echoes", value: 20 }],
+    effects: [{ type: "talent_thrown_maxhit_echoes", value: 20, unsupported: true }],
     linkedNodes: ["node2", "node22"],
     position: { x: 600, y: 260 } },
 
@@ -99,7 +99,7 @@ export const PACT_NODES: PactNode[] = [
 
   { id: "node17", name: "Ranged Power III", description: "+1% ranged damage", branch: "ranged", size: "node_minor",
     effects: [{ type: "talent_percentage_ranged_damage", value: 1 }],
-    linkedNodes: ["node15", "node18", "node19"],
+    linkedNodes: ["node15", "node18", "node19", "node38"],
     position: { x: 500, y: 180 } },
 
   { id: "node18", name: "Echo Cascade", description: "Ranged echoes can trigger additional echoes at half chance (up to 4 times)", branch: "ranged", size: "node_major",
@@ -109,7 +109,7 @@ export const PACT_NODES: PactNode[] = [
 
   { id: "node19", name: "Ranged Power IV", description: "+1% ranged damage", branch: "ranged", size: "node_minor",
     effects: [{ type: "talent_percentage_ranged_damage", value: 1 }],
-    linkedNodes: ["node17", "node24", "node25"],
+    linkedNodes: ["node17", "node24", "node25", "node39"],
     position: { x: 540, y: 140 } },
 
   // Bow sub-branch
@@ -312,7 +312,7 @@ export const PACT_NODES: PactNode[] = [
 
   { id: "node141", name: "Thorns Double", description: "Thorns hits twice (second hit at 50% damage)", branch: "melee", size: "node_capstone",
     effects: [{ type: "talent_thorns_double_hit", value: true, unsupported: true }],
-    linkedNodes: ["node140"],
+    linkedNodes: ["node140", "node139"],
     position: { x: 180, y: 520 } },
 
   { id: "node142", name: "Light Weapon Speed", description: "Melee weapons <1kg attack 1 tick faster", branch: "melee", size: "node_major",
@@ -332,7 +332,7 @@ export const PACT_NODES: PactNode[] = [
 
   { id: "node145", name: "Melee Power III", description: "+1% melee damage", branch: "melee", size: "node_minor",
     effects: [{ type: "talent_percentage_melee_damage", value: 1 }],
-    linkedNodes: ["node143", "node151"],
+    linkedNodes: ["node143", "node151", "node146"],
     position: { x: 240, y: 620 } },
 
   { id: "node150", name: "Blindbag Chance+", description: "Per unique heavy weapon in inv: Blindbag chance +2% (max 5)", branch: "melee", size: "node_major",
@@ -590,7 +590,7 @@ export const PACT_NODES: PactNode[] = [
     position: { x: 880, y: 400 } },
 
   { id: "node111", name: "Smoke = Air", description: "Smoke spells count as air", branch: "magic", size: "node_major",
-    effects: [{ type: "talent_smoke_counts_as_air", value: true }],
+    effects: [{ type: "talent_smoke_counts_as_air", value: true, unsupported: true }],
     linkedNodes: ["node107"],
     position: { x: 840, y: 400 } },
 
@@ -611,7 +611,7 @@ export const PACT_NODES: PactNode[] = [
     position: { x: 920, y: 460 } },
 
   { id: "node123", name: "Ice = Water", description: "Ice spells count as water", branch: "magic", size: "node_major",
-    effects: [{ type: "talent_ice_counts_as_water", value: true }],
+    effects: [{ type: "talent_ice_counts_as_water", value: true, unsupported: true }],
     linkedNodes: ["node112"],
     position: { x: 880, y: 520 } },
 
@@ -632,7 +632,7 @@ export const PACT_NODES: PactNode[] = [
     position: { x: 960, y: 520 } },
 
   { id: "node124", name: "Blood = Fire", description: "Blood spells count as fire", branch: "magic", size: "node_major",
-    effects: [{ type: "talent_blood_counts_as_fire", value: true }],
+    effects: [{ type: "talent_blood_counts_as_fire", value: true, unsupported: true }],
     linkedNodes: ["node117"],
     position: { x: 920, y: 580 } },
 
@@ -653,7 +653,7 @@ export const PACT_NODES: PactNode[] = [
     position: { x: 980, y: 560 } },
 
   { id: "node131", name: "Shadow = Earth", description: "Shadow spells count as earth", branch: "magic", size: "node_major",
-    effects: [{ type: "talent_shadow_counts_as_earth", value: true }],
+    effects: [{ type: "talent_shadow_counts_as_earth", value: true, unsupported: true }],
     linkedNodes: ["node127"],
     position: { x: 940, y: 640 } },
 
