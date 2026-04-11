@@ -1,12 +1,12 @@
-import { LeagueBuild, CharacterProfile, AccountType } from "@/types/league";
+import type { SavedBuild, PlayerConfig, EquipmentSlot } from "@/types/dps";
 
-const STORAGE_KEY = "gielinor-guide-profiles";
+const STORAGE_KEY = "gielinor-dps-builds";
 
-function generateId(): string {
-  return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
-}
+// ═══════════════════════════════════════════════════════════════════════
+// CRUD
+// ═══════════════════════════════════════════════════════════════════════
 
-export function getProfiles(): CharacterProfile[] {
+export function getBuilds(): SavedBuild[] {
   if (typeof window === "undefined") return [];
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -16,103 +16,90 @@ export function getProfiles(): CharacterProfile[] {
   }
 }
 
-export function saveProfiles(profiles: CharacterProfile[]) {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(profiles));
+export function saveBuild(build: SavedBuild): void {
+  const builds = getBuilds();
+  const idx = builds.findIndex(b => b.id === build.id);
+  if (idx >= 0) {
+    builds[idx] = build;
+  } else {
+    builds.push(build);
+  }
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(builds));
 }
 
-export function createProfile(name: string, accountType: AccountType): CharacterProfile {
-  const profile: CharacterProfile = {
-    id: generateId(),
-    name,
-    accountType,
-    builds: [],
-    createdAt: Date.now(),
+export function deleteBuild(id: string): void {
+  const builds = getBuilds().filter(b => b.id !== id);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(builds));
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// URL SHARING
+// ═══════════════════════════════════════════════════════════════════════
+
+interface CompactBuild {
+  p: {
+    a: number; s: number; d: number; r: number; m: number; pr: number;
+    pot: string; pry: string; sty: string; cs: string;
+    reg: string[]; pacts: string[];
+    void: string; slay: boolean;
   };
-  const profiles = getProfiles();
-  profiles.push(profile);
-  saveProfiles(profiles);
-  return profile;
+  gear: { [slot: string]: string | null };
+  target?: string;
 }
 
-export function createBuild(
-  profileId: string,
-  name: string,
-  accountType: AccountType
-): LeagueBuild | null {
-  const profiles = getProfiles();
-  const profile = profiles.find((p) => p.id === profileId);
-  if (!profile) return null;
-
-  const build: LeagueBuild = {
-    id: generateId(),
-    name,
-    accountType,
-    regions: [],
-    relics: [],
-    pacts: [],
-    completedTasks: [],
-    notes: "",
-    createdAt: Date.now(),
-    updatedAt: Date.now(),
+export function encodeBuild(
+  player: PlayerConfig,
+  loadout: { [slot in EquipmentSlot]: string | null },
+  targetId?: string,
+): string {
+  const compact: CompactBuild = {
+    p: {
+      a: player.attack, s: player.strength, d: player.defence,
+      r: player.ranged, m: player.magic, pr: player.prayer,
+      pot: player.potion, pry: player.prayerType,
+      sty: player.attackStyle, cs: player.combatStyle,
+      reg: player.regions, pacts: player.activePacts,
+      void: player.voidSet, slay: player.onSlayerTask,
+    },
+    gear: loadout,
+    target: targetId,
   };
-  profile.builds.push(build);
-  saveProfiles(profiles);
-  return build;
-}
 
-export function updateBuild(profileId: string, build: LeagueBuild) {
-  const profiles = getProfiles();
-  const profile = profiles.find((p) => p.id === profileId);
-  if (!profile) return;
-
-  const idx = profile.builds.findIndex((b) => b.id === build.id);
-  if (idx === -1) return;
-
-  profile.builds[idx] = { ...build, updatedAt: Date.now() };
-  saveProfiles(profiles);
-}
-
-export function deleteBuild(profileId: string, buildId: string) {
-  const profiles = getProfiles();
-  const profile = profiles.find((p) => p.id === profileId);
-  if (!profile) return;
-
-  profile.builds = profile.builds.filter((b) => b.id !== buildId);
-  saveProfiles(profiles);
-}
-
-export function deleteProfile(profileId: string) {
-  const profiles = getProfiles().filter((p) => p.id !== profileId);
-  saveProfiles(profiles);
-}
-
-// Encode a build into a shareable URL parameter
-export function encodeBuild(build: LeagueBuild): string {
-  const compact = {
-    n: build.name,
-    a: build.accountType,
-    g: build.regions,
-    r: build.relics,
-    p: build.pacts,
-    t: build.completedTasks,
-  };
   return btoa(JSON.stringify(compact));
 }
 
-// Decode a build from a URL parameter
-export function decodeBuild(encoded: string): Partial<LeagueBuild> | null {
+export function decodeBuild(encoded: string): {
+  player: PlayerConfig;
+  loadout: { [slot in EquipmentSlot]: string | null };
+  targetId?: string;
+} | null {
   try {
-    const compact = JSON.parse(atob(encoded));
-    return {
-      name: compact.n || "Imported Build",
-      accountType: compact.a || "ironman",
-      regions: compact.g || [],
-      relics: compact.r || [],
-      pacts: compact.p || [],
-      completedTasks: compact.t || [],
+    const compact: CompactBuild = JSON.parse(atob(encoded));
+    const player: PlayerConfig = {
+      attack: compact.p.a,
+      strength: compact.p.s,
+      defence: compact.p.d,
+      ranged: compact.p.r,
+      magic: compact.p.m,
+      prayer: compact.p.pr,
+      hitpoints: 99,
+      potion: compact.p.pot as PlayerConfig["potion"],
+      prayerType: compact.p.pry as PlayerConfig["prayerType"],
+      attackStyle: compact.p.sty as PlayerConfig["attackStyle"],
+      combatStyle: compact.p.cs as PlayerConfig["combatStyle"],
+      regions: compact.p.reg,
+      activePacts: compact.p.pacts,
+      voidSet: compact.p.void as PlayerConfig["voidSet"],
+      onSlayerTask: compact.p.slay,
     };
+
+    const loadout = compact.gear as { [slot in EquipmentSlot]: string | null };
+    return { player, loadout, targetId: compact.target };
   } catch {
     return null;
   }
+}
+
+export function generateBuildId(): string {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 }

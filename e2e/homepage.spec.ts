@@ -1,43 +1,46 @@
 import { test, expect } from "@playwright/test";
 
 test.describe("Homepage", () => {
-  test("loads and shows hero section", async ({ page }) => {
+  test.beforeEach(async ({ page }) => {
     await page.goto("/");
-    await expect(page.locator("h1")).toBeVisible();
-    await expect(page.locator("h1")).toContainText("Ultimate");
-    await expect(page.locator("h1")).toContainText("OSRS Companion");
   });
 
-  test("displays league stats in featured card", async ({ page }) => {
-    await page.goto("/");
-    await expect(page.locator("text=Relics").first()).toBeVisible();
-    await expect(page.locator("text=Pacts").first()).toBeVisible();
-    await expect(page.locator("text=Tasks").first()).toBeVisible();
+  test("renders hero section with title", async ({ page }) => {
+    await expect(page.locator("h1")).toContainText("DPS Calculator");
   });
 
-  test("shows Get Started section with feature cards", async ({ page }) => {
-    await page.goto("/");
-    await expect(page.locator("h2 >> text=Get Started")).toBeVisible();
-    await expect(page.locator("h3 >> text=Build Planner")).toBeVisible();
-    await expect(page.locator("h3 >> text=Task Tracker")).toBeVisible();
-    await expect(page.locator("h3 >> text=Strategy Guide")).toBeVisible();
+  test("renders Demonic Pacts badge", async ({ page }) => {
+    await expect(page.locator("span:has-text('Demonic Pacts League')")).toBeVisible();
   });
 
-  test("navigates to build planner", async ({ page }) => {
-    await page.goto("/");
-    await page.locator("a[href='/leagues/demonic-pacts/planner']").first().click();
-    await expect(page).toHaveURL("/leagues/demonic-pacts/planner");
+  test("has Open Calculator CTA", async ({ page }) => {
+    const cta = page.getByRole("link", { name: "Open Calculator" });
+    await expect(cta).toBeVisible();
+    await expect(cta).toHaveAttribute("href", "/calculator");
   });
 
-  test("navigates to league overview", async ({ page }) => {
-    await page.goto("/");
-    await page.locator("a[href='/leagues/demonic-pacts']").first().click();
-    await expect(page).toHaveURL("/leagues/demonic-pacts");
+  test("has View Formulas CTA", async ({ page }) => {
+    const cta = page.getByRole("link", { name: "View Formulas" });
+    await expect(cta).toBeVisible();
+    await expect(cta).toHaveAttribute("href", "/formulas");
   });
 
-  test("shows dynamic league status badge", async ({ page }) => {
-    await page.goto("/");
-    const badge = page.locator("text=/Coming Soon|Live Now|Ended/").first();
-    await expect(badge).toBeVisible();
+  test("renders 3 combat style cards", async ({ page }) => {
+    await expect(page.locator("h3:has-text('melee')")).toBeVisible();
+    await expect(page.locator("h3:has-text('ranged')")).toBeVisible();
+    await expect(page.locator("h3:has-text('magic')")).toBeVisible();
+  });
+
+  test("renders popular bosses section", async ({ page }) => {
+    await expect(page.getByText("Popular Bosses")).toBeVisible();
+    await expect(page.getByText("General Graardor")).toBeVisible();
+  });
+
+  test("renders feature cards", async ({ page }) => {
+    // Features are below fold, scroll to them
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    await expect(page.getByRole("heading", { name: "Gear Optimizer" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Pact Modifiers" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Build Sharing" })).toBeVisible();
   });
 });

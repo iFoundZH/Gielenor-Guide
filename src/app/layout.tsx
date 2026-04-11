@@ -4,9 +4,9 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 
 export const metadata: Metadata = {
-  title: "Gielinor Guide — OSRS Guides & League Planners",
+  title: "Gielinor Guide — Demonic Pacts DPS Calculator",
   description:
-    "Your ultimate Old School RuneScape companion. Interactive league build planners, up-to-date guides, task trackers, and strategies for mains, ironmen, and every league.",
+    "OSRS Demonic Pacts League DPS Calculator. Exact combat formulas, pact modifiers, gear optimizer, and boss presets.",
 };
 
 export default function RootLayout({

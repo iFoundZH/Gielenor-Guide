@@ -1,18 +1,12 @@
 {
   "name": "gielenor-guide",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "prebuild": "npx tsx src/lib/sync-or-skip.ts",
     "build": "next build",
     "start": "next start",
     "lint": "eslint src/",
-    "sync-wiki": "npx tsx src/lib/wiki-sync.ts",
-    "sync-guides": "npx tsx src/lib/wiki-sync-guides.ts",
-    "sync-data": "npx tsx src/lib/wiki-sync-data.ts",
-    "compute-guide-stats": "npx tsx src/lib/compute-guide-stats.ts",
-    "audit-data": "npx tsx src/lib/data-audit.ts",
     "test": "npx playwright test",
     "test:ui": "npx playwright test --ui"
   },
