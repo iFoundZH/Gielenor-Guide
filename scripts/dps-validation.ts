@@ -760,13 +760,13 @@ section("TEST 13: Salve + Slayer Helm — should not stack");
 
 section("TEST 14: DHL vs Vorkath (dragon)");
 {
-  // DHL: stab, 4t, astab=85, mstr=82
+  // DHL: stab, 4t, astab=85, mstr=70 (wiki DB)
   // Piety, super combat, accurate
   // Vorkath: def=214, dstab=26, isDragon
   //
   // EffStr: 99+19=118, floor(118*1.23)=145, +0+8=153
-  // Base max: floor(0.5+153*(82+64)/640) = floor(0.5+153*146/640) = floor(0.5+34.903) = 35
-  // DHL +20% dmg: floor(35*1.20) = 42
+  // Base max: floor(0.5+153*(70+64)/640) = floor(0.5+153*134/640) = floor(0.5+32.044) = 32
+  // DHL +20% dmg: floor(32*1.20) = 38
   //
   // EffAtk: 99+19=118, floor(118*1.20)=141, +3+8=152
   // AtkRoll_base: 152*(85+64) = 152*149 = 22648
@@ -775,7 +775,7 @@ section("TEST 14: DHL vs Vorkath (dragon)");
   // DefRoll: (214+9)*(26+64) = 223*90 = 20070
   // Accuracy: A>D → 1-20072/(2*27178) = 1-20072/54356 = 0.63081
   //
-  // DPS: (42/2*0.63081)/(4*0.6) = (21*0.63081)/2.4 = 13.247/2.4 = 5.520
+  // DPS: (38/2*0.63081)/(4*0.6) = (19*0.63081)/2.4 = 11.985/2.4 = 4.994
 
   const vorkath = getBoss("vorkath")!;
   const ctx = makeCtx(
@@ -785,11 +785,11 @@ section("TEST 14: DHL vs Vorkath (dragon)");
   );
   const result = calculateDps(ctx);
 
-  assertEqual(result.maxHit, 42, "T14: DHL max hit vs dragon");
+  assertEqual(result.maxHit, 38, "T14: DHL max hit vs dragon");
   assertEqual(result.breakdown.attackRoll, 27177, "T14: DHL attack roll vs dragon");
   assertEqual(result.breakdown.defenceRoll, 20070, "T14: defence roll");
   assertClose(result.accuracy, 0.6308, "T14: accuracy", 0.005);
-  assertClose(result.dps, 5.52, "T14: DPS", 0.1);
+  assertClose(result.dps, 4.994, "T14: DPS", 0.1);
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -798,7 +798,7 @@ section("TEST 14: DHL vs Vorkath (dragon)");
 
 section("TEST 15: DHCB + ruby bolts vs KBD (dragon)");
 {
-  // DHCB: crossbow, 5t, aranged=95
+  // DHCB: crossbow, 6t (wiki DB), aranged=95
   // ruby bolts: rstr=122
   // anguish: aranged=15, rstr=5
   // Rigour, ranging pot, rapid
@@ -818,8 +818,8 @@ section("TEST 15: DHCB + ruby bolts vs KBD (dragon)");
   // DefRoll: (240+9)*(20+64) = 249*84 = 20916
   //
   // Accuracy: A>D → 1-20918/(2*32121) = 1-20918/64242 = 0.67438
-  // Speed: 5-1(rapid)=4 → 2.4s
-  // DPS: (53/2*0.67438)/2.4 = (26.5*0.67438)/2.4 = 17.871/2.4 = 7.446
+  // Speed: 6-1(rapid)=5 → 3.0s
+  // DPS: (53/2*0.67438)/3.0 = (26.5*0.67438)/3.0 = 17.871/3.0 = 5.957
 
   const kbd = getBoss("kbd")!;
   const ctx = makeCtx(
@@ -833,8 +833,8 @@ section("TEST 15: DHCB + ruby bolts vs KBD (dragon)");
   assertEqual(result.breakdown.defenceRoll, 20916, "T15: defence roll");
   assertClose(result.accuracy, 0.6744, "T15: accuracy", 0.005);
   // DPS includes ruby bolt spec: 6% proc for min(100, 20% of 240hp)=48 dmg
-  // Bolt bonus = 0.06*acc*(48-26.5)/interval ≈ 0.362
-  assertClose(result.dps, 7.809, "T15: DPS (includes ruby bolt spec)", 0.1);
+  // Bolt bonus = 0.06*acc*(48-26.5)/interval (interval=3.0s now)
+  assertClose(result.dps, 6.247, "T15: DPS (includes ruby bolt spec)", 0.1);
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -843,22 +843,22 @@ section("TEST 15: DHCB + ruby bolts vs KBD (dragon)");
 
 section("TEST 16: Arclight vs K'ril (demon)");
 {
-  // Arclight: slash, 4t, aslash=72, mstr=72
+  // Arclight: slash, 4t, aslash=38, mstr=8 (wiki DB values)
   // Piety, super combat, accurate
   // K'ril: def=270, dslash=80, isDemon, magic=200
   //
   // EffStr: 99+19=118, floor(118*1.23)=145, +0+8=153
-  // Base max: floor(0.5+153*(72+64)/640) = floor(0.5+153*136/640) = floor(0.5+32.513) = floor(33.013) = 33
-  // Arclight +70% dmg: floor(33*1.70) = floor(56.1) = 56
+  // Base max: floor(0.5+153*(8+64)/640) = floor(0.5+153*72/640) = floor(0.5+17.2125) = 17
+  // Arclight +70% dmg: floor(17*1.70) = floor(28.9) = 28
   //
   // EffAtk: 152
-  // AtkRoll: 152*(72+64) = 152*136 = 20672
-  // Arclight +70% acc: floor(20672*1.70) = floor(35142.4) = 35142
+  // AtkRoll: 152*(38+64) = 152*102 = 15504
+  // Arclight +70% acc: floor(15504*1.70) = floor(26356.8) = 26356
   //
   // DefRoll: (270+9)*(80+64) = 279*144 = 40176
-  // Accuracy: A<D → 35142/(2*40177) = 35142/80354 = 0.43734
+  // Accuracy: A<D → 26356/(2*40177) = 26356/80354 = 0.32800
   //
-  // DPS: (56/2*0.43734)/(4*0.6) = (28*0.43734)/2.4 = 12.246/2.4 = 5.102
+  // DPS: (28/2*0.32800)/(4*0.6) = (14*0.32800)/2.4 = 4.592/2.4 = 1.913
 
   const kril = getBoss("kril")!;
   const ctx = makeCtx(
@@ -868,9 +868,9 @@ section("TEST 16: Arclight vs K'ril (demon)");
   );
   const result = calculateDps(ctx);
 
-  assertEqual(result.maxHit, 56, "T16: arclight max hit vs demon");
-  assertClose(result.accuracy, 0.4373, "T16: accuracy", 0.005);
-  assertClose(result.dps, 5.102, "T16: DPS", 0.1);
+  assertEqual(result.maxHit, 28, "T16: arclight max hit vs demon");
+  assertClose(result.accuracy, 0.328, "T16: accuracy", 0.005);
+  assertClose(result.dps, 1.913, "T16: DPS", 0.1);
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -1215,30 +1215,30 @@ section("TEST 25: Shadow tripling of magic attack and damage %");
 
 section("TEST 26: Configurable spell max hit — Ice Barrage vs Fire Surge");
 {
-  // Kodai wand: staff, 5t, amagic=28, mdmg=5
-  // Fire Surge (default 24): floor(24*(1+5/100)) = floor(25.2) = 25
+  // Kodai wand: staff, 5t, amagic=28, mdmg=15 (wiki DB)
+  // Fire Surge (default 24): floor(24*(1+15/100)) = floor(24*1.15) = floor(27.6) = 27
   const ctxFire = makeCtx(
     { combatStyle: "magic", attackStyle: "autocast" },
     { weapon: getItem("kodai")! },
     customTarget,
   );
-  assertEqual(calculateMaxHit(ctxFire), 25, "T26a: Fire Surge max hit (kodai, 5% mdmg)");
+  assertEqual(calculateMaxHit(ctxFire), 27, "T26a: Fire Surge max hit (kodai, 15% mdmg)");
 
-  // Ice Barrage (30): floor(30*(1+5/100)) = floor(31.5) = 31
+  // Ice Barrage (30): floor(30*(1+15/100)) = floor(30*1.15) = floor(34.5) = 34
   const ctxIce = makeCtx(
     { combatStyle: "magic", attackStyle: "autocast", spellMaxHit: 30 },
     { weapon: getItem("kodai")! },
     customTarget,
   );
-  assertEqual(calculateMaxHit(ctxIce), 31, "T26b: Ice Barrage max hit (kodai, 5% mdmg)");
+  assertEqual(calculateMaxHit(ctxIce), 34, "T26b: Ice Barrage max hit (kodai, 15% mdmg)");
 
-  // Fire Wave (20): floor(20*1.05) = 21
+  // Fire Wave (20): floor(20*1.15) = floor(23) = 23
   const ctxWave = makeCtx(
     { combatStyle: "magic", attackStyle: "autocast", spellMaxHit: 20 },
     { weapon: getItem("kodai")! },
     customTarget,
   );
-  assertEqual(calculateMaxHit(ctxWave), 21, "T26c: Fire Wave max hit (kodai, 5% mdmg)");
+  assertEqual(calculateMaxHit(ctxWave), 23, "T26c: Fire Wave max hit (kodai, 15% mdmg)");
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -1255,7 +1255,7 @@ section("TEST 27: V's Helm — slayer helm bonus for melee and ranged");
     customTarget,
   );
   const rMelee = calculateDps(ctxMelee);
-  const vhelmMeleeChain = rMelee.breakdown.multiplierChain.find(s => s.name.includes("V's Helm"));
+  const vhelmMeleeChain = rMelee.breakdown.multiplierChain.find(s => s.name.includes("V's helm"));
   if (vhelmMeleeChain) {
     assertClose(vhelmMeleeChain.factor, 7/6, "T27a: V's Helm melee dmg factor", 0.001);
   } else {
@@ -1269,7 +1269,7 @@ section("TEST 27: V's Helm — slayer helm bonus for melee and ranged");
     customTarget,
   );
   const rRanged = calculateDps(ctxRanged);
-  const vhelmRangedChain = rRanged.breakdown.multiplierChain.find(s => s.name.includes("V's Helm"));
+  const vhelmRangedChain = rRanged.breakdown.multiplierChain.find(s => s.name.includes("V's helm"));
   if (vhelmRangedChain) {
     assertClose(vhelmRangedChain.factor, 1.15, "T27b: V's Helm ranged dmg factor", 0.001);
   } else {
@@ -1407,8 +1407,8 @@ section("TEST 30: Shadowflame Quadrant — 40% spell damage bonus");
 
 section("TEST 31: Drygore Blowpipe — double roll + 2t speed");
 {
-  // Drygore: blowpipe, 2t, ranged, aranged=50, rstr=10
-  // Speed: 2t = 1.2s (fastest weapon in game)
+  // Drygore: blowpipe, 3t (wiki DB), ranged, aranged=50, rstr=10
+  // Speed: 3-1(rapid)=2t = 1.2s
   // Double accuracy roll
   const ctx = makeCtx(
     { combatStyle: "ranged", attackStyle: "rapid" },
@@ -1416,9 +1416,8 @@ section("TEST 31: Drygore Blowpipe — double roll + 2t speed");
     customTarget,
   );
   const result = calculateDps(ctx);
-  // Speed: blowpipe is already at 2t; rapid shouldn't apply since rapid only triggers for ranged
-  // Actually rapid DOES apply: 2-1=1. But floor min is 1.
-  assertEqual(result.speed, 1, "T31a: drygore speed (2t - 1 rapid = 1t min)");
+  // Speed: base=3t, rapid subtracts 1: 3-1=2t
+  assertEqual(result.speed, 2, "T31a: drygore speed (3t - 1 rapid = 2t)");
 
   // Double roll should improve accuracy
   if (result.accuracy > result.breakdown.baseAccuracy) {
@@ -1661,9 +1660,22 @@ section("TEST 37: Sanity checks — DPS orderings");
     failed++; failures.push(`  FAIL: T37c: Shadow+gear (${rShadow.dps}) should > Trident+gear (${rTrident.dps})`);
   }
 
-  // Arclight should beat Rapier vs demons (due to 70% bonus)
-  const rArclight = calculateDps(makeCtx(maxGear, { weapon: getItem("arclight")! }, getBoss("kril")!));
-  const rRapierDemon = calculateDps(makeCtx(maxGear, { weapon: getItem("rapier")! }, getBoss("kril")!));
+  // Arclight should beat Rapier vs demons (due to 70% bonus) when using full melee gear
+  // Without gear, Rapier's mstr=94 beats Arclight's mstr=8 even with 1.70x.
+  // Full gear adds enough mstr that the 1.70x multiplier pushes Arclight ahead.
+  const fullMeleeGear = {
+    neck: getItem("torture")!,
+    cape: getItem("infernal-cape")!,
+    head: getItem("torva-helm")!,
+    body: getItem("torva-body")!,
+    legs: getItem("torva-legs")!,
+    shield: getItem("avernic")!,
+    feet: getItem("primordial")!,
+    hands: getItem("ferocious")!,
+    ring: getItem("berserker-i")!,
+  };
+  const rArclight = calculateDps(makeCtx(maxGear, { weapon: getItem("arclight")!, ...fullMeleeGear }, getBoss("kril")!));
+  const rRapierDemon = calculateDps(makeCtx(maxGear, { weapon: getItem("rapier")!, ...fullMeleeGear }, getBoss("kril")!));
   if (rArclight.dps > rRapierDemon.dps) { passed++; } else {
     failed++; failures.push(`  FAIL: T37d: Arclight (${rArclight.dps}) should > Rapier (${rRapierDemon.dps}) vs demon`);
   }
@@ -1722,6 +1734,76 @@ section("TEST 38: All weapons produce valid DPS");
   if (allValid) {
     passed++;
     console.log(`  OK: All ${weapons.length} weapons produce valid positive DPS`);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// TEST 39: Echo — Crystal Blessing (set bonus for melee/magic)
+// ═══════════════════════════════════════════════════════════════════════
+
+section("TEST 39: Crystal Blessing — crystal armour bonuses for melee");
+{
+  // Crystal Blessing (ammo slot) extends crystal armour set bonus to melee/magic.
+  // Full crystal set: +30% accuracy, +15% damage.
+  //
+  // Whip + crystal blessing + crystal helm/body/legs, accurate, vs custom
+  // EffStr: 99+0+8=107
+  // whip mstr=82, crystal helm/body/legs mstr=0
+  // Total mstr=82
+  // Base max hit: floor(0.5+107*(82+64)/640) = floor(0.5+24.419) = 24
+  // Crystal dmg +15%: floor(24*1.15) = floor(27.6) = 27
+  //
+  // EffAtk: 99+3+8=110
+  // whip aslash=82
+  // AtkRoll_base: 110*(82+64) = 16060
+  // Crystal acc +30%: floor(16060*1.30) = 20878
+
+  const ctx = makeCtx(
+    { combatStyle: "melee", attackStyle: "accurate" },
+    {
+      weapon: getItem("whip")!,
+      ammo: getItem("echo-crystal-blessing")!,
+      head: getItem("crystal-helm")!,
+      body: getItem("crystal-body")!,
+      legs: getItem("crystal-legs")!,
+    },
+    customTarget,
+  );
+  const result = calculateDps(ctx);
+
+  // Verify crystal armour bonus is in the multiplier chain
+  const crystalStep = result.breakdown.multiplierChain.find(s => s.name.includes("Crystal"));
+  if (crystalStep) {
+    assertClose(crystalStep.factor, 1.15, "T39a: crystal blessing melee dmg factor", 0.001);
+  } else {
+    failed++; failures.push("  FAIL: T39a: Crystal Armour not in multiplier chain with blessing");
+  }
+
+  assertEqual(result.maxHit, 27, "T39b: crystal blessing melee max hit");
+  assertEqual(result.breakdown.attackRoll, 20878, "T39c: crystal blessing melee attack roll (+30% acc)");
+
+  // Without crystal blessing — same gear but no blessing → no crystal bonus
+  const ctxNoBless = makeCtx(
+    { combatStyle: "melee", attackStyle: "accurate" },
+    {
+      weapon: getItem("whip")!,
+      head: getItem("crystal-helm")!,
+      body: getItem("crystal-body")!,
+      legs: getItem("crystal-legs")!,
+    },
+    customTarget,
+  );
+  const rNoBless = calculateDps(ctxNoBless);
+
+  // Without blessing, crystal bonus should NOT apply (whip is not bowfa)
+  assertEqual(rNoBless.maxHit, 24, "T39d: no crystal bonus without blessing");
+  assertEqual(rNoBless.breakdown.attackRoll, 16060, "T39e: no crystal acc bonus without blessing");
+
+  // Blessing DPS should be higher than no-blessing
+  if (result.dps > rNoBless.dps) {
+    passed++;
+  } else {
+    failed++; failures.push(`  FAIL: T39f: Blessing DPS (${result.dps}) should > no-blessing (${rNoBless.dps})`);
   }
 }
 
