@@ -19,7 +19,7 @@ export const BOSS_PRESETS: BossPreset[] = [
 
   { id: "kril", name: "K'ril Tsutsaroth", defenceLevel: 270, magicLevel: 200,
     dstab: 70, dslash: 80, dcrush: 80, dranged: 80, dmagic: 80,
-    hp: 255, region: "asgarnia" },
+    hp: 255, region: "asgarnia", isDemon: true },
 
   { id: "nex", name: "Nex", defenceLevel: 260, magicLevel: 230,
     dstab: 40, dslash: 140, dcrush: 60, dranged: 190, dmagic: 300,
@@ -51,15 +51,15 @@ export const BOSS_PRESETS: BossPreset[] = [
 
   { id: "olm-melee", name: "Great Olm (Melee Hand)", defenceLevel: 175, magicLevel: 150,
     dstab: 50, dslash: 50, dcrush: 50, dranged: 50, dmagic: 50,
-    hp: 800, region: "kourend" },
+    hp: 800, region: "kourend", isDragon: true },
 
   { id: "olm-head", name: "Great Olm (Head)", defenceLevel: 175, magicLevel: 250,
     dstab: 0, dslash: 0, dcrush: 0, dranged: 0, dmagic: 50,
-    hp: 800, region: "kourend" },
+    hp: 800, region: "kourend", isDragon: true },
 
   { id: "verzik-p3", name: "Verzik Vitur (P3)", defenceLevel: 150, magicLevel: 100,
     dstab: 20, dslash: 20, dcrush: 20, dranged: 60, dmagic: 60,
-    hp: 1500, region: "morytania" },
+    hp: 1500, region: "morytania", isUndead: true },
 
   { id: "wardens-p3", name: "Wardens (P3 Tumeken)", defenceLevel: 200, magicLevel: 200,
     dstab: 80, dslash: 80, dcrush: 80, dranged: 80, dmagic: -60,
@@ -71,23 +71,27 @@ export const BOSS_PRESETS: BossPreset[] = [
 
   { id: "cerberus", name: "Cerberus", defenceLevel: 100, magicLevel: 220,
     dstab: 50, dslash: 100, dcrush: 25, dranged: 100, dmagic: 65,
-    hp: 600, region: "asgarnia" },
+    hp: 600, region: "asgarnia", isDemon: true },
 
   { id: "hydra", name: "Alchemical Hydra", defenceLevel: 100, magicLevel: 260,
     dstab: 75, dslash: 150, dcrush: 150, dranged: 45, dmagic: 150,
-    hp: 1100, region: "kourend" },
+    hp: 1100, region: "kourend", isDragon: true },
 
   { id: "thermy", name: "Thermonuclear Smoke Devil", defenceLevel: 190, magicLevel: 1,
     dstab: 0, dslash: 0, dcrush: 0, dranged: 10, dmagic: 0,
-    hp: 240 },
+    hp: 240, region: "desert" },
 
   { id: "kraken", name: "Kraken", defenceLevel: 1, magicLevel: 1,
     dstab: 0, dslash: 0, dcrush: 0, dranged: 300, dmagic: 130,
-    hp: 255 },
+    hp: 255, region: "kandarin" },
 
   { id: "abyssal-sire", name: "Abyssal Sire", defenceLevel: 250, magicLevel: 200,
     dstab: 20, dslash: 20, dcrush: 20, dranged: 40, dmagic: 40,
-    hp: 400 },
+    hp: 400, region: "morytania", isDemon: true },
+
+  { id: "grotesque-guardians", name: "Grotesque Guardians", defenceLevel: 100, magicLevel: 140,
+    dstab: 0, dslash: 0, dcrush: 0, dranged: 0, dmagic: 0,
+    hp: 450, region: "morytania" },
 
   // ══════════════════════════════════════════════════════════════════════
   // OTHER NOTABLE BOSSES — wiki-verified
@@ -95,7 +99,7 @@ export const BOSS_PRESETS: BossPreset[] = [
 
   { id: "vorkath", name: "Vorkath", defenceLevel: 214, magicLevel: 150,
     dstab: 26, dslash: 108, dcrush: 108, dranged: 26, dmagic: 240,
-    hp: 750, region: "fremennik" },
+    hp: 750, region: "fremennik", isDragon: true, isUndead: true },
 
   { id: "zulrah", name: "Zulrah", defenceLevel: 300, magicLevel: 300,
     dstab: 0, dslash: 0, dcrush: 0, dranged: 50, dmagic: -45,
@@ -111,11 +115,11 @@ export const BOSS_PRESETS: BossPreset[] = [
 
   { id: "kbd", name: "King Black Dragon", defenceLevel: 240, magicLevel: 240,
     dstab: 70, dslash: 70, dcrush: 70, dranged: 20, dmagic: 20,
-    hp: 240 },
+    hp: 240, region: "wilderness", isDragon: true },
 
   { id: "kq", name: "Kalphite Queen (P2)", defenceLevel: 300, magicLevel: 300,
     dstab: 10, dslash: 10, dcrush: 10, dranged: 10, dmagic: 10,
-    hp: 255, region: "desert" },
+    hp: 255, region: "desert", isKalphite: true },
 
   { id: "nightmare", name: "The Nightmare", defenceLevel: 150, magicLevel: 150,
     dstab: 120, dslash: 180, dcrush: 40, dranged: 600, dmagic: 600,
@@ -123,15 +127,59 @@ export const BOSS_PRESETS: BossPreset[] = [
 
   { id: "jad", name: "TzTok-Jad", defenceLevel: 480, magicLevel: 480,
     dstab: 0, dslash: 0, dcrush: 0, dranged: 0, dmagic: 0,
-    hp: 250 },
+    hp: 250, region: "karamja" },
 
   { id: "zuk", name: "TzKal-Zuk", defenceLevel: 260, magicLevel: 600,
     dstab: 0, dslash: 0, dcrush: 0, dranged: 0, dmagic: 0,
-    hp: 1400 },
+    hp: 1400, region: "karamja" },
 
   { id: "sol-heredit", name: "Sol Heredit", defenceLevel: 300, magicLevel: 300,
     dstab: 80, dslash: 80, dcrush: 80, dranged: 80, dmagic: 80,
     hp: 2000, region: "varlamore" },
+
+  { id: "giant-mole", name: "Giant Mole", defenceLevel: 200, magicLevel: 200,
+    dstab: 60, dslash: 80, dcrush: 100, dranged: 60, dmagic: 80,
+    hp: 200, region: "asgarnia" },
+
+  // ══════════════════════════════════════════════════════════════════════
+  // FREMENNIK BOSSES — wiki-verified
+  // ══════════════════════════════════════════════════════════════════════
+
+  { id: "dag-rex", name: "Dagannoth Rex", defenceLevel: 255, magicLevel: 0,
+    dstab: 255, dslash: 255, dcrush: 255, dranged: 255, dmagic: 10,
+    hp: 255, region: "fremennik" },
+
+  { id: "dag-prime", name: "Dagannoth Prime", defenceLevel: 255, magicLevel: 255,
+    dstab: 255, dslash: 255, dcrush: 255, dranged: 10, dmagic: 255,
+    hp: 255, region: "fremennik" },
+
+  { id: "dag-supreme", name: "Dagannoth Supreme", defenceLevel: 128, magicLevel: 255,
+    dstab: 10, dslash: 10, dcrush: 10, dranged: 550, dmagic: 255,
+    hp: 255, region: "fremennik" },
+
+  { id: "phantom-muspah", name: "Phantom Muspah", defenceLevel: 200, magicLevel: 150,
+    dstab: 185, dslash: 134, dcrush: 120, dranged: 56, dmagic: 437,
+    hp: 850, region: "fremennik" },
+
+  // ══════════════════════════════════════════════════════════════════════
+  // KOUREND BOSSES — wiki-verified
+  // ══════════════════════════════════════════════════════════════════════
+
+  { id: "araxxor", name: "Araxxor", defenceLevel: 135, magicLevel: 190,
+    dstab: 160, dslash: 75, dcrush: 15, dranged: 218, dmagic: 237,
+    hp: 1020, region: "kourend" },
+
+  { id: "demonic-gorillas", name: "Demonic Gorillas", defenceLevel: 200, magicLevel: 195,
+    dstab: 0, dslash: 0, dcrush: 0, dranged: 0, dmagic: 20,
+    hp: 380, region: "kourend", isDemon: true },
+
+  { id: "sarachnis", name: "Sarachnis", defenceLevel: 150, magicLevel: 150,
+    dstab: 60, dslash: 40, dcrush: 10, dranged: 300, dmagic: 150,
+    hp: 400, region: "kourend" },
+
+  { id: "skotizo", name: "Skotizo", defenceLevel: 200, magicLevel: 280,
+    dstab: 80, dslash: 80, dcrush: 80, dranged: 130, dmagic: 80,
+    hp: 450, region: "kourend", isDemon: true },
 
   // ══════════════════════════════════════════════════════════════════════
   // VARLAMORE BOSSES

@@ -78,6 +78,16 @@ export const ITEMS: Item[] = [
     bonuses: b({ astab: 38, aslash: 72, mstr: 72 }),
     passive: "+70% accuracy and damage vs demons" },
 
+  // Dragon Hunter Lance (wiki-verified: +85 stab, +65 slash, +20 crush, +82 str)
+  { id: "dhl", name: "Dragon Hunter Lance", slot: "weapon", weaponCategory: "1h-heavy", attackSpeed: 4, combatStyle: "melee", attackType: "stab",
+    bonuses: b({ astab: 85, aslash: 65, acrush: 20, mstr: 82 }),
+    passive: "+20% accuracy and damage vs dragons" },
+
+  // Keris Partisan of Breaching (wiki-verified)
+  { id: "keris-breaching", name: "Keris Partisan of Breaching", slot: "weapon", weaponCategory: "1h-heavy", attackSpeed: 5, combatStyle: "melee", attackType: "stab",
+    bonuses: b({ astab: 78, acrush: 2, mstr: 75 }),
+    region: "desert", passive: "+33% damage vs kalphites, 1/51 triple-damage proc" },
+
   // Crystal Halberd
   { id: "crystal-halberd", name: "Crystal Halberd", slot: "weapon", isTwoHanded: true, weaponCategory: "halberd", attackSpeed: 7, combatStyle: "melee", attackType: "slash",
     bonuses: b({ astab: 70, aslash: 95, mstr: 97 }),
@@ -101,6 +111,11 @@ export const ITEMS: Item[] = [
   { id: "dcb", name: "Dragon Crossbow", slot: "weapon", weaponCategory: "crossbow", attackSpeed: 5, combatStyle: "ranged", attackType: "ranged",
     bonuses: b({ aranged: 94 }) },
 
+  // Dragon Hunter Crossbow (wiki-verified: +95 ranged atk)
+  { id: "dhcb", name: "Dragon Hunter Crossbow", slot: "weapon", weaponCategory: "crossbow", attackSpeed: 5, combatStyle: "ranged", attackType: "ranged",
+    bonuses: b({ aranged: 95 }),
+    passive: "+30% accuracy, +25% damage vs dragons" },
+
   // Toxic Blowpipe
   { id: "blowpipe", name: "Toxic Blowpipe", slot: "weapon", isTwoHanded: true, weaponCategory: "blowpipe", attackSpeed: 3, combatStyle: "ranged", attackType: "ranged",
     bonuses: b({ aranged: 30, rstr: 20 }),
@@ -114,6 +129,41 @@ export const ITEMS: Item[] = [
   // Magic Shortbow (i)
   { id: "msb-i", name: "Magic Shortbow (i)", slot: "weapon", isTwoHanded: true, weaponCategory: "bow", attackSpeed: 3, combatStyle: "ranged", attackType: "ranged",
     bonuses: b({ aranged: 75 }) },
+
+  // Craw's Bow (wiki-verified)
+  { id: "craws-bow", name: "Craw's Bow", slot: "weapon", isTwoHanded: true, weaponCategory: "bow", attackSpeed: 4, combatStyle: "ranged", attackType: "ranged",
+    bonuses: b({ aranged: 75, rstr: 60 }),
+    region: "wilderness", passive: "+50% accuracy and damage in wilderness" },
+
+  // Webweaver Bow (wiki-verified)
+  { id: "webweaver-bow", name: "Webweaver Bow", slot: "weapon", isTwoHanded: true, weaponCategory: "bow", attackSpeed: 5, combatStyle: "ranged", attackType: "ranged",
+    bonuses: b({ aranged: 85, rstr: 65 }),
+    region: "wilderness", passive: "+50% accuracy and damage in wilderness" },
+
+  // Viggora's Chainmace (wiki-verified)
+  { id: "viggoras-chainmace", name: "Viggora's Chainmace", slot: "weapon", weaponCategory: "1h-heavy", attackSpeed: 4, combatStyle: "melee", attackType: "crush",
+    bonuses: b({ acrush: 72, mstr: 72 }),
+    region: "wilderness", passive: "+50% accuracy and damage in wilderness" },
+
+  // Ursine Chainmace (wiki-verified)
+  { id: "ursine-chainmace", name: "Ursine Chainmace", slot: "weapon", weaponCategory: "1h-heavy", attackSpeed: 4, combatStyle: "melee", attackType: "crush",
+    bonuses: b({ acrush: 78, mstr: 78 }),
+    region: "wilderness", passive: "+50% accuracy and damage in wilderness" },
+
+  // Thammaron's Sceptre (wiki-verified)
+  { id: "thammarons-sceptre", name: "Thammaron's Sceptre", slot: "weapon", weaponCategory: "powered-staff", attackSpeed: 5, combatStyle: "magic", attackType: "magic",
+    bonuses: b({ amagic: 20, mdmg: 3 }),
+    region: "wilderness", passive: "+100% magic accuracy, +25% magic damage in wilderness" },
+
+  // Accursed Sceptre (wiki-verified)
+  { id: "accursed-sceptre", name: "Accursed Sceptre", slot: "weapon", weaponCategory: "powered-staff", attackSpeed: 5, combatStyle: "magic", attackType: "magic",
+    bonuses: b({ amagic: 22, mdmg: 4 }),
+    region: "wilderness", passive: "+100% magic accuracy, +25% magic damage in wilderness" },
+
+  // Eclipse Atlatl (wiki-verified: Varlamore thrown weapon)
+  { id: "eclipse-atlatl", name: "Eclipse Atlatl", slot: "weapon", weaponCategory: "thrown", attackSpeed: 3, combatStyle: "ranged", attackType: "ranged",
+    bonuses: b({ aranged: 90 }),
+    region: "varlamore" },
 
   // ══════════════════════════════════════════════════════════════════════
   // MAGIC WEAPONS (non-powered)
@@ -179,6 +229,16 @@ export const ITEMS: Item[] = [
     bonuses: b({ amagic: 3, aranged: 3, dstab: 30, dslash: 32, dcrush: 27, dranged: 30, dmagic: 10, mstr: 3 }),
     passive: "Melee: +16.67% acc & dmg. Ranged/Magic: +15% acc & dmg. On task only." },
 
+  // Crystal Helm (wiki-verified: Tirannwn)
+  { id: "crystal-helm", name: "Crystal Helm", slot: "head",
+    bonuses: b({ aranged: 6, dstab: 9, dslash: 9, dcrush: 9, dranged: 9 }),
+    region: "tirannwn", passive: "+5% ranged acc, +2.5% ranged dmg with Bow of Faerdhinen" },
+
+  // Inquisitor's Great Helm (wiki-verified)
+  { id: "inq-helm", name: "Inquisitor's Great Helm", slot: "head",
+    bonuses: b({ acrush: 4, dstab: 27, dslash: 27, dcrush: 27, dranged: -5, dmagic: -5, mstr: 2, prayer: 1 }),
+    region: "morytania" },
+
   // ══════════════════════════════════════════════════════════════════════
   // BODY SLOT
   // ══════════════════════════════════════════════════════════════════════
@@ -214,6 +274,11 @@ export const ITEMS: Item[] = [
     bonuses: b({ aranged: 26, dstab: 42, dslash: 42, dcrush: 42, dranged: 42, rstr: 0 }),
     region: "tirannwn", passive: "+6% ranged acc, +3% ranged dmg with Bow of Faerdhinen" },
 
+  // Inquisitor's Hauberk (wiki-verified)
+  { id: "inq-body", name: "Inquisitor's Hauberk", slot: "body",
+    bonuses: b({ acrush: 8, dstab: 38, dslash: 38, dcrush: 38, dranged: -7, dmagic: -7, mstr: 4, prayer: 1 }),
+    region: "morytania" },
+
   // ══════════════════════════════════════════════════════════════════════
   // LEGS SLOT
   // ══════════════════════════════════════════════════════════════════════
@@ -245,6 +310,11 @@ export const ITEMS: Item[] = [
   { id: "crystal-legs", name: "Crystal Legs", slot: "legs",
     bonuses: b({ aranged: 13, dstab: 26, dslash: 26, dcrush: 26, dranged: 26, rstr: 0 }),
     region: "tirannwn", passive: "+4% ranged acc, +2% ranged dmg with Bow of Faerdhinen" },
+
+  // Inquisitor's Plateskirt (wiki-verified)
+  { id: "inq-legs", name: "Inquisitor's Plateskirt", slot: "legs",
+    bonuses: b({ acrush: 6, dstab: 21, dslash: 21, dcrush: 21, dranged: -4, dmagic: -4, mstr: 2, prayer: 1 }),
+    region: "morytania" },
 
   // ══════════════════════════════════════════════════════════════════════
   // SHIELD SLOT
@@ -314,6 +384,11 @@ export const ITEMS: Item[] = [
   { id: "occult", name: "Occult Necklace", slot: "neck",
     bonuses: b({ amagic: 12, mdmg: 5 }) },
 
+  // Salve Amulet (ei) — +20% acc & dmg vs undead (all styles), does NOT stack with slayer helm
+  { id: "salve-ei", name: "Salve Amulet (ei)", slot: "neck",
+    bonuses: b({ dstab: 2, dslash: 2, dcrush: 2, dranged: 2, dmagic: 2 }),
+    passive: "+20% accuracy and damage vs undead (all styles)" },
+
   { id: "fury", name: "Amulet of Fury", slot: "neck",
     bonuses: b({ astab: 10, aslash: 10, acrush: 10, aranged: 10, amagic: 10, dstab: 15, dslash: 15, dcrush: 15, dranged: 15, dmagic: 15, mstr: 8, prayer: 5 }) },
 
@@ -343,6 +418,10 @@ export const ITEMS: Item[] = [
 
   { id: "dragon-darts", name: "Dragon Darts", slot: "ammo",
     bonuses: b({ aranged: 2, rstr: 18 }) },
+
+  { id: "atlatl-dart", name: "Atlatl Dart", slot: "ammo",
+    bonuses: b({ rstr: 55 }),
+    region: "varlamore" },
 
   // ══════════════════════════════════════════════════════════════════════
   // HANDS SLOT
@@ -395,7 +474,7 @@ export const ITEMS: Item[] = [
 
   { id: "bellator", name: "Bellator Ring", slot: "ring",
     bonuses: b({ astab: 0, aslash: 0, acrush: 0, mstr: 6 }),
-    region: "desert", passive: "15% chance to double-hit with melee" },
+    region: "desert" },
 
   { id: "berserker-i", name: "Berserker Ring (i)", slot: "ring",
     bonuses: b({ mstr: 8 }) },

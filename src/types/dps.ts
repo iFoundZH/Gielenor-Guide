@@ -118,6 +118,10 @@ export interface BossPreset {
   hp: number;
   elementalWeakness?: AttackType;
   elementalWeaknessPercent?: number;
+  isDragon?: boolean;
+  isDemon?: boolean;
+  isUndead?: boolean;
+  isKalphite?: boolean;
 }
 
 /* ── Player Config ───────────────────────────────────────────────────── */

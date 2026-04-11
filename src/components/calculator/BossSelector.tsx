@@ -38,6 +38,10 @@ export function BossSelector({ selected, onSelect }: Props) {
             }`}
           >
             <span className="font-medium">{boss.name}</span>
+            {boss.isDragon && <span className="ml-1 text-[9px] px-1 py-0.5 rounded bg-green-900/40 text-green-400">Dragon</span>}
+            {boss.isDemon && <span className="ml-1 text-[9px] px-1 py-0.5 rounded bg-red-900/40 text-red-400">Demon</span>}
+            {boss.isUndead && <span className="ml-1 text-[9px] px-1 py-0.5 rounded bg-purple-900/40 text-purple-400">Undead</span>}
+            {boss.isKalphite && <span className="ml-1 text-[9px] px-1 py-0.5 rounded bg-yellow-900/40 text-yellow-400">Kalphite</span>}
             {boss.region && (
               <span className="ml-2 text-[10px] opacity-60 capitalize">{boss.region}</span>
             )}

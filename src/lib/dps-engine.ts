@@ -47,6 +47,11 @@ export function calculateDps(ctx: DpsContext): DpsResult {
   const alwaysMax = hasModifier(ctx, "always-max");
   if (alwaysMax) {
     baseDps = (finalMax * finalAcc) / interval;
+  } else if (weapon?.id === "fang") {
+    // Fang min-hit mechanic: min hit = floor(maxHit * 3/20) = 15% of reduced max
+    // Wiki calc: shrink = trunc(max * 3/20), min = shrink, max = max - shrink
+    const fangMin = Math.trunc(finalMax * 3 / 20);
+    baseDps = ((finalMax + fangMin) / 2 * finalAcc) / interval;
   } else {
     baseDps = ((finalMax / 2) * finalAcc) / interval;
   }
@@ -55,6 +60,16 @@ export function calculateDps(ctx: DpsContext): DpsResult {
   let bonusDps = 0;
   bonusDps += calculateBonusHitDps(ctx, finalMax, finalAcc, interval);
   bonusDps += calculateBlindbagDps(ctx, finalMax, finalAcc, interval);
+
+  // Bolt special effects
+  bonusDps += calculateBoltSpecDps(ctx, finalMax, finalAcc, interval);
+
+  // Keris 1/51 triple-damage proc vs kalphites
+  if (weapon?.id === "keris-breaching" && ctx.target.isKalphite) {
+    // On proc (1/51), hit is tripled. Average bonus = (1/51) * 2 * avgDmg
+    const avgDmg = (finalMax / 2) * finalAcc;
+    bonusDps += (1 / 51) * 2 * avgDmg / interval;
+  }
 
   // Flask of Fervour flat DPS
   bonusDps += getFlatDps(ctx);
@@ -153,7 +168,10 @@ function getPotionStrengthBoost(baseLevel: number, potion: PlayerConfig["potion"
       if (style === "magic") return 4 + Math.floor(baseLevel * 0.10);
       return 0;
     case "overload":
-      if (style === "melee" || style === "ranged" || style === "magic") return 5 + Math.floor(baseLevel * 0.15);
+      // NMZ overload: melee uses super combat formula, ranged/magic use their respective potion formulas
+      if (style === "melee") return 5 + Math.floor(baseLevel * 0.15);
+      if (style === "ranged") return 4 + Math.floor(baseLevel * 0.10);
+      if (style === "magic") return 4 + Math.floor(baseLevel * 0.10);
       return 0;
     case "smelling-salts":
       if (style === "melee" || style === "ranged" || style === "magic") return 11 + Math.floor(baseLevel * 0.16);
@@ -342,16 +360,24 @@ export function getMultiplierChain(ctx: DpsContext, _baseMax: number): Multiplie
   const weapon = ctx.loadout.weapon;
   const weaponCat = weapon?.weaponCategory;
 
-  // 1. Slayer helm / V's helm (on task)
-  // Wiki: melee = 7/6 (~16.67%), ranged/magic (imbued) = 1.15 (15%)
-  if (ctx.player.onSlayerTask) {
-    const head = ctx.loadout.head;
-    if (head?.id === "slayer-helm-i" || head?.id === "echo-vs-helm") {
-      if (style === "melee") {
-        chain.push({ name: head.name, factor: 7 / 6 });
-      } else {
-        chain.push({ name: head.name, factor: 1.15 });
-      }
+  // 1. Slayer helm / V's helm / Salve amulet (mutually exclusive — use best)
+  // Wiki: slayer helm melee = 7/6 (~16.67%), ranged/magic (imbued) = 1.15 (15%)
+  // Salve (ei) = 20% all styles vs undead. Does NOT stack with slayer helm.
+  const head = ctx.loadout.head;
+  const hasSalve = ctx.loadout.neck?.id === "salve-ei" && ctx.target.isUndead;
+  const hasSlayerHelm = ctx.player.onSlayerTask && (head?.id === "slayer-helm-i" || head?.id === "echo-vs-helm");
+
+  if (hasSalve && hasSlayerHelm) {
+    // Use whichever is higher: salve 20% vs slayer helm 16.67% (melee) / 15% (ranged/magic)
+    // Salve always wins or ties
+    chain.push({ name: "Salve (ei) vs Undead", factor: 1.20 });
+  } else if (hasSalve) {
+    chain.push({ name: "Salve (ei) vs Undead", factor: 1.20 });
+  } else if (hasSlayerHelm) {
+    if (style === "melee") {
+      chain.push({ name: head!.name, factor: 7 / 6 });
+    } else {
+      chain.push({ name: head!.name, factor: 1.15 });
     }
   }
 
@@ -381,11 +407,13 @@ export function getMultiplierChain(ctx: DpsContext, _baseMax: number): Multiplie
   }
 
   // 5. Twisted Bow passive (scales with target magic level)
-  // Wiki formula: damage% = 250 + (3M/10 - 14)/100 - ((3M/10 - 140)^2)/100, clamped [0, 250]
+  // Wiki calc source: t2 = trunc((3M - factor)/100), t3 = trunc((trunc(3M/10) - 10*factor)^2/100)
+  // damage: base=250, factor=14; accuracy uses same formula with base=140, factor=10
   if (weapon?.id === "tbow") {
     const M = Math.min(250, ctx.target.magicLevel);
-    const x = 3 * M / 10;
-    const tbowDmg = Math.min(250, Math.max(0, 250 + Math.floor((x - 14) / 100) - Math.floor(Math.pow(x - 140, 2) / 100)));
+    const t2 = Math.trunc((3 * M - 14) / 100);
+    const t3 = Math.trunc(Math.pow(Math.trunc(3 * M / 10) - 140, 2) / 100);
+    const tbowDmg = Math.min(250, Math.max(0, 250 + t2 - t3));
     chain.push({ name: "Twisted Bow", factor: tbowDmg / 100 });
   }
 
@@ -399,14 +427,66 @@ export function getMultiplierChain(ctx: DpsContext, _baseMax: number): Multiplie
     chain.push({ name: "Shadowflame 40%", factor: 1.40 });
   }
 
-  // 8. Arclight vs demons (+70%)
-  if (weapon?.id === "arclight") {
+  // 8. Arclight vs demons (+70%) — only applies to isDemon targets
+  if (weapon?.id === "arclight" && ctx.target.isDemon) {
     chain.push({ name: "Arclight vs Demons", factor: 1.70 });
   }
 
   // 9. Devil's Element elemental weakness (+30%)
   if (ctx.loadout.shield?.id === "echo-devils-element" && ctx.target.elementalWeakness === "magic") {
     chain.push({ name: "Devil's Element", factor: 1.30 });
+  }
+
+  // 10. Dragon Hunter Crossbow vs dragons (+25% dmg)
+  if (weapon?.id === "dhcb" && ctx.target.isDragon) {
+    chain.push({ name: "DHCB vs Dragons", factor: 1.25 });
+  }
+
+  // 11. Dragon Hunter Lance vs dragons (+20% dmg)
+  if (weapon?.id === "dhl" && ctx.target.isDragon) {
+    chain.push({ name: "DHL vs Dragons", factor: 1.20 });
+  }
+
+  // 12. Wilderness weapons (+50% dmg when target is in wilderness)
+  const wildernessWeapons = ["craws-bow", "webweaver-bow", "viggoras-chainmace", "ursine-chainmace"];
+  if (weapon && wildernessWeapons.includes(weapon.id) && ctx.target.region === "wilderness") {
+    chain.push({ name: `${weapon.name} (Wilderness)`, factor: 1.50 });
+  }
+
+  // 13. Wilderness sceptres (+25% magic dmg in wilderness)
+  const wildernessSceptres = ["thammarons-sceptre", "accursed-sceptre"];
+  if (weapon && wildernessSceptres.includes(weapon.id) && ctx.target.region === "wilderness") {
+    chain.push({ name: `${weapon.name} (Wilderness)`, factor: 1.25 });
+  }
+
+  // 14. Keris Partisan vs kalphites (+33% dmg)
+  if (weapon?.id === "keris-breaching" && ctx.target.isKalphite) {
+    chain.push({ name: "Keris vs Kalphites", factor: 4 / 3 });
+  }
+
+  // 15. Crystal armour set bonus with Bow of Faerdhinen
+  // Per piece: helm +2.5%, body +7.5%, legs +5%. Total +15% with full set.
+  if (weapon?.id === "bowfa") {
+    let crystalDmg = 0;
+    if (ctx.loadout.head?.id === "crystal-helm") crystalDmg += 0.025;
+    if (ctx.loadout.body?.id === "crystal-body") crystalDmg += 0.075;
+    if (ctx.loadout.legs?.id === "crystal-legs") crystalDmg += 0.05;
+    if (crystalDmg > 0) {
+      chain.push({ name: "Crystal Armour", factor: 1 + crystalDmg });
+    }
+  }
+
+  // 16. Inquisitor's armour set bonus (crush weapons only)
+  // +0.5% per piece, +2.5% bonus for full set (total 4% with 3 pieces)
+  if (style === "melee" && getAttackType(ctx) === "crush") {
+    let inqPieces = 0;
+    if (ctx.loadout.head?.id === "inq-helm") inqPieces++;
+    if (ctx.loadout.body?.id === "inq-body") inqPieces++;
+    if (ctx.loadout.legs?.id === "inq-legs") inqPieces++;
+    if (inqPieces > 0) {
+      const inqBonus = inqPieces * 0.005 + (inqPieces === 3 ? 0.025 : 0);
+      chain.push({ name: `Inquisitor's (${inqPieces}pc)`, factor: 1 + inqBonus });
+    }
   }
 
   return chain;
@@ -461,11 +541,18 @@ export function calculateAttackRoll(ctx: DpsContext, bonuses: EquipmentBonuses):
 
   let roll = base * (equipAtk + 64);
 
-  // Slayer helm accuracy on task
-  // Wiki: melee = 7/6, ranged/magic = 1.15
-  if (ctx.player.onSlayerTask) {
+  // Slayer helm / Salve amulet accuracy (mutually exclusive — use best)
+  {
     const head = ctx.loadout.head;
-    if (head?.id === "slayer-helm-i" || head?.id === "echo-vs-helm") {
+    const hasSalve = ctx.loadout.neck?.id === "salve-ei" && ctx.target.isUndead;
+    const hasSlayerHelm = ctx.player.onSlayerTask && (head?.id === "slayer-helm-i" || head?.id === "echo-vs-helm");
+
+    if (hasSalve && hasSlayerHelm) {
+      // Salve 20% always >= slayer helm (16.67% melee, 15% ranged/magic)
+      roll = Math.floor(roll * 1.20);
+    } else if (hasSalve) {
+      roll = Math.floor(roll * 1.20);
+    } else if (hasSlayerHelm) {
       if (style === "melee") {
         roll = Math.floor(roll * (7 / 6));
       } else {
@@ -481,17 +568,63 @@ export function calculateAttackRoll(ctx: DpsContext, bonuses: EquipmentBonuses):
   }
 
   // Twisted Bow accuracy scaling
-  // Wiki: accuracy% = 140 + (3M/10 - 10)/100 - ((3M/10 - 100)^2)/100, clamped [0, 140]
+  // Wiki calc source: t2 = trunc((3M - 10)/100), t3 = trunc((trunc(3M/10) - 100)^2/100)
   if (weapon?.id === "tbow") {
     const M = Math.min(250, ctx.target.magicLevel);
-    const x = 3 * M / 10;
-    const tbowAcc = Math.min(140, Math.max(0, 140 + Math.floor((x - 10) / 100) - Math.floor(Math.pow(x - 100, 2) / 100)));
+    const t2 = Math.trunc((3 * M - 10) / 100);
+    const t3 = Math.trunc(Math.pow(Math.trunc(3 * M / 10) - 100, 2) / 100);
+    const tbowAcc = Math.min(140, Math.max(0, 140 + t2 - t3));
     roll = Math.floor(roll * tbowAcc / 100);
   }
 
-  // Arclight accuracy vs demons
-  if (weapon?.id === "arclight") {
+  // Arclight accuracy vs demons — only applies to isDemon targets
+  if (weapon?.id === "arclight" && ctx.target.isDemon) {
     roll = Math.floor(roll * 1.70);
+  }
+
+  // Dragon Hunter Crossbow accuracy vs dragons (+30%)
+  if (weapon?.id === "dhcb" && ctx.target.isDragon) {
+    roll = Math.floor(roll * 1.30);
+  }
+
+  // Dragon Hunter Lance accuracy vs dragons (+20%)
+  if (weapon?.id === "dhl" && ctx.target.isDragon) {
+    roll = Math.floor(roll * 1.20);
+  }
+
+  // Wilderness weapon accuracy (+50% melee/ranged, +100% magic)
+  const wildernessWeapons = ["craws-bow", "webweaver-bow", "viggoras-chainmace", "ursine-chainmace"];
+  if (weapon && wildernessWeapons.includes(weapon.id) && ctx.target.region === "wilderness") {
+    roll = Math.floor(roll * 1.50);
+  }
+  const wildernessSceptres = ["thammarons-sceptre", "accursed-sceptre"];
+  if (weapon && wildernessSceptres.includes(weapon.id) && ctx.target.region === "wilderness") {
+    roll = Math.floor(roll * 2.0); // +100% magic accuracy
+  }
+
+  // Crystal armour set accuracy bonus with Bow of Faerdhinen
+  // Per piece: helm +5%, body +15%, legs +10%. Total +30% with full set.
+  if (weapon?.id === "bowfa") {
+    let crystalAcc = 0;
+    if (ctx.loadout.head?.id === "crystal-helm") crystalAcc += 0.05;
+    if (ctx.loadout.body?.id === "crystal-body") crystalAcc += 0.15;
+    if (ctx.loadout.legs?.id === "crystal-legs") crystalAcc += 0.10;
+    if (crystalAcc > 0) {
+      roll = Math.floor(roll * (1 + crystalAcc));
+    }
+  }
+
+  // Inquisitor's armour accuracy bonus (crush weapons only)
+  // +0.5% per piece, +2.5% bonus for full set (total 4%)
+  if (style === "melee" && atkType === "crush") {
+    let inqPieces = 0;
+    if (ctx.loadout.head?.id === "inq-helm") inqPieces++;
+    if (ctx.loadout.body?.id === "inq-body") inqPieces++;
+    if (ctx.loadout.legs?.id === "inq-legs") inqPieces++;
+    if (inqPieces > 0) {
+      const inqBonus = inqPieces * 0.005 + (inqPieces === 3 ? 0.025 : 0);
+      roll = Math.floor(roll * (1 + inqBonus));
+    }
   }
 
   return roll;
@@ -510,7 +643,11 @@ function getPotionAttackBoost(baseLevel: number, potion: PlayerConfig["potion"],
       if (style === "magic") return 4 + Math.floor(baseLevel * 0.10);
       return 0;
     case "overload":
-      return 5 + Math.floor(baseLevel * 0.15);
+      // NMZ overload: melee uses super attack formula, ranged/magic use their respective formulas
+      if (style === "melee") return 5 + Math.floor(baseLevel * 0.15);
+      if (style === "ranged") return 4 + Math.floor(baseLevel * 0.10);
+      if (style === "magic") return 4 + Math.floor(baseLevel * 0.10);
+      return 0;
     case "smelling-salts":
       return 11 + Math.floor(baseLevel * 0.16);
     default:
@@ -670,6 +807,34 @@ function calculateBlindbagDps(ctx: DpsContext, maxHit: number, accuracy: number,
   if (!hasPact(ctx, "D3")) return 0;
   if (ctx.loadout.weapon?.weaponCategory !== "1h-heavy") return 0;
   return 0.15 * (maxHit * accuracy) / interval;
+}
+
+function calculateBoltSpecDps(ctx: DpsContext, maxHit: number, accuracy: number, interval: number): number {
+  const ammo = ctx.loadout.ammo;
+  if (!ammo) return 0;
+  const weaponCat = ctx.loadout.weapon?.weaponCategory;
+  if (weaponCat !== "crossbow") return 0;
+
+  // Ruby Dragon Bolts (e): 6% proc, deals min(100, 20% of target HP) as flat damage
+  if (ammo.id === "ruby-bolts-e") {
+    const procDmg = Math.min(100, Math.floor(ctx.target.hp * 0.20));
+    // On proc: flat damage replaces normal hit. Bonus DPS = proc chance * (procDmg - normalAvg)
+    const normalAvg = maxHit / 2;
+    const boltBonus = 0.06 * accuracy * (procDmg - normalAvg);
+    return Math.max(0, boltBonus) / interval;
+  }
+
+  // Diamond Dragon Bolts (e): 10% proc, ignores ranged defence (acc ≈ 1.0)
+  if (ammo.id === "diamond-bolts-e") {
+    // Effective accuracy = 0.10 * 1.0 + 0.90 * normalAcc
+    const boostedAcc = 0.10 + 0.90 * accuracy;
+    // Bonus from increased accuracy
+    const normalDps = (maxHit / 2 * accuracy) / interval;
+    const boostedDps = (maxHit / 2 * boostedAcc) / interval;
+    return boostedDps - normalDps;
+  }
+
+  return 0;
 }
 
 // ═══════════════════════════════════════════════════════════════════════
