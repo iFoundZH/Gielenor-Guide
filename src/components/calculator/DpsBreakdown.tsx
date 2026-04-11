@@ -45,6 +45,7 @@ export function DpsBreakdown({ breakdown }: Props) {
           )}
 
           <Row label="Final Max Hit" value={breakdown.finalMaxHit} highlight />
+          {breakdown.minHit > 0 && <Row label="Min Hit" value={breakdown.minHit} />}
           <div className="border-t border-osrs-border pt-2" />
           <Row label="Attack Roll" value={breakdown.attackRoll.toLocaleString()} />
           <Row label="Defence Roll" value={breakdown.defenceRoll.toLocaleString()} />
@@ -55,11 +56,23 @@ export function DpsBreakdown({ breakdown }: Props) {
           <Row label="Base DPS" value={breakdown.baseDps.toFixed(3)} />
           {breakdown.echoDps > 0 && <Row label="Echo DPS" value={`+${breakdown.echoDps.toFixed(3)}`} />}
           {breakdown.bonusDps > 0 && <Row label="Bonus DPS" value={`+${breakdown.bonusDps.toFixed(3)}`} />}
+          {breakdown.thornsDps > 0 && <Row label="Thorns DPS" value={`+${breakdown.thornsDps.toFixed(3)}`} />}
           <Row
             label="Total DPS"
-            value={(breakdown.baseDps + breakdown.echoDps + breakdown.bonusDps).toFixed(3)}
+            value={(breakdown.baseDps + breakdown.echoDps + breakdown.bonusDps + breakdown.thornsDps).toFixed(3)}
             highlight
           />
+
+          {breakdown.sustainInfo.length > 0 && (
+            <div className="border-t border-osrs-border pt-2">
+              <div className="text-osrs-text-dim mb-1">Sustain / Utility:</div>
+              {breakdown.sustainInfo.map((info, i) => (
+                <div key={i} className="pl-3 text-osrs-text-dim text-[11px]">
+                  {info}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>

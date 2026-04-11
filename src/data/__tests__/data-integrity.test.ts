@@ -5,7 +5,7 @@
  * structure, no duplicates, valid references, and wiki-verified values.
  */
 import { describe, it, expect } from "vitest";
-import { ITEMS, getItem, getItemsBySlot, getItemsByRegion, getAvailableItems } from "@/data/items";
+import { ITEMS, getItem, getItemsBySlot, getItemsByRegion, getItemsForStyle, getAvailableItems } from "@/data/items";
 import { BOSS_PRESETS, getBoss, getBossesByRegion } from "@/data/boss-presets";
 import type { EquipmentSlot } from "@/types/dps";
 
@@ -48,7 +48,7 @@ describe("items data integrity", () => {
     ];
     for (const item of ITEMS) {
       for (const key of requiredKeys) {
-        expect(typeof (item.bonuses as Record<string, number>)[key]).toBe("number");
+        expect(typeof (item.bonuses as unknown as Record<string, number>)[key]).toBe("number");
       }
     }
   });
@@ -227,6 +227,66 @@ describe("item helper functions", () => {
     const desert = available.filter(i => i.region === "desert");
     expect(desert.length).toBe(0);
   });
+
+  it("getAvailableItems with multiple regions includes all", () => {
+    const available = getAvailableItems(["morytania", "desert"]);
+    const morytania = available.filter(i => i.region === "morytania");
+    const desert = available.filter(i => i.region === "desert");
+    expect(morytania.length).toBeGreaterThan(0);
+    expect(desert.length).toBeGreaterThan(0);
+    // Should NOT include items from other regions
+    const kourend = available.filter(i => i.region === "kourend");
+    expect(kourend.length).toBe(0);
+  });
+
+  it("getItemsForStyle returns melee weapons and gear", () => {
+    const melee = getItemsForStyle("melee");
+    expect(melee.length).toBeGreaterThan(10);
+    // Should include whip (melee weapon)
+    expect(melee.some(i => i.id === "whip")).toBe(true);
+    // Should NOT include tbow (ranged weapon)
+    expect(melee.some(i => i.id === "tbow")).toBe(false);
+    // Should include torture amulet (has mstr/astab)
+    expect(melee.some(i => i.id === "torture")).toBe(true);
+  });
+
+  it("getItemsForStyle returns ranged weapons and gear", () => {
+    const ranged = getItemsForStyle("ranged");
+    expect(ranged.length).toBeGreaterThan(5);
+    // Should include tbow (ranged weapon)
+    expect(ranged.some(i => i.id === "tbow")).toBe(true);
+    // Should NOT include whip (melee weapon)
+    expect(ranged.some(i => i.id === "whip")).toBe(false);
+    // Should include anguish (has rstr/aranged)
+    expect(ranged.some(i => i.id === "anguish")).toBe(true);
+  });
+
+  it("getItemsForStyle returns magic weapons and gear", () => {
+    const magic = getItemsForStyle("magic");
+    expect(magic.length).toBeGreaterThan(5);
+    // Should include shadow (magic weapon)
+    expect(magic.some(i => i.id === "shadow")).toBe(true);
+    // Should NOT include whip (melee weapon)
+    expect(magic.some(i => i.id === "whip")).toBe(false);
+    // Should include occult (has mdmg/amagic)
+    expect(magic.some(i => i.id === "occult")).toBe(true);
+  });
+
+  it("getItemsBySlot returns no items for non-matching slot check", () => {
+    const weapons = getItemsBySlot("weapon");
+    for (const w of weapons) {
+      expect(w.slot).toBe("weapon");
+    }
+    const rings = getItemsBySlot("ring");
+    for (const r of rings) {
+      expect(r.slot).toBe("ring");
+    }
+    // Ensure no overlap
+    const weaponIds = new Set(weapons.map(w => w.id));
+    for (const r of rings) {
+      expect(weaponIds.has(r.id)).toBe(false);
+    }
+  });
 });
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -316,7 +376,7 @@ describe("boss presets data integrity", () => {
 // ═══════════════════════════════════════════════════════════════════════
 
 describe("wiki-verified boss stats", () => {
-  it("General Graardor: def=250, magicLevel=80, hp=255", () => {
+  it("General Graardor: def=250, magicLevel=80, hp=255, size=4", () => {
     const boss = getBoss("graardor")!;
     expect(boss.defenceLevel).toBe(250);
     expect(boss.magicLevel).toBe(80);
@@ -324,6 +384,7 @@ describe("wiki-verified boss stats", () => {
     expect(boss.dstab).toBe(90);
     expect(boss.dslash).toBe(90);
     expect(boss.region).toBe("asgarnia");
+    expect(boss.size).toBe(4);
   });
 
   it("Vorkath: isDragon=true, isUndead=true, region=fremennik", () => {
@@ -450,5 +511,95 @@ describe("item region assignments", () => {
 
   it("Barrows gloves have no region", () => {
     expect(getItem("barrows-gloves")!.region).toBeUndefined();
+  });
+});
+
+// ════════════════════════════════════���══════════════════════════════════
+// BOSS SIZE AND ADDITIONAL DATA INTEGRITY
+// ══════════════════��════════════════════════════════════════════════════
+
+describe("all bosses have size", () => {
+  it("every boss preset has a defined size field", () => {
+    for (const boss of BOSS_PRESETS) {
+      expect(boss.size).toBeDefined();
+      expect(boss.size).toBeGreaterThanOrEqual(1);
+    }
+  });
+
+  it("boss sizes match known wiki values", () => {
+    expect(getBoss("graardor")!.size).toBe(4);
+    expect(getBoss("kreearra")!.size).toBe(5);
+    expect(getBoss("vorkath")!.size).toBe(7);
+    expect(getBoss("duke")!.size).toBe(7);
+    expect(getBoss("zuk")!.size).toBe(7);
+    expect(getBoss("whisperer")!.size).toBe(1);
+    expect(getBoss("vardorvis")!.size).toBe(2);
+    expect(getBoss("custom")!.size).toBe(1);
+  });
+});
+
+describe("echo items isTwoHanded correct", () => {
+  it("2H echo items are marked isTwoHanded", () => {
+    const twoHandedEchos = [
+      "echo-tecpatl",
+      "echo-shadowflame",
+      "echo-natures-recurve",
+      "echo-kings-barrage",
+      "echo-lithic-sceptre",
+      "echo-drygore-blowpipe",
+    ];
+    for (const id of twoHandedEchos) {
+      const item = getItem(id);
+      expect(item).toBeDefined();
+      expect(item!.isTwoHanded).toBe(true);
+    }
+  });
+
+  it("1H echo items are NOT marked isTwoHanded", () => {
+    const oneHandedEchos = [
+      "echo-fang-hound",
+    ];
+    for (const id of oneHandedEchos) {
+      const item = getItem(id);
+      expect(item).toBeDefined();
+      expect(item!.isTwoHanded).toBeFalsy();
+    }
+  });
+
+  it("non-weapon echo items have no isTwoHanded flag", () => {
+    const nonWeaponEchos = [
+      "echo-vs-helm",
+      "echo-devils-element",
+      "echo-crystal-blessing",
+    ];
+    for (const id of nonWeaponEchos) {
+      const item = getItem(id);
+      expect(item).toBeDefined();
+      expect(item!.isTwoHanded).toBeFalsy();
+    }
+  });
+});
+
+describe("specific boss data", () => {
+  it("Demonic Gorillas: region=kandarin, isDemon=true", () => {
+    const boss = getBoss("demonic-gorillas")!;
+    expect(boss).toBeDefined();
+    expect(boss.region).toBe("kandarin");
+    expect(boss.isDemon).toBe(true);
+    expect(boss.size).toBe(2);
+  });
+
+  it("Giant Mole: defenceLevel=50, all defence bonuses 0", () => {
+    const boss = getBoss("giant-mole")!;
+    expect(boss).toBeDefined();
+    expect(boss.defenceLevel).toBe(50);
+    expect(boss.dstab).toBe(0);
+    expect(boss.dslash).toBe(0);
+    expect(boss.dcrush).toBe(0);
+    expect(boss.dranged).toBe(0);
+    expect(boss.dmagic).toBe(0);
+    expect(boss.hp).toBe(200);
+    expect(boss.region).toBe("asgarnia");
+    expect(boss.size).toBe(3);
   });
 });

@@ -252,6 +252,11 @@ const STAT_OVERRIDES: Record<string, Partial<EquipmentBonuses>> = {
   "slayer-helm-i": { mstr: 3, rstr: 3, mdmg: 3 },
 };
 
+// ── Attack speed overrides (wiki DB may not reflect effective speed) ──
+const ATTACK_SPEED_OVERRIDES: Record<string, number> = {
+  "harm-staff": 4, // Harmonised orb: standard spells cast at 4t instead of 5t
+};
+
 // ── Weapon category overrides (for items whose wiki category doesn't map well) ──
 const WEAPON_CAT_OVERRIDES: Record<string, WeaponCategory> = {
   "eclipse-atlatl": "thrown",
@@ -275,6 +280,62 @@ const MANUAL_ITEMS: Item[] = [
   // Masori Assembler Max Cape — not in wiki (custom combined item)
   { id: "ma2-cape-range", name: "Masori Assembler Max Cape", slot: "cape",
     bonuses: { ...Z, aranged: 10, dstab: 3, dslash: 3, dcrush: 3, dranged: 5, rstr: 2, prayer: 4 } },
+
+  // ── Echo items (DP league — not in wiki equipment DB) ──
+  { id: "echo-vs-helm", name: "V's helm", slot: "head",
+    bonuses: { ...Z, amagic: 8, aranged: 12, mstr: 8, rstr: 2, mdmg: 3 },
+    region: "fremennik",
+    passive: PASSIVES["echo-vs-helm"] },
+  { id: "echo-kings-barrage", name: "King's barrage", slot: "weapon",
+    bonuses: { ...Z, aranged: 130, rstr: 14 },
+    isTwoHanded: true, weaponCategory: "crossbow", attackSpeed: 6,
+    combatStyle: "ranged", attackType: "ranged",
+    region: "wilderness",
+    passive: PASSIVES["echo-kings-barrage"] },
+  { id: "echo-tecpatl", name: "Infernal tecpatl", slot: "weapon",
+    bonuses: { ...Z, astab: 72, aslash: 72, acrush: 72, mstr: 70 },
+    isTwoHanded: true, weaponCategory: "2h-melee", attackSpeed: 4,
+    combatStyle: "melee", attackType: "slash",
+    region: "varlamore",
+    passive: PASSIVES["echo-tecpatl"] },
+  { id: "echo-fang-hound", name: "Fang of the hound", slot: "weapon",
+    bonuses: { ...Z, astab: 60, aslash: 60, mstr: 20 },
+    weaponCategory: "1h-light", attackSpeed: 3,
+    combatStyle: "melee", attackType: "stab",
+    region: "asgarnia",
+    passive: PASSIVES["echo-fang-hound"] },
+  { id: "echo-shadowflame", name: "Shadowflame quadrant", slot: "weapon",
+    bonuses: { ...Z, acrush: 60, amagic: 25, mstr: 50, mdmg: 15 },
+    isTwoHanded: true, weaponCategory: "staff", attackSpeed: 5,
+    combatStyle: "magic", attackType: "magic",
+    region: "kandarin",
+    passive: PASSIVES["echo-shadowflame"] },
+  { id: "echo-natures-recurve", name: "Nature's recurve", slot: "weapon",
+    bonuses: { ...Z, aranged: 95, rstr: 4 },
+    isTwoHanded: true, weaponCategory: "bow", attackSpeed: 4,
+    combatStyle: "ranged", attackType: "ranged",
+    region: "kourend",
+    passive: PASSIVES["echo-natures-recurve"] },
+  { id: "echo-devils-element", name: "Devil's element", slot: "shield",
+    bonuses: { ...Z, amagic: 20, mdmg: 6, prayer: 3 },
+    region: "kandarin",
+    passive: PASSIVES["echo-devils-element"] },
+  { id: "echo-crystal-blessing", name: "Crystal blessing", slot: "ammo",
+    bonuses: { ...Z, prayer: 5 },
+    region: "tirannwn",
+    passive: PASSIVES["echo-crystal-blessing"] },
+  { id: "echo-lithic-sceptre", name: "Lithic sceptre", slot: "weapon",
+    bonuses: { ...Z, amagic: 25 },
+    isTwoHanded: true, weaponCategory: "powered-staff", attackSpeed: 4,
+    combatStyle: "magic", attackType: "magic",
+    region: "morytania",
+    passive: PASSIVES["echo-lithic-sceptre"] },
+  { id: "echo-drygore-blowpipe", name: "Drygore blowpipe", slot: "weapon",
+    bonuses: { ...Z, aranged: 50, rstr: 10 },
+    isTwoHanded: true, weaponCategory: "blowpipe", attackSpeed: 3,
+    combatStyle: "ranged", attackType: "ranged",
+    region: "desert",
+    passive: PASSIVES["echo-drygore-blowpipe"] },
 ];
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -316,6 +377,11 @@ function processItem(raw: RawItem): Item {
     item.bonuses = { ...item.bonuses, ...STAT_OVERRIDES[ourId] };
   }
 
+  // Attack speed overrides
+  if (ourId && ATTACK_SPEED_OVERRIDES[ourId]) {
+    item.attackSpeed = ATTACK_SPEED_OVERRIDES[ourId];
+  }
+
   // Passive
   if (ourId && PASSIVES[ourId]) {
     item.passive = PASSIVES[ourId];
@@ -329,18 +395,18 @@ function processItem(raw: RawItem): Item {
   return item;
 }
 
-// Process all wiki items
+// Manual items first — hand-curated echo stats win over DB versions
 const items: Item[] = [];
-for (const raw of rawItems) {
-  const item = processItem(raw);
+for (const item of MANUAL_ITEMS) {
   if (!usedIds.has(item.id)) {
     usedIds.add(item.id);
     items.push(item);
   }
 }
 
-// Add manual items
-for (const item of MANUAL_ITEMS) {
+// Then process wiki items (deduped against manual items)
+for (const raw of rawItems) {
+  const item = processItem(raw);
   if (!usedIds.has(item.id)) {
     usedIds.add(item.id);
     items.push(item);

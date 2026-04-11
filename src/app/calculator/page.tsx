@@ -61,8 +61,13 @@ type Action =
 
 function reducer(state: CalcState, action: Action): CalcState {
   switch (action.type) {
-    case "SET_PLAYER":
+    case "SET_PLAYER": {
+      // Clear loadout when combat style changes (gear is style-specific)
+      if (action.player.combatStyle !== state.player.combatStyle) {
+        return { ...state, player: action.player, loadout: EMPTY_LOADOUT };
+      }
       return { ...state, player: action.player };
+    }
     case "SET_TARGET":
       return { ...state, target: action.target };
     case "SET_LOADOUT":
@@ -149,6 +154,7 @@ export default function CalculatorPage() {
     if (opt.attackStyle) updates.attackStyle = opt.attackStyle;
     if (opt.voidSet) updates.voidSet = opt.voidSet;
     if (opt.activePacts) updates.activePacts = opt.activePacts;
+    if (opt.spellMaxHit !== undefined) updates.spellMaxHit = opt.spellMaxHit;
     if (Object.keys(updates).length > 0) {
       dispatch({ type: "SET_PLAYER", player: { ...state.player, ...updates } });
     }

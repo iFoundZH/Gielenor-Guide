@@ -1,6 +1,7 @@
 "use client";
 
-import type { PlayerConfig, CombatStyle, PotionType, PrayerType, AttackStyleBonus } from "@/types/dps";
+import type { PlayerConfig, CombatStyle, PotionType, PrayerType, AttackStyleBonus, SpellElement } from "@/types/dps";
+import { aggregatePactEffects } from "@/lib/pact-effects";
 
 const POTIONS: { value: PotionType; label: string }[] = [
   { value: "auto", label: "Auto (best)" },
@@ -26,13 +27,18 @@ const PRAYERS: { value: PrayerType; label: string; style: CombatStyle | "all" }[
   { value: "mystic-might", label: "Mystic Might", style: "magic" },
 ];
 
-const SPELLS: { value: number; label: string }[] = [
-  { value: 24, label: "Fire Surge (24)" },
-  { value: 30, label: "Ice Barrage (30)" },
-  { value: 28, label: "Blood Barrage (28)" },
-  { value: 22, label: "Ice Burst (22)" },
-  { value: 20, label: "Fire Wave (20)" },
-  { value: 16, label: "Fire Blast (16)" },
+const SPELLS: { value: number; label: string; element: SpellElement }[] = [
+  { value: 24, label: "Fire Surge (24)", element: "fire" },
+  { value: 30, label: "Ice Barrage (30)", element: "ice" },
+  { value: 28, label: "Blood Barrage (28)", element: "blood" },
+  { value: 22, label: "Ice Burst (22)", element: "ice" },
+  { value: 20, label: "Fire Wave (20)", element: "fire" },
+  { value: 16, label: "Fire Blast (16)", element: "fire" },
+  { value: 26, label: "Smoke Barrage (26)", element: "smoke" },
+  { value: 24, label: "Shadow Barrage (24)", element: "shadow" },
+  { value: 21, label: "Air Surge (21)", element: "air" },
+  { value: 22, label: "Earth Surge (22)", element: "earth" },
+  { value: 24, label: "Water Surge (24)", element: "water" },
 ];
 
 const ATTACK_STYLES: { value: AttackStyleBonus; label: string }[] = [
@@ -51,12 +57,27 @@ interface Props {
   onChange: (config: PlayerConfig) => void;
 }
 
+const SPELL_ELEMENTS: { value: SpellElement; label: string }[] = [
+  { value: "none", label: "None / Powered" },
+  { value: "air", label: "Air" },
+  { value: "water", label: "Water" },
+  { value: "fire", label: "Fire" },
+  { value: "earth", label: "Earth" },
+  { value: "smoke", label: "Smoke" },
+  { value: "ice", label: "Ice" },
+  { value: "blood", label: "Blood" },
+  { value: "shadow", label: "Shadow" },
+];
+
 export function PlayerConfigPanel({ config, onChange }: Props) {
   const update = (partial: Partial<PlayerConfig>) => onChange({ ...config, ...partial });
 
   const filteredPrayers = PRAYERS.filter(
     p => p.style === "all" || p.style === config.combatStyle,
   );
+
+  // Compute pact effects to show conditional inputs
+  const pe = config.activePacts.length > 0 ? aggregatePactEffects(config.activePacts) : null;
 
   return (
     <div className="space-y-4">
@@ -130,12 +151,15 @@ export function PlayerConfigPanel({ config, onChange }: Props) {
         <div>
           <label className="text-xs text-osrs-text-dim block mb-1">Spell</label>
           <select
-            value={config.spellMaxHit ?? 24}
-            onChange={e => update({ spellMaxHit: parseInt(e.target.value) })}
+            value={`${config.spellMaxHit ?? 24}:${config.spellElement ?? "fire"}`}
+            onChange={e => {
+              const [maxStr, elem] = e.target.value.split(":");
+              update({ spellMaxHit: parseInt(maxStr), spellElement: elem as SpellElement });
+            }}
             className="w-full px-3 py-1.5 bg-osrs-darker border border-osrs-border rounded-lg text-sm text-osrs-text focus:border-osrs-gold focus:outline-none"
           >
-            {SPELLS.map(opt => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            {SPELLS.map((opt, i) => (
+              <option key={`${opt.value}-${opt.element}-${i}`} value={`${opt.value}:${opt.element}`}>{opt.label}</option>
             ))}
           </select>
         </div>
@@ -169,6 +193,56 @@ export function PlayerConfigPanel({ config, onChange }: Props) {
         min={0}
         max={15}
       />
+
+      {/* Pact-conditional inputs */}
+      {pe && (pe.rangedStrengthHpDifference || pe.fireHpConsumeForDamage || pe.waterSpellDamageHighHp) && (
+        <StatInput
+          label="Current HP"
+          value={config.currentHitpoints ?? config.hitpoints}
+          onChange={v => update({ currentHitpoints: v })}
+          min={1}
+          max={config.hitpoints}
+        />
+      )}
+
+      {pe && (pe.airSpellDamagePerPrayer > 0 || pe.airSpellMaxHitPrayerBonus > 0) && config.combatStyle === "magic" && (
+        <StatInput
+          label="Active Prayers"
+          value={config.activePrayerCount ?? 1}
+          onChange={v => update({ activePrayerCount: v })}
+          min={0}
+          max={6}
+        />
+      )}
+
+      {pe && (pe.smokeCountsAsAir || pe.iceCountsAsWater || pe.bloodCountsAsFire || pe.shadowCountsAsEarth ||
+              pe.airSpellDamagePerPrayer > 0 || pe.fireHpConsumeForDamage || pe.earthReduceDefence ||
+              pe.waterSpellDamageHighHp) && config.combatStyle === "magic" && (
+        <SelectField
+          label="Spell Element"
+          value={config.spellElement ?? "none"}
+          options={SPELL_ELEMENTS}
+          onChange={v => update({ spellElement: v as SpellElement })}
+        />
+      )}
+
+      {pe && (pe.uniqueBlindBagChance || pe.uniqueBlindBagDamage > 0) && config.combatStyle === "melee" && (
+        <StatInput
+          label="Heavy Weapons (inv)"
+          value={config.uniqueHeavyWeapons ?? 0}
+          onChange={v => update({ uniqueHeavyWeapons: v })}
+          min={0}
+          max={5}
+        />
+      )}
+
+      {pe && pe.overhealConsumptionBoost && config.combatStyle === "melee" && (
+        <Toggle
+          label="Has Overheal"
+          checked={config.hasOverheal ?? false}
+          onChange={v => update({ hasOverheal: v })}
+        />
+      )}
     </div>
   );
 }

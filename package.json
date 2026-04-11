@@ -10,6 +10,7 @@
     "test": "npx playwright test",
     "test:ui": "npx playwright test --ui",
     "test:unit": "vitest run",
+    "test:unit:coverage": "vitest run --coverage",
     "test:unit:watch": "vitest",
     "sync:items": "python3 scripts/sync-items.py",
     "prepare": "husky"
@@ -31,6 +32,7 @@
     "@eslint/js": "^9.39.4",
     "@next/eslint-plugin-next": "^16.2.2",
     "@playwright/test": "^1.58.2",
+    "@vitest/coverage-v8": "^4.1.4",
     "eslint": "^9.39.4",
     "eslint-plugin-react-hooks": "^7.0.1",
     "husky": "^9.1.7",

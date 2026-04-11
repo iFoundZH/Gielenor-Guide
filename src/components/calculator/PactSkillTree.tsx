@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import { PACT_NODES, canSelectNode, canDeselectNode } from "@/data/pacts";
 import { PACT_POINT_LIMIT } from "@/types/dps";
 import type { PactNode } from "@/types/dps";
@@ -29,7 +29,7 @@ const TREE_W = Math.max(...xs) - MIN_X + PAD;
 const TREE_H = Math.max(...ys) - MIN_Y + PAD;
 
 export function PactSkillTree({ selected, onChange }: Props) {
-  const selectedSet = new Set(selected);
+  const selectedSet = useMemo(() => new Set(selected), [selected]);
   const [tooltip, setTooltip] = useState<PactNode | null>(null);
   const [collapsed, setCollapsed] = useState(false);
 
@@ -181,8 +181,6 @@ export function PactSkillTree({ selected, onChange }: Props) {
                 const branchKey = node.branch ?? "null";
                 const colors = BRANCH_COLORS[branchKey as keyof typeof BRANCH_COLORS];
                 const r = NODE_RADIUS[node.size];
-                const hasUnsupported = node.effects.some(e => e.unsupported);
-
                 let fill = "#1f2937"; // unreachable: dark
                 let stroke = "#374151";
                 let opacity = 0.4;
@@ -225,16 +223,6 @@ export function PactSkillTree({ selected, onChange }: Props) {
                         opacity={opacity}
                       />
                     )}
-                    {/* "Coming soon" dot for unsupported capstones */}
-                    {hasUnsupported && node.size === "node_capstone" && (
-                      <circle
-                        cx={node.position.x + r + 3}
-                        cy={node.position.y - r - 3}
-                        r={3}
-                        fill="#f97316"
-                        opacity={0.8}
-                      />
-                    )}
                   </g>
                 );
               })}
@@ -248,9 +236,6 @@ export function PactSkillTree({ selected, onChange }: Props) {
                   <span className="text-[10px] text-osrs-text-dim capitalize">
                     {tooltip.branch ?? "general"} &middot; {tooltip.size.replace("node_", "")}
                   </span>
-                  {tooltip.effects.some(e => e.unsupported) && (
-                    <span className="text-[10px] text-orange-400 bg-orange-400/10 px-1 rounded">coming soon</span>
-                  )}
                 </div>
                 <div className="text-xs text-osrs-text">{tooltip.description}</div>
               </div>

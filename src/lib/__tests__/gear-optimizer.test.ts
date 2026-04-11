@@ -10,10 +10,11 @@
  * - Optimizer returns valid DPS results
  */
 import { describe, it, expect } from "vitest";
-import { optimizeGear, optimizeBuild } from "@/lib/gear-optimizer";
+import { optimizeGear, optimizeBuild, isNodeRelevantForStyle } from "@/lib/gear-optimizer";
+import { calculateDps } from "@/lib/dps-engine";
 import { getItem } from "@/data/items";
 import { getBoss } from "@/data/boss-presets";
-import { validateSelection } from "@/data/pacts";
+import { validateSelection, getNode, getAllNodes } from "@/data/pacts";
 import { PACT_POINT_LIMIT } from "@/types/dps";
 import type { PlayerConfig, OptimizerConfig, BuildLoadout } from "@/types/dps";
 
@@ -243,6 +244,78 @@ describe("combat style filtering", () => {
 });
 
 // ═══════════════════════════════════════════════════════════════════════
+// WEAPON DIVERSITY
+// ═══════════════════════════════════════════════════════════════════════
+
+describe("weapon diversity", () => {
+  it("magic results include diverse weapons, not all the same", () => {
+    const config: OptimizerConfig = {
+      player: defaultPlayer({
+        combatStyle: "magic", attackStyle: "autocast",
+        potion: "magic", prayerType: "augury",
+      }),
+      target: custom,
+      lockedSlots: {},
+      topN: 5,
+    };
+    const results = optimizeGear(config);
+    const weaponIds = new Set(results.map(r => r.loadout.weapon?.id));
+    // With all regions, should have at least 3 different weapons in top 5
+    expect(weaponIds.size).toBeGreaterThanOrEqual(3);
+  });
+
+  it("melee results include diverse weapons", () => {
+    const config: OptimizerConfig = {
+      player: defaultPlayer(),
+      target: custom,
+      lockedSlots: {},
+      topN: 5,
+    };
+    const results = optimizeGear(config);
+    const weaponIds = new Set(results.map(r => r.loadout.weapon?.id));
+    expect(weaponIds.size).toBeGreaterThanOrEqual(3);
+  });
+
+  it("Shadow beats Trident when desert is unlocked (all regions)", () => {
+    const config: OptimizerConfig = {
+      player: defaultPlayer({
+        combatStyle: "magic", attackStyle: "autocast",
+        potion: "magic", prayerType: "augury",
+      }),
+      target: custom,
+      lockedSlots: {},
+      topN: 10,
+    };
+    const results = optimizeGear(config);
+    const shadowIdx = results.findIndex(r => r.loadout.weapon?.id === "shadow");
+    const tridentIdx = results.findIndex(r => r.loadout.weapon?.id === "trident-swamp");
+    // Shadow should appear in results and rank above Trident
+    expect(shadowIdx).toBeGreaterThanOrEqual(0);
+    expect(tridentIdx).toBeGreaterThanOrEqual(0);
+    expect(shadowIdx).toBeLessThan(tridentIdx);
+  });
+
+  it("1H weapons still appear when shield pool is empty", () => {
+    // Use regions with no magic shields
+    const config: OptimizerConfig = {
+      player: defaultPlayer({
+        combatStyle: "magic", attackStyle: "autocast",
+        potion: "magic", prayerType: "augury",
+        regions: [], // no regions — very limited items
+      }),
+      target: custom,
+      lockedSlots: {},
+      topN: 5,
+    };
+    const results = optimizeGear(config);
+    // Should still have results (1H weapons tested with null shield)
+    expect(results.length).toBeGreaterThan(0);
+    const has1H = results.some(r => r.loadout.weapon && !r.loadout.weapon.isTwoHanded);
+    expect(has1H).toBe(true);
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════════════
 // OPTIMIZER VS SPECIFIC BOSSES
 // ═══════════════════════════════════════════════════════════════════════
 
@@ -363,4 +436,193 @@ describe("pact beam search optimization", () => {
     expect(results.length).toBeGreaterThan(0);
     expect(results[0].optimizedConfig?.activePacts?.length).toBe(PACT_POINT_LIMIT);
   }, 30_000);
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+// PACT STYLE RELEVANCE
+// ═══════════════════════════════════════════════════════════════════════
+
+describe("pact style relevance", () => {
+  function countBranchPacts(pacts: string[], branch: string): number {
+    return pacts.filter(id => {
+      const node = getNode(id);
+      return node?.branch === branch;
+    }).length;
+  }
+
+  it("melee build selects mostly melee + neutral pacts (fewer than 5 ranged)", () => {
+    const config: OptimizerConfig = {
+      player: defaultPlayer({ activePacts: [] }),
+      target: custom,
+      lockedSlots: {},
+      topN: 1,
+    };
+    const results = optimizeBuild(config);
+    const pacts = results[0].optimizedConfig!.activePacts!;
+    const rangedCount = countBranchPacts(pacts, "ranged");
+    expect(rangedCount).toBeLessThan(5);
+  }, 30_000);
+
+  it("ranged build selects mostly ranged + neutral pacts (fewer than 5 melee)", () => {
+    const config: OptimizerConfig = {
+      player: defaultPlayer({
+        combatStyle: "ranged", attackStyle: "auto", potion: "auto", prayerType: "auto",
+        activePacts: [],
+      }),
+      target: custom,
+      lockedSlots: {},
+      topN: 1,
+    };
+    const results = optimizeBuild(config);
+    const pacts = results[0].optimizedConfig!.activePacts!;
+    const meleeCount = countBranchPacts(pacts, "melee");
+    expect(meleeCount).toBeLessThan(5);
+  }, 30_000);
+
+  it("magic build selects mostly magic + neutral pacts (fewer than 5 melee)", () => {
+    const config: OptimizerConfig = {
+      player: defaultPlayer({
+        combatStyle: "magic", attackStyle: "auto", potion: "auto", prayerType: "auto",
+        activePacts: [],
+      }),
+      target: custom,
+      lockedSlots: {},
+      topN: 1,
+    };
+    const results = optimizeBuild(config);
+    const pacts = results[0].optimizedConfig!.activePacts!;
+    const meleeCount = countBranchPacts(pacts, "melee");
+    expect(meleeCount).toBeLessThan(5);
+  }, 30_000);
+
+  it("melee build includes key melee DPS nodes", () => {
+    const config: OptimizerConfig = {
+      player: defaultPlayer({ activePacts: [] }),
+      target: custom,
+      lockedSlots: {},
+      topN: 1,
+    };
+    const results = optimizeBuild(config);
+    const pacts = new Set(results[0].optimizedConfig!.activePacts!);
+    const meleeCount = countBranchPacts([...pacts], "melee");
+    // Should have at least 3 melee-branch nodes
+    expect(meleeCount).toBeGreaterThanOrEqual(3);
+  }, 30_000);
+
+  it("ranged build includes ranged DPS nodes", () => {
+    const config: OptimizerConfig = {
+      player: defaultPlayer({
+        combatStyle: "ranged", attackStyle: "auto", potion: "auto", prayerType: "auto",
+        activePacts: [],
+      }),
+      target: custom,
+      lockedSlots: {},
+      topN: 1,
+    };
+    const results = optimizeBuild(config);
+    const pacts = results[0].optimizedConfig!.activePacts!;
+    const rangedCount = countBranchPacts(pacts, "ranged");
+    expect(rangedCount).toBeGreaterThanOrEqual(3);
+  }, 30_000);
+
+  it("magic build includes magic DPS nodes", () => {
+    const config: OptimizerConfig = {
+      player: defaultPlayer({
+        combatStyle: "magic", attackStyle: "auto", potion: "auto", prayerType: "auto",
+        activePacts: [],
+      }),
+      target: custom,
+      lockedSlots: {},
+      topN: 1,
+    };
+    const results = optimizeBuild(config);
+    const pacts = results[0].optimizedConfig!.activePacts!;
+    const magicCount = countBranchPacts(pacts, "magic");
+    expect(magicCount).toBeGreaterThanOrEqual(3);
+  }, 30_000);
+
+  it("melee DPS multiplier chain includes 'Melee Pacts' not 'Ranged Pacts'", () => {
+    const config: OptimizerConfig = {
+      player: defaultPlayer({ activePacts: [] }),
+      target: custom,
+      lockedSlots: {},
+      topN: 1,
+    };
+    const results = optimizeBuild(config);
+    const pacts = results[0].optimizedConfig!.activePacts!;
+    const loadout = results[0].loadout;
+    const result = calculateDps({
+      player: { ...defaultPlayer({ activePacts: pacts }), },
+      loadout,
+      target: custom,
+    });
+    const chainNames = result.breakdown.multiplierChain.map(m => m.name);
+    // Melee build should have melee pacts in its multiplier chain
+    const hasMeleePacts = chainNames.some(n => n.includes("Melee"));
+    const hasRangedPacts = chainNames.some(n => n.includes("Ranged"));
+    expect(hasMeleePacts).toBe(true);
+    expect(hasRangedPacts).toBe(false);
+  }, 30_000);
+
+  it("echo DPS is zero for melee even with twohMeleeEchos + rangedRegenEchoChance", () => {
+    // Select pacts that include both 2H melee echos and ranged echo chance
+    const rapier = getItem("rapier")!;
+    const loadout: BuildLoadout = {
+      head: null, cape: null, neck: null, ammo: null,
+      weapon: rapier, body: null, shield: null,
+      legs: null, hands: null, feet: null, ring: null,
+    };
+    // Include node157 (2H melee echos) + node2 (ranged echo +25%)
+    const pacts = ["node1", "node2", "node157"];
+    const result = calculateDps({
+      player: defaultPlayer({ combatStyle: "melee", activePacts: pacts }),
+      loadout,
+      target: custom,
+    });
+    // Echo DPS should be 0 for melee
+    expect(result.echoDps).toBe(0);
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+// isNodeRelevantForStyle unit tests
+// ═══════════════════════════════════════════════════════════════════════
+
+describe("isNodeRelevantForStyle", () => {
+  it("melee damage node is relevant for melee", () => {
+    const node = getNode("node140")!; // Melee Power I
+    expect(isNodeRelevantForStyle(node, "melee")).toBe(true);
+  });
+
+  it("melee damage node is NOT relevant for ranged", () => {
+    const node = getNode("node140")!; // Melee Power I
+    expect(isNodeRelevantForStyle(node, "ranged")).toBe(false);
+  });
+
+  it("ranged damage node is relevant for ranged", () => {
+    const node = getNode("node13")!; // Ranged Power I
+    expect(isNodeRelevantForStyle(node, "ranged")).toBe(true);
+  });
+
+  it("ranged damage node is NOT relevant for melee", () => {
+    const node = getNode("node13")!; // Ranged Power I
+    expect(isNodeRelevantForStyle(node, "melee")).toBe(false);
+  });
+
+  it("all-style accuracy node is relevant for all styles", () => {
+    const allNodes = getAllNodes();
+    const accNode = allNodes.find(n => n.effects.some(e => e.type === "talent_all_style_accuracy"))!;
+    expect(isNodeRelevantForStyle(accNode, "melee")).toBe(true);
+    expect(isNodeRelevantForStyle(accNode, "ranged")).toBe(true);
+    expect(isNodeRelevantForStyle(accNode, "magic")).toBe(true);
+  });
+
+  it("neutral node (defence/regen) is relevant for all styles", () => {
+    const allNodes = getAllNodes();
+    const neutralNode = allNodes.find(n => n.effects.some(e => e.type === "talent_defence_boost"));
+    expect(neutralNode).toBeDefined();
+    expect(isNodeRelevantForStyle(neutralNode!, "melee")).toBe(true);
+    expect(isNodeRelevantForStyle(neutralNode!, "ranged")).toBe(true);
+    expect(isNodeRelevantForStyle(neutralNode!, "magic")).toBe(true);
+  });
 });

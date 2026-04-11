@@ -11,6 +11,7 @@ import type {
   PrayerType,
   AttackStyleBonus,
   BossPreset,
+  PactNode,
 } from "@/types/dps";
 import { PACT_POINT_LIMIT } from "@/types/dps";
 import { ITEMS } from "@/data/items";
@@ -35,26 +36,42 @@ export function optimizeGear(config: OptimizerConfig): OptimizerResult[] {
     slotItems[slot] = pruneDominated(slotItems[slot], style);
   }
 
-  // Step 3: Weapon-first enumeration
+  // Step 3: Weapon-first enumeration — keep best result per weapon for diversity
   const weapons = slotItems.weapon;
-  const heap: OptimizerResult[] = [];
+  const bestPerWeapon = new Map<string, OptimizerResult>();
 
   for (const weapon of weapons) {
-    // If 2H, shield slot is blocked
-    const shields = weapon.isTwoHanded ? [null] : slotItems.shield;
+    // 2H: no shield. 1H: try each shield + no-shield fallback
+    const shields: (Item | null)[] = weapon.isTwoHanded
+      ? [null]
+      : slotItems.shield.length > 0
+        ? [...slotItems.shield, null]
+        : [null];
+
+    // Set optimal spell for staff weapons (Ice Barrage for ancient-capable staves)
+    const spellMax = getOptimalSpellMaxHit(weapon);
+    const adjustedPlayer = spellMax !== undefined
+      ? { ...player, spellMaxHit: spellMax }
+      : player;
 
     for (const shield of shields) {
-      // Build the best loadout for this weapon+shield combo
       const loadout = buildBestLoadout(slotItems, weapon, shield, lockedSlots);
 
-      const ctx = { player, loadout, target };
+      const ctx = { player: adjustedPlayer, loadout, target };
       const result = calculateDps(ctx);
 
-      insertIntoHeap(heap, { loadout, result }, topN);
+      const wid = weapon.id;
+      const existing = bestPerWeapon.get(wid);
+      if (!existing || result.dps > existing.result.dps) {
+        bestPerWeapon.set(wid, { loadout, result });
+      }
     }
   }
 
-  return heap.sort((a, b) => b.result.dps - a.result.dps);
+  // Return one result per weapon, sorted by DPS, top N
+  return [...bestPerWeapon.values()]
+    .sort((a, b) => b.result.dps - a.result.dps)
+    .slice(0, topN);
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -77,12 +94,30 @@ export function optimizeBuild(config: OptimizerConfig): OptimizerResult[] {
   // Phase 1: Enumerate all config combos for "auto" fields
   const combos = enumerateConfigCombos(player);
 
-  // Phase 2: Quick rank — test top 3 weapons with greedy fill for each combo
+  // Phase 2: Quick rank — test top 5 weapons with greedy fill for each combo
   const ranked = quickRankCombos(combos, player, target, lockedSlots, style);
 
   // Phase 3: Full gear optimize for top 5 combos
+  // Use per-weapon-best map for diversity across all combos
   const topCombos = ranked.slice(0, 5);
-  const heap: OptimizerResult[] = [];
+  const bestPerWeapon = new Map<string, OptimizerResult>();
+
+  function mergeResults(results: OptimizerResult[], optConfig: OptimizedConfig) {
+    for (const r of results) {
+      const wid = r.loadout.weapon?.id ?? "";
+      // Add spellMaxHit to config if weapon is a regular staff
+      const spellMax = getOptimalSpellMaxHit(r.loadout.weapon);
+      const config = spellMax !== undefined
+        ? { ...optConfig, spellMaxHit: spellMax }
+        : optConfig;
+      r.optimizedConfig = config;
+
+      const existing = bestPerWeapon.get(wid);
+      if (!existing || r.result.dps > existing.result.dps) {
+        bestPerWeapon.set(wid, r);
+      }
+    }
+  }
 
   for (const { combo } of topCombos) {
     const resolved = resolvePlayer(player, combo);
@@ -92,13 +127,7 @@ export function optimizeBuild(config: OptimizerConfig): OptimizerResult[] {
       lockedSlots,
       topN,
     });
-
-    // Tag each result with the optimized config
-    const optConfig = buildOptimizedConfig(player, combo);
-    for (const r of results) {
-      r.optimizedConfig = optConfig;
-      insertIntoHeap(heap, r, topN);
-    }
+    mergeResults(results, buildOptimizedConfig(player, combo));
   }
 
   // Phase 4: Comprehensive pact optimization via beam search (if activePacts empty = auto)
@@ -114,38 +143,34 @@ export function optimizeBuild(config: OptimizerConfig): OptimizerResult[] {
         const pactResults = optimizeGear({
           player: pactPlayer, target, lockedSlots, topN,
         });
-        const optConfig = { ...buildOptimizedConfig(player, combo), activePacts: pacts };
-        for (const r of pactResults) {
-          r.optimizedConfig = optConfig;
-          insertIntoHeap(heap, r, topN);
-        }
+        mergeResults(pactResults, { ...buildOptimizedConfig(player, combo), activePacts: pacts });
       }
     }
 
     // Iterative refinement: re-optimise pacts against the best gear found so far
-    if (heap.length > 0) {
-      const best = heap.reduce((a, b) => (a.result.dps > b.result.dps ? a : b));
+    const bestSoFar = [...bestPerWeapon.values()].reduce(
+      (a, b) => (a.result.dps > b.result.dps ? a : b),
+      { result: { dps: 0 } } as OptimizerResult,
+    );
+    if (bestSoFar.result.dps > 0) {
       const bestCombo = topCombos[0]?.combo;
       if (bestCombo) {
         const resolved = resolvePlayer(player, bestCombo);
-        // Fixed-loadout beam search is fast (no gear estimation per candidate)
-        const refinedPacts = optimizePactsBeam(resolved, target, lockedSlots, best.loadout);
+        const refinedPacts = optimizePactsBeam(resolved, target, lockedSlots, bestSoFar.loadout);
         for (const pacts of refinedPacts.slice(0, 2)) {
           const pactPlayer = { ...resolved, activePacts: pacts };
           const pactResults = optimizeGear({
             player: pactPlayer, target, lockedSlots, topN,
           });
-          const optConfig = { ...buildOptimizedConfig(player, bestCombo), activePacts: pacts };
-          for (const r of pactResults) {
-            r.optimizedConfig = optConfig;
-            insertIntoHeap(heap, r, topN);
-          }
+          mergeResults(pactResults, { ...buildOptimizedConfig(player, bestCombo), activePacts: pacts });
         }
       }
     }
   }
 
-  return heap.sort((a, b) => b.result.dps - a.result.dps);
+  return [...bestPerWeapon.values()]
+    .sort((a, b) => b.result.dps - a.result.dps)
+    .slice(0, topN);
 }
 
 function getValidPotions(style: CombatStyle): Exclude<PotionType, "auto">[] {
@@ -231,10 +256,10 @@ function quickRankCombos(
   const regions = player.regions;
   const slotItems = getSlotCandidates(style, regions, locked);
 
-  // Pick top 3 weapons by offensive score
+  // Pick top 5 weapons by offensive score (more diverse than 3)
   const weaponScores = slotItems.weapon.map(w => ({ w, score: offensiveScore(w, style) }));
   weaponScores.sort((a, b) => b.score - a.score);
-  const topWeapons = weaponScores.slice(0, 3).map(ws => ws.w);
+  const topWeapons = weaponScores.slice(0, 5).map(ws => ws.w);
 
   const results: { combo: ConfigCombo; dps: number }[] = [];
 
@@ -243,11 +268,16 @@ function quickRankCombos(
     let bestDps = 0;
 
     for (const weapon of topWeapons) {
-      const shields = weapon.isTwoHanded ? [null] : slotItems.shield;
-      const shield = shields.length > 0 ? shields[0] : null;
+      const shield = weapon.isTwoHanded ? null : (slotItems.shield[0] ?? null);
       const loadout = buildBestLoadout(slotItems, weapon, shield, locked);
 
-      const result = calculateDps({ player: resolved, loadout, target });
+      // Use optimal spell for staff weapons
+      const spellMax = getOptimalSpellMaxHit(weapon);
+      const evalPlayer = spellMax !== undefined
+        ? { ...resolved, spellMaxHit: spellMax }
+        : resolved;
+
+      const result = calculateDps({ player: evalPlayer, loadout, target });
       if (result.dps > bestDps) bestDps = result.dps;
     }
 
@@ -256,6 +286,83 @@ function quickRankCombos(
 
   results.sort((a, b) => b.dps - a.dps);
   return results;
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// PACT STYLE RELEVANCE
+// ═══════════════════════════════════════════════════════════════════════
+
+const MELEE_EFFECTS = new Set([
+  "talent_percentage_melee_damage",
+  "talent_light_weapon_faster",
+  "talent_light_weapon_doublehit",
+  "talent_free_random_weapon_attack_chance",
+  "talent_multi_hit_str_increase",
+  "talent_melee_strength_prayer_bonus",
+  "talent_percentage_melee_maxhit_distance",
+  "talent_2h_melee_echos",
+]);
+
+const RANGED_EFFECTS = new Set([
+  "talent_percentage_ranged_damage",
+  "talent_ranged_regen_echo_chance",
+  "talent_crossbow_echo_reproc_chance",
+  "talent_crossbow_slow_big_hits",
+  "talent_crossbow_max_hit",
+  "talent_crossbow_double_accuracy_roll",
+  "talent_bow_always_pass_accuracy",
+  "talent_bow_fast_hits",
+  "talent_bow_min_hit_stacking_increase",
+  "talent_bow_max_hit_stacking_increase",
+  "talent_thrown_maxhit_echoes",
+  "talent_thrown_weapon_melee_str_scale",
+  "talent_thrown_weapon_accuracy",
+  "talent_thrown_weapon_multi",
+  "talent_buffed_ranged_prayers",
+  "talent_ranged_echo_cyclical",
+  "talent_ranged_strength_hp_difference",
+]);
+
+const MAGIC_EFFECTS = new Set([
+  "talent_percentage_magic_damage",
+  "talent_magic_attack_speed_traditional",
+  "talent_magic_attack_speed_powered",
+  "talent_air_spell_damage_active_prayers",
+  "talent_air_spell_max_hit_prayer_bonus",
+  "talent_water_spell_damage_high_hp",
+  "talent_water_spell_bouce_heal",
+  "talent_fire_hp_consume_for_damage",
+  "talent_fire_spell_burn_bounce",
+  "talent_earth_reduce_defence",
+  "talent_earth_scale_defence_stat",
+  "talent_smoke_counts_as_air",
+  "talent_ice_counts_as_water",
+  "talent_blood_counts_as_fire",
+  "talent_shadow_counts_as_earth",
+  "talent_regen_stave_charges_water",
+  "talent_regen_stave_charges_fire",
+  "talent_regen_stave_charges_air",
+  "talent_regen_stave_charges_earth",
+  "talent_regen_magic_level_boost",
+]);
+
+/** Check whether a pact node could provide DPS benefit for the given style. */
+export function isNodeRelevantForStyle(node: PactNode, style: CombatStyle): boolean {
+  const styleSet = style === "melee" ? MELEE_EFFECTS
+    : style === "ranged" ? RANGED_EFFECTS
+    : MAGIC_EFFECTS;
+
+  for (const e of node.effects) {
+    // Effect matches the current style
+    if (styleSet.has(e.type)) return true;
+    // Effect is for a different style — check if it's in ANY style set
+    if (!MELEE_EFFECTS.has(e.type) && !RANGED_EFFECTS.has(e.type) && !MAGIC_EFFECTS.has(e.type)) {
+      // Universal/neutral effect (accuracy, defence, regen, etc.)
+      return true;
+    }
+  }
+
+  return false;
 }
 
 /**
@@ -305,12 +412,17 @@ function optimizePactsBeam(
   function evalDps(pacts: string[]): number {
     const p = { ...player, activePacts: pacts };
     if (fixedLoadout) {
-      return calculateDps({ player: p, loadout: fixedLoadout, target }).dps;
+      // Use optimal spell for the fixed loadout weapon
+      const spellMax = getOptimalSpellMaxHit(fixedLoadout.weapon);
+      const evalPlayer = spellMax !== undefined ? { ...p, spellMaxHit: spellMax } : p;
+      return calculateDps({ player: evalPlayer, loadout: fixedLoadout, target }).dps;
     }
     let best = 0;
     for (const { weapon, shield } of quickWeapons) {
       const loadout = buildBestLoadout(slotItems!, weapon, shield, lockedSlots);
-      const dps = calculateDps({ player: p, loadout, target }).dps;
+      const spellMax = getOptimalSpellMaxHit(weapon);
+      const evalPlayer = spellMax !== undefined ? { ...p, spellMaxHit: spellMax } : p;
+      const dps = calculateDps({ player: evalPlayer, loadout, target }).dps;
       if (dps > best) best = dps;
     }
     return best;
@@ -326,6 +438,7 @@ function optimizePactsBeam(
     for (const entry of beam) {
       for (const node of allNodes) {
         if (entry.selected.has(node.id)) continue;
+        if (!isNodeRelevantForStyle(node, style)) continue;
         if (!canSelectNode(node.id, entry.selected)) continue;
 
         const sel = new Set(entry.selected);
@@ -537,30 +650,35 @@ function offensiveScore(item: Item, style: string): number {
       return b.mstr * 2 + Math.max(b.astab, b.aslash, b.acrush) + b.prayer * 0.5;
     case "ranged":
       return b.rstr * 2 + b.aranged + b.prayer * 0.5;
-    case "magic":
-      return b.mdmg * 3 + b.amagic + b.prayer * 0.5;
+    case "magic": {
+      let score = b.mdmg * 3 + b.amagic + b.prayer * 0.5;
+      // Powered staves have mdmg=0 but high base damage from magic level.
+      // Add a DPS-equivalent bonus so they rank alongside regular staves.
+      if (item.weaponCategory === "powered-staff") {
+        score += 60;
+      }
+      return score;
+    }
     default:
       return 0;
   }
 }
 
 // ═══════════════════════════════════════════════════════════════════════
-// MIN-HEAP (top N by DPS)
+// SPELL MAX HIT (for regular staves in optimizer)
 // ═══════════════════════════════════════════════════════════════════════
 
-function insertIntoHeap(heap: OptimizerResult[], item: OptimizerResult, maxSize: number): void {
-  if (heap.length < maxSize) {
-    heap.push(item);
-  } else {
-    // Find the minimum DPS in heap
-    let minIdx = 0;
-    for (let i = 1; i < heap.length; i++) {
-      if (heap[i].result.dps < heap[minIdx].result.dps) {
-        minIdx = i;
-      }
-    }
-    if (item.result.dps > heap[minIdx].result.dps) {
-      heap[minIdx] = item;
-    }
-  }
+/** Staves that can autocast ancient magicks (Ice Barrage base max = 30) */
+const ANCIENT_AUTOCAST_STAVES = new Set([
+  "kodai", "nightmare-staff", "echo-shadowflame",
+]);
+
+/**
+ * Returns the optimal spellMaxHit for a regular staff weapon.
+ * Powered staves and non-staff weapons return undefined (not applicable).
+ */
+function getOptimalSpellMaxHit(weapon: Item | null): number | undefined {
+  if (!weapon) return undefined;
+  if (weapon.weaponCategory !== "staff") return undefined;
+  return ANCIENT_AUTOCAST_STAVES.has(weapon.id) ? 30 : 24;
 }

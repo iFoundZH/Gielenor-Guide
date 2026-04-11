@@ -63,7 +63,7 @@ export const PACT_NODES: PactNode[] = [
     position: { x: 550, y: 270 } },
 
   { id: "node3", name: "True Shot", description: "Bow Ranged echoes never miss", branch: "ranged", size: "node_major",
-    effects: [{ type: "talent_bow_always_pass_accuracy", value: true, unsupported: true }],
+    effects: [{ type: "talent_bow_always_pass_accuracy", value: true }],
     linkedNodes: ["node2", "node6"],
     position: { x: 450, y: 220 } },
 
@@ -73,7 +73,7 @@ export const PACT_NODES: PactNode[] = [
     position: { x: 550, y: 220 } },
 
   { id: "node5", name: "Thrown Echo", description: "Thrown: echoes have 20% chance to max hit", branch: "ranged", size: "node_major",
-    effects: [{ type: "talent_thrown_maxhit_echoes", value: 20, unsupported: true }],
+    effects: [{ type: "talent_thrown_maxhit_echoes", value: 20 }],
     linkedNodes: ["node2", "node8"],
     position: { x: 650, y: 220 } },
 
@@ -93,7 +93,7 @@ export const PACT_NODES: PactNode[] = [
     position: { x: 500, y: 70 } },
 
   { id: "node16", name: "HP Ranged Str", description: "Ranged str +1 per 10 HP difference (current vs max)", branch: "ranged", size: "node_major",
-    effects: [{ type: "talent_ranged_strength_hp_difference", value: true, unsupported: true }],
+    effects: [{ type: "talent_ranged_strength_hp_difference", value: true }],
     linkedNodes: ["node15", "node17"],
     position: { x: 550, y: 70 } },
 
@@ -147,7 +147,7 @@ export const PACT_NODES: PactNode[] = [
 
   // Bow capstones
   { id: "node26", name: "Bow Min Hit Stack", description: "Hitting increases min hit by 1, caps at 15% of base max", branch: "ranged", size: "node_capstone",
-    effects: [{ type: "talent_bow_min_hit_stacking_increase", value: true, unsupported: true }],
+    effects: [{ type: "talent_bow_min_hit_stacking_increase", value: true }],
     linkedNodes: ["node27"],
     position: { x: 365, y: -130 } },
 
@@ -157,7 +157,7 @@ export const PACT_NODES: PactNode[] = [
     position: { x: 400, y: -80 } },
 
   { id: "node28", name: "Bow Max Hit Stack", description: "Hitting increases max hit by 1, caps at 15% of base max", branch: "ranged", size: "node_capstone",
-    effects: [{ type: "talent_bow_max_hit_stacking_increase", value: true, unsupported: true }],
+    effects: [{ type: "talent_bow_max_hit_stacking_increase", value: true }],
     linkedNodes: ["node27"],
     position: { x: 435, y: -130 } },
 
@@ -189,7 +189,7 @@ export const PACT_NODES: PactNode[] = [
     position: { x: 700, y: -80 } },
 
   { id: "node34", name: "Multi-Target Thrown", description: "Thrown: attack hits an additional nearby target", branch: "ranged", size: "node_capstone",
-    effects: [{ type: "talent_thrown_weapon_multi", value: true, unsupported: true }],
+    effects: [{ type: "talent_thrown_weapon_multi", value: true }],
     linkedNodes: ["node33"],
     position: { x: 735, y: -130 } },
 
@@ -208,38 +208,38 @@ export const PACT_NODES: PactNode[] = [
   // REGEN SUB-BRANCH (elemental regen bonuses, from node10)
   // ══════════════════════════════════════════════════════════════════════
   { id: "node44", name: "Magic Level Boost", description: "Regen runes: Magic level +1 per regen for 30 ticks (cap +10)", branch: "magic", size: "node_major",
-    effects: [{ type: "talent_regen_magic_level_boost", value: 10, unsupported: true }],
+    effects: [{ type: "talent_regen_magic_level_boost", value: 10 }],
     linkedNodes: ["node1", "node45", "node46", "node47", "node48"],
     position: { x: 462, y: 383 } },
 
   { id: "node45", name: "Air Rune Prayer", description: "Regen air runes: 15% chance to restore 1 prayer per rune", branch: "magic", size: "node_major",
-    effects: [{ type: "talent_airrune_regen_prayer_restore", value: 15, unsupported: true }],
+    effects: [{ type: "talent_airrune_regen_prayer_restore", value: 15 }],
     linkedNodes: ["node44", "node55"],
     position: { x: 313, y: 383 } },
 
   { id: "node46", name: "Water Rune Heal", description: "Regen water runes: healed for 1 per rune", branch: "magic", size: "node_major",
-    effects: [{ type: "talent_waterrune_regen_healing", value: 1, unsupported: true }],
+    effects: [{ type: "talent_waterrune_regen_healing", value: 1 }],
     linkedNodes: ["node44", "node56"],
     position: { x: 350, y: 420 } },
 
   { id: "node47", name: "Fire Rune Damage", description: "Regen fire runes: +1 damage per rune regenerated", branch: "magic", size: "node_major",
-    effects: [{ type: "talent_firerune_regen_damage_boost", value: 1, unsupported: true }],
+    effects: [{ type: "talent_firerune_regen_damage_boost", value: 1 }],
     linkedNodes: ["node44", "node56"],
     position: { x: 425, y: 495 } },
 
   { id: "node48", name: "Earth Rune Defence", description: "Regen earth runes: +1 Defence per rune for 30t (cap 20%)", branch: "magic", size: "node_major",
-    effects: [{ type: "talent_earthrune_regen_defence_boost", value: 1, unsupported: true }],
+    effects: [{ type: "talent_earthrune_regen_defence_boost", value: 1 }],
     linkedNodes: ["node44", "node57"],
     position: { x: 462, y: 532 } },
 
   // Powered staff regen nodes
   { id: "node53", name: "Staff Regen Water", description: "Powered staff regen also generates 1 water rune", branch: "magic", size: "node_major",
-    effects: [{ type: "talent_regen_stave_charges_water", value: true, unsupported: true }],
+    effects: [{ type: "talent_regen_stave_charges_water", value: true }],
     linkedNodes: ["node68", "node166"],
     position: { x: 237, y: 457 } },
 
   { id: "node54", name: "Staff Regen Fire", description: "Powered staff regen also generates 1 fire rune", branch: "magic", size: "node_major",
-    effects: [{ type: "talent_regen_stave_charges_fire", value: true, unsupported: true }],
+    effects: [{ type: "talent_regen_stave_charges_fire", value: true }],
     linkedNodes: ["node69", "node167"],
     position: { x: 337, y: 657 } },
 
@@ -267,7 +267,7 @@ export const PACT_NODES: PactNode[] = [
     position: { x: 225, y: 395 } },
 
   { id: "node59", name: "Overheal I", description: "Pact healing overheals up to +30% of base HP", branch: null, size: "node_major",
-    effects: [{ type: "talent_overhealing_via_talents", value: 30, unsupported: true }],
+    effects: [{ type: "talent_overhealing_via_talents", value: 30 }],
     linkedNodes: ["node55", "node56", "node68"],
     position: { x: 300, y: 470 } },
 
@@ -300,7 +300,7 @@ export const PACT_NODES: PactNode[] = [
     position: { x: 350, y: 170 } },
 
   { id: "node65", name: "Style Swap", description: "Max hitting from 3+ tiles: next different-style hit deals +25%", branch: null, size: "node_major",
-    effects: [{ type: "talent_max_hit_style_swap", value: true, unsupported: true }],
+    effects: [{ type: "talent_max_hit_style_swap", value: true }],
     linkedNodes: ["node64", "node66"],
     position: { x: 288, y: 108 } },
 
@@ -311,7 +311,7 @@ export const PACT_NODES: PactNode[] = [
     position: { x: 800, y: 770 } },
 
   { id: "node141", name: "Thorns Double", description: "Thorns hits twice (second hit at 50% damage)", branch: "melee", size: "node_capstone",
-    effects: [{ type: "talent_thorns_double_hit", value: true, unsupported: true }],
+    effects: [{ type: "talent_thorns_double_hit", value: true }],
     linkedNodes: ["node140"],
     position: { x: 850, y: 820 } },
 
@@ -326,7 +326,7 @@ export const PACT_NODES: PactNode[] = [
     position: { x: 875, y: 695 } },
 
   { id: "node144", name: "Spec Restore", description: "Melee hits restore 2% special attack energy", branch: "melee", size: "node_capstone",
-    effects: [{ type: "talent_hit_restore_spec_energy", value: 2, unsupported: true }],
+    effects: [{ type: "talent_hit_restore_spec_energy", value: 2 }],
     linkedNodes: ["node143"],
     position: { x: 925, y: 745 } },
 
@@ -336,7 +336,7 @@ export const PACT_NODES: PactNode[] = [
     position: { x: 700, y: 670 } },
 
   { id: "node150", name: "Blindbag Chance+", description: "Per unique heavy weapon in inv: Blindbag chance +2% (max 5)", branch: "melee", size: "node_major",
-    effects: [{ type: "talent_unique_blindbag_chance", value: true, unsupported: true }],
+    effects: [{ type: "talent_unique_blindbag_chance", value: true }],
     linkedNodes: ["node151", "node161"],
     position: { x: 900, y: 570 } },
 
@@ -346,7 +346,7 @@ export const PACT_NODES: PactNode[] = [
     position: { x: 950, y: 620 } },
 
   { id: "node152", name: "Blindbag Damage+", description: "Per unique heavy weapon in inv: Blindbag max hit +2% (max 5)", branch: "melee", size: "node_capstone",
-    effects: [{ type: "talent_unique_blindbag_damage", value: 2, unsupported: true }],
+    effects: [{ type: "talent_unique_blindbag_damage", value: 2 }],
     linkedNodes: ["node151"],
     position: { x: 1000, y: 670 } },
 
@@ -361,7 +361,7 @@ export const PACT_NODES: PactNode[] = [
     position: { x: 1025, y: 545 } },
 
   { id: "node155", name: "Melee Range Boost", description: "If melee range >= 4, increase to 7. Halberds slower than 5t set to 5t", branch: "melee", size: "node_capstone",
-    effects: [{ type: "talent_melee_range_conditional_boost", value: true, unsupported: true }],
+    effects: [{ type: "talent_melee_range_conditional_boost", value: true }],
     linkedNodes: ["node154"],
     position: { x: 1075, y: 595 } },
 
@@ -391,13 +391,13 @@ export const PACT_NODES: PactNode[] = [
     position: { x: 775, y: 595 } },
 
   { id: "node165", name: "Overheal Consumption", description: "Consume 5 overheal HP to increase min hit by 5", branch: "melee", size: "node_major",
-    effects: [{ type: "talent_overheal_consumption_boost", value: true, unsupported: true }],
+    effects: [{ type: "talent_overheal_consumption_boost", value: true }],
     linkedNodes: ["node161", "node162"],
     position: { x: 838, y: 582 } },
 
   // Light/heavy melee weapon nodes
   { id: "node71", name: "Thorns", description: "Shield equipped: Thorns effect deals 3 damage when attacked", branch: "melee", size: "node_major",
-    effects: [{ type: "talent_thorns_damage", value: 3, unsupported: true }],
+    effects: [{ type: "talent_thorns_damage", value: 3 }],
     linkedNodes: ["node74", "node81"],
     position: { x: 638, y: 532 } },
 
@@ -412,7 +412,7 @@ export const PACT_NODES: PactNode[] = [
     position: { x: 750, y: 420 } },
 
   { id: "node74", name: "Distance Min Hit", description: "Melee min hit +3, plus +3 per tile distance", branch: "melee", size: "node_major",
-    effects: [{ type: "talent_distance_melee_minhit", value: 3, unsupported: true }],
+    effects: [{ type: "talent_distance_melee_minhit", value: 3 }],
     linkedNodes: ["node1", "node71", "node72", "node73", "node43"],
     position: { x: 638, y: 383 } },
 
@@ -422,12 +422,12 @@ export const PACT_NODES: PactNode[] = [
     position: { x: 763, y: 657 } },
 
   { id: "node80", name: "Melee Heal Chance I", description: "Melee/Thorns: +10% chance to heal based on distance", branch: "melee", size: "node_major",
-    effects: [{ type: "talent_melee_distance_healing_chance", value: 10, unsupported: true }],
+    effects: [{ type: "talent_melee_distance_healing_chance", value: 10 }],
     linkedNodes: ["node156", "node157"],
     position: { x: 912, y: 507 } },
 
   { id: "node43", name: "2H Range Double", description: "2H weapons: melee range doubled", branch: "melee", size: "node_major",
-    effects: [{ type: "talent_melee_range_multiplier", value: 2, unsupported: true }],
+    effects: [{ type: "talent_melee_range_multiplier", value: 2 }],
     linkedNodes: ["node74", "node83"],
     position: { x: 787, y: 383 } },
 
@@ -435,7 +435,7 @@ export const PACT_NODES: PactNode[] = [
   // MAGIC BRANCH (upper left / left side)
   // ══════════════════════════════════════════════════════════════════════
   { id: "node66", name: "Prayer Pen I", description: "+15% prayer penetration", branch: null, size: "node_minor",
-    effects: [{ type: "talent_prayer_pen_all", value: 15, unsupported: true }],
+    effects: [{ type: "talent_prayer_pen_all", value: 15 }],
     linkedNodes: ["node65", "node102"],
     position: { x: 225, y: 170 } },
 
@@ -475,12 +475,12 @@ export const PACT_NODES: PactNode[] = [
     position: { x: 837, y: 432 } },
 
   { id: "node84", name: "Shield Reflect", description: "Shield: 0.1% per Defence level to reflect all damage", branch: null, size: "node_major",
-    effects: [{ type: "talent_shield_reflect", value: true, unsupported: true }],
+    effects: [{ type: "talent_shield_reflect", value: true }],
     linkedNodes: ["node81", "node95", "node145"],
     position: { x: 650, y: 620 } },
 
   { id: "node85", name: "Free Spec", description: "20% chance special attacks don't consume energy", branch: null, size: "node_major",
-    effects: [{ type: "talent_spec_for_free", value: 20, unsupported: true }],
+    effects: [{ type: "talent_spec_for_free", value: 20 }],
     linkedNodes: ["node81", "node82", "node163"],
     position: { x: 725, y: 545 } },
 
@@ -495,7 +495,7 @@ export const PACT_NODES: PactNode[] = [
     position: { x: 812, y: 233 } },
 
   { id: "node88", name: "Distance Spec", description: "Attack from 2+ tiles: restore 2% spec energy", branch: null, size: "node_major",
-    effects: [{ type: "talent_restore_sa_energy_from_distance", value: true, unsupported: true }],
+    effects: [{ type: "talent_restore_sa_energy_from_distance", value: true }],
     linkedNodes: ["node83", "node98", "node156"],
     position: { x: 875, y: 395 } },
 
@@ -522,18 +522,18 @@ export const PACT_NODES: PactNode[] = [
     position: { x: 600, y: 570 } },
 
   { id: "node96", name: "Overheal II", description: "Pact healing overheals up to +30% of base HP", branch: null, size: "node_major",
-    effects: [{ type: "talent_overhealing_via_talents", value: 30, unsupported: true }],
+    effects: [{ type: "talent_overhealing_via_talents", value: 30 }],
     linkedNodes: ["node94", "node97"],
     position: { x: 550, y: 620 } },
 
   // Prayer pen nodes
   { id: "node91", name: "Prayer Pen II", description: "+15% prayer penetration", branch: null, size: "node_minor",
-    effects: [{ type: "talent_prayer_pen_all", value: 15, unsupported: true }],
+    effects: [{ type: "talent_prayer_pen_all", value: 15 }],
     linkedNodes: ["node22", "node164"],
     position: { x: 975, y: 20 } },
 
   { id: "node97", name: "Prayer Pen III", description: "+15% prayer penetration", branch: null, size: "node_minor",
-    effects: [{ type: "talent_prayer_pen_all", value: 15, unsupported: true }],
+    effects: [{ type: "talent_prayer_pen_all", value: 15 }],
     linkedNodes: ["node96", "node135"],
     position: { x: 500, y: 670 } },
 
@@ -548,17 +548,17 @@ export const PACT_NODES: PactNode[] = [
     position: { x: 750, y: 170 } },
 
   { id: "node100", name: "Overheal III", description: "Pact healing overheals up to +30% of base HP", branch: null, size: "node_major",
-    effects: [{ type: "talent_overhealing_via_talents", value: 30, unsupported: true }],
+    effects: [{ type: "talent_overhealing_via_talents", value: 30 }],
     linkedNodes: ["node99", "node101"],
     position: { x: 812, y: 108 } },
 
   { id: "node101", name: "Prayer Pen IV", description: "+15% prayer penetration", branch: null, size: "node_minor",
-    effects: [{ type: "talent_prayer_pen_all", value: 15, unsupported: true }],
+    effects: [{ type: "talent_prayer_pen_all", value: 15 }],
     linkedNodes: ["node100", "node87"],
     position: { x: 875, y: 170 } },
 
   { id: "node102", name: "Prayer Restore", description: "No protection prayers: restore 1 prayer/15t", branch: null, size: "node_major",
-    effects: [{ type: "talent_prayer_restore_no_overhead", value: true, unsupported: true }],
+    effects: [{ type: "talent_prayer_restore_no_overhead", value: true }],
     linkedNodes: ["node66", "node106"],
     position: { x: 288, y: 233 } },
 
@@ -585,12 +585,12 @@ export const PACT_NODES: PactNode[] = [
     position: { x: 75, y: 545 } },
 
   { id: "node109", name: "Air Max Hit Prayer", description: "Air spells: +1% chance to max hit per prayer bonus", branch: "magic", size: "node_capstone",
-    effects: [{ type: "talent_air_spell_max_hit_prayer_bonus", value: 1, unsupported: true }],
+    effects: [{ type: "talent_air_spell_max_hit_prayer_bonus", value: 1 }],
     linkedNodes: ["node108"],
     position: { x: 25, y: 595 } },
 
   { id: "node111", name: "Smoke = Air", description: "Smoke spells count as air", branch: "magic", size: "node_major",
-    effects: [{ type: "talent_smoke_counts_as_air", value: true, unsupported: true }],
+    effects: [{ type: "talent_smoke_counts_as_air", value: true }],
     linkedNodes: ["node108"],
     position: { x: 113, y: 582 } },
 
@@ -606,18 +606,18 @@ export const PACT_NODES: PactNode[] = [
     position: { x: 150, y: 620 } },
 
   { id: "node114", name: "Water Heal", description: "Water spell hits heal you for 60% of damage dealt", branch: "magic", size: "node_capstone",
-    effects: [{ type: "talent_water_spell_bouce_heal", value: true, unsupported: true }],
+    effects: [{ type: "talent_water_spell_bouce_heal", value: true }],
     linkedNodes: ["node113"],
     position: { x: 100, y: 670 } },
 
   { id: "node123", name: "Ice = Water", description: "Ice spells count as water", branch: "magic", size: "node_major",
-    effects: [{ type: "talent_ice_counts_as_water", value: true, unsupported: true }],
+    effects: [{ type: "talent_ice_counts_as_water", value: true }],
     linkedNodes: ["node113"],
     position: { x: 212, y: 632 } },
 
   // Fire spell nodes
   { id: "node117", name: "Fire HP Consume", description: "Fire spells burn 6% of your max HP to add 2x that as damage", branch: "magic", size: "node_major",
-    effects: [{ type: "talent_fire_hp_consume_for_damage", value: true, unsupported: true }],
+    effects: [{ type: "talent_fire_hp_consume_for_damage", value: true }],
     linkedNodes: ["node69", "node118"],
     position: { x: 275, y: 645 } },
 
@@ -627,18 +627,18 @@ export const PACT_NODES: PactNode[] = [
     position: { x: 225, y: 695 } },
 
   { id: "node119", name: "Fire Burn Bounce", description: "Fire spell hits apply burn and bounce to nearby targets", branch: "magic", size: "node_capstone",
-    effects: [{ type: "talent_fire_spell_burn_bounce", value: true, unsupported: true }],
+    effects: [{ type: "talent_fire_spell_burn_bounce", value: true }],
     linkedNodes: ["node118"],
     position: { x: 175, y: 745 } },
 
   { id: "node124", name: "Blood = Fire", description: "Blood spells count as fire", branch: "magic", size: "node_major",
-    effects: [{ type: "talent_blood_counts_as_fire", value: true, unsupported: true }],
+    effects: [{ type: "talent_blood_counts_as_fire", value: true }],
     linkedNodes: ["node118"],
     position: { x: 162, y: 682 } },
 
   // Earth spell nodes
   { id: "node127", name: "Earth Def Reduce", description: "Earth spell hits reduce enemy Defence & Magic Def by 2", branch: "magic", size: "node_major",
-    effects: [{ type: "talent_earth_reduce_defence", value: true, unsupported: true }],
+    effects: [{ type: "talent_earth_reduce_defence", value: true }],
     linkedNodes: ["node70", "node128", "node134"],
     position: { x: 350, y: 720 } },
 
@@ -653,59 +653,59 @@ export const PACT_NODES: PactNode[] = [
     position: { x: 250, y: 820 } },
 
   { id: "node131", name: "Shadow = Earth", description: "Shadow spells count as earth", branch: "magic", size: "node_major",
-    effects: [{ type: "talent_shadow_counts_as_earth", value: true, unsupported: true }],
+    effects: [{ type: "talent_shadow_counts_as_earth", value: true }],
     linkedNodes: ["node128"],
     position: { x: 262, y: 732 } },
 
   // Powered staff regen nodes (from magic side)
   { id: "node166", name: "Staff Regen Air", description: "Powered staff regen also generates 1 air rune", branch: "magic", size: "node_major",
-    effects: [{ type: "talent_regen_stave_charges_air", value: true, unsupported: true }],
+    effects: [{ type: "talent_regen_stave_charges_air", value: true }],
     linkedNodes: ["node67", "node53"],
     position: { x: 187, y: 507 } },
 
   { id: "node167", name: "Staff Regen Earth", description: "Powered staff regen also generates 1 earth rune", branch: "magic", size: "node_major",
-    effects: [{ type: "talent_regen_stave_charges_earth", value: true, unsupported: true }],
+    effects: [{ type: "talent_regen_stave_charges_earth", value: true }],
     linkedNodes: ["node54", "node70"],
     position: { x: 387, y: 607 } },
 
   // Misc utility nodes
   { id: "node103", name: "Prayer Pen V", description: "+15% prayer penetration", branch: null, size: "node_minor",
-    effects: [{ type: "talent_prayer_pen_all", value: 15, unsupported: true }],
+    effects: [{ type: "talent_prayer_pen_all", value: 15 }],
     linkedNodes: ["node20", "node106"],
     position: { x: 125, y: 20 } },
 
   { id: "node106", name: "Prayer Pen VI", description: "+15% prayer penetration", branch: null, size: "node_minor",
-    effects: [{ type: "talent_prayer_pen_all", value: 15, unsupported: true }],
+    effects: [{ type: "talent_prayer_pen_all", value: 15 }],
     linkedNodes: ["node102", "node103", "node107"],
     position: { x: 125, y: 233 } },
 
   { id: "node134", name: "Prayer Pen VII", description: "+15% prayer penetration", branch: null, size: "node_minor",
-    effects: [{ type: "talent_prayer_pen_all", value: 15, unsupported: true }],
+    effects: [{ type: "talent_prayer_pen_all", value: 15 }],
     linkedNodes: ["node127", "node136"],
     position: { x: 450, y: 820 } },
 
   { id: "node135", name: "Shield Block Heal", description: "0-damage hits with shield/off-hand: heal 2 + restore 2 prayer", branch: null, size: "node_major",
-    effects: [{ type: "talent_shield_block_heal", value: true, unsupported: true }],
+    effects: [{ type: "talent_shield_block_heal", value: true }],
     linkedNodes: ["node97", "node136"],
     position: { x: 550, y: 720 } },
 
   { id: "node136", name: "Prayer Pen VIII", description: "+15% prayer penetration", branch: null, size: "node_minor",
-    effects: [{ type: "talent_prayer_pen_all", value: 15, unsupported: true }],
+    effects: [{ type: "talent_prayer_pen_all", value: 15 }],
     linkedNodes: ["node134", "node135", "node139"],
     position: { x: 650, y: 820 } },
 
   { id: "node139", name: "Defence Recoil", description: "Recoil/Thorns: +1% of total defence bonuses as damage", branch: "melee", size: "node_major",
-    effects: [{ type: "talent_defence_recoil_scaling", value: true, unsupported: true }],
+    effects: [{ type: "talent_defence_recoil_scaling", value: true }],
     linkedNodes: ["node136", "node140", "node145"],
     position: { x: 750, y: 720 } },
 
   { id: "node146", name: "Melee Heal Chance II", description: "Melee/Thorns: +10% chance to heal based on distance", branch: "melee", size: "node_major",
-    effects: [{ type: "talent_melee_distance_healing_chance", value: 10, unsupported: true }],
+    effects: [{ type: "talent_melee_distance_healing_chance", value: 10 }],
     linkedNodes: ["node79", "node145"],
     position: { x: 713, y: 607 } },
 
   { id: "node164", name: "Prayer Pen IX", description: "+15% prayer penetration", branch: null, size: "node_minor",
-    effects: [{ type: "talent_prayer_pen_all", value: 15, unsupported: true }],
+    effects: [{ type: "talent_prayer_pen_all", value: 15 }],
     linkedNodes: ["node87", "node91", "node153"],
     position: { x: 975, y: 233 } },
 ];

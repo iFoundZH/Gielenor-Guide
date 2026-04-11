@@ -19,6 +19,8 @@ export type CombatStyle = "melee" | "ranged" | "magic";
 
 export type AttackType = "stab" | "slash" | "crush" | "ranged" | "magic";
 
+export type SpellElement = "air" | "water" | "fire" | "earth" | "smoke" | "ice" | "blood" | "shadow" | "none";
+
 export type WeaponCategory =
   | "bow"
   | "crossbow"
@@ -154,7 +156,6 @@ export type PactEffectType =
 export interface PactEffect {
   type: PactEffectType;
   value: number | boolean;
-  unsupported?: boolean;
 }
 
 export interface PactNode {
@@ -241,6 +242,11 @@ export interface PlayerConfig {
   onSlayerTask: boolean;
   targetDistance?: number;
   spellMaxHit?: number;
+  currentHitpoints?: number;
+  activePrayerCount?: number;
+  spellElement?: SpellElement;
+  uniqueHeavyWeapons?: number;
+  hasOverheal?: boolean;
 }
 
 /* ── Build Loadout ───────────────────────────────────────────────────── */
@@ -291,6 +297,9 @@ export interface DpsBreakdown {
   baseDps: number;
   echoDps: number;
   bonusDps: number;
+  thornsDps: number;
+  minHit: number;
+  sustainInfo: string[];
 }
 
 export interface DpsResult {
@@ -310,6 +319,7 @@ export interface OptimizedConfig {
   attackStyle?: AttackStyleBonus;
   voidSet?: "none" | "void" | "elite-void";
   activePacts?: string[];
+  spellMaxHit?: number;
 }
 
 export interface OptimizerConfig {

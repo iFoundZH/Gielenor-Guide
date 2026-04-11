@@ -6,7 +6,7 @@
  * - canSelectNode enforces graph adjacency + budget
  * - canDeselectNode prevents disconnection
  * - validateSelection verifies root, connectivity, budget
- * - Unsupported effects are skipped
+ * - All newly supported pact effects aggregate correctly
  */
 import { describe, it, expect } from "vitest";
 import { aggregatePactEffects } from "@/lib/pact-effects";
@@ -66,12 +66,110 @@ describe("aggregatePactEffects", () => {
     expect(pe.crossbowEchoReprocChance).toBe(15);
   });
 
-  it("unsupported effects are skipped", () => {
-    // node26 = Bow Min Hit Stack (unsupported)
-    const pe = aggregatePactEffects(["node1", "node7", "node2", "node3", "node20", "node26"]);
-    // The unsupported effect shouldn't crash or change anything
-    // bowFastHits from node20 should still work
-    expect(pe.bowFastHits).toBe(true);
+  it("bowAlwaysPassAccuracy from node3", () => {
+    // node1 → node2 → node3
+    const pe = aggregatePactEffects(["node1", "node2", "node3"]);
+    expect(pe.bowAlwaysPassAccuracy).toBe(true);
+  });
+
+  it("thrownMaxhitEchoes (20) from node5", () => {
+    // node1 → node2 → node5
+    const pe = aggregatePactEffects(["node1", "node2", "node5"]);
+    expect(pe.thrownMaxhitEchoes).toBe(20);
+  });
+
+  it("rangedStrengthHpDifference from node16", () => {
+    // node1 → node2 → node4 → node7 → node11 → node17 → node16
+    const pe = aggregatePactEffects(["node1", "node2", "node4", "node7", "node11", "node17", "node16"]);
+    expect(pe.rangedStrengthHpDifference).toBe(true);
+  });
+
+  it("bowMinHitStackingIncrease from node26", () => {
+    // node1 → node2 → node3 → node6 → node9 → node13 → node20 → node23 → node27 → node26
+    const ids = ["node1", "node2", "node3", "node6", "node9", "node13", "node20", "node23", "node27", "node26"];
+    const pe = aggregatePactEffects(ids);
+    expect(pe.bowMinHitStackingIncrease).toBe(true);
+  });
+
+  it("bowMaxHitStackingIncrease from node28", () => {
+    // node1 → node2 → node3 → node6 → node9 → node13 → node20 → node23 → node27 → node28
+    const ids = ["node1", "node2", "node3", "node6", "node9", "node13", "node20", "node23", "node27", "node28"];
+    const pe = aggregatePactEffects(ids);
+    expect(pe.bowMaxHitStackingIncrease).toBe(true);
+  });
+
+  it("thrownWeaponMulti from node34", () => {
+    // node1 → node2 → node5 → node8 → node12 → node19 → node22 → node25 → node33 → node34
+    const ids = ["node1", "node2", "node5", "node8", "node12", "node19", "node22", "node25", "node33", "node34"];
+    const pe = aggregatePactEffects(ids);
+    expect(pe.thrownWeaponMulti).toBe(true);
+  });
+
+  it("distanceMeleeMinHit (3) from node74", () => {
+    // node1 → node74
+    const pe = aggregatePactEffects(["node1", "node74"]);
+    expect(pe.distanceMeleeMinHit).toBe(3);
+  });
+
+  it("meleeRangeMultiplier (2) from node43", () => {
+    // node1 → node74 → node43
+    const pe = aggregatePactEffects(["node1", "node74", "node43"]);
+    expect(pe.meleeRangeMultiplier).toBe(2);
+  });
+
+  it("thornsDamage (3) from node71", () => {
+    // node1 → node74 → node71
+    const pe = aggregatePactEffects(["node1", "node74", "node71"]);
+    expect(pe.thornsDamage).toBe(3);
+  });
+
+  it("thornsDoubleHit from node141", () => {
+    // node1 → node74 → node71 → node81 → node84 → node145 → node139 → node140 → node141
+    const ids = ["node1", "node74", "node71", "node81", "node84", "node145", "node139", "node140", "node141"];
+    const pe = aggregatePactEffects(ids);
+    expect(pe.thornsDoubleHit).toBe(true);
+  });
+
+  it("defenceRecoilScaling from node139", () => {
+    // node1 → node74 → node71 → node81 → node84 → node145 → node139
+    const ids = ["node1", "node74", "node71", "node81", "node84", "node145", "node139"];
+    const pe = aggregatePactEffects(ids);
+    expect(pe.defenceRecoilScaling).toBe(true);
+  });
+
+  it("prayerPenAll (15) from node66", () => {
+    // node1 → node62 → node64 → node65 → node66
+    const ids = ["node1", "node62", "node64", "node65", "node66"];
+    const pe = aggregatePactEffects(ids);
+    expect(pe.prayerPenAll).toBe(15);
+  });
+
+  it("fireHpConsumeForDamage from node117", () => {
+    // node1 → node44 → node47 → node56 → node60 → node69 → node117
+    const ids = ["node1", "node44", "node47", "node56", "node60", "node69", "node117"];
+    const pe = aggregatePactEffects(ids);
+    expect(pe.fireHpConsumeForDamage).toBe(true);
+  });
+
+  it("earthReduceDefence from node127", () => {
+    // node1 → node44 → node48 → node57 → node70 → node127
+    const ids = ["node1", "node44", "node48", "node57", "node70", "node127"];
+    const pe = aggregatePactEffects(ids);
+    expect(pe.earthReduceDefence).toBe(true);
+  });
+
+  it("smokeCountsAsAir from node111", () => {
+    // node1 → node44 → node45 → node55 → node58 → node67 → node107 → node108 → node111
+    const ids = ["node1", "node44", "node45", "node55", "node58", "node67", "node107", "node108", "node111"];
+    const pe = aggregatePactEffects(ids);
+    expect(pe.smokeCountsAsAir).toBe(true);
+  });
+
+  it("iceCountsAsWater from node123", () => {
+    // node1 → node44 → node45 → node55 → node59 → node68 → node112 → node113 → node123
+    const ids = ["node1", "node44", "node45", "node55", "node59", "node68", "node112", "node113", "node123"];
+    const pe = aggregatePactEffects(ids);
+    expect(pe.iceCountsAsWater).toBe(true);
   });
 
   it("invalid node IDs are silently ignored", () => {
