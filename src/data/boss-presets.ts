@@ -199,7 +199,7 @@ export const BOSS_PRESETS: BossPreset[] = [
 
   { id: "custom", name: "Custom Target", defenceLevel: 1, magicLevel: 1,
     dstab: 0, dslash: 0, dcrush: 0, dranged: 0, dmagic: 0,
-    hp: 100 },
+    hp: 100, size: 1 },
 ];
 
 // ═══════════════════════════════════════════════════════════════════════

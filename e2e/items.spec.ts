@@ -33,21 +33,21 @@ test.describe("Items Page", () => {
   });
 
   test("search finds specific items", async ({ page }) => {
-    await page.getByPlaceholder("Search items...").fill("Scythe");
-    await expect(page.getByText("Scythe of Vitur")).toBeVisible();
+    await page.getByPlaceholder("Search items...").fill("Scythe of vitur");
+    await expect(page.getByText("Scythe of vitur", { exact: true })).toBeVisible();
   });
 
   test("echo items show Echo badge", async ({ page }) => {
-    await page.getByPlaceholder("Search items...").fill("V's Helm");
-    const card = page.locator("text=V's Helm").first();
+    await page.getByPlaceholder("Search items...").fill("V's helm");
+    const card = page.locator("text=V's helm").first();
     await expect(card).toBeVisible();
     await expect(page.locator("span:has-text('Echo')").first()).toBeVisible();
   });
 
   test("clicking item expands full stats", async ({ page }) => {
-    await page.getByPlaceholder("Search items...").fill("Scythe");
+    await page.getByPlaceholder("Search items...").fill("Scythe of vitur");
     // Click the card (Card component has onClick)
-    await page.locator("text=Scythe of Vitur").first().click();
+    await page.locator("text=Scythe of vitur").first().click();
     // Expanded view shows detailed stat rows
     await expect(page.getByText("Stab Atk")).toBeVisible();
     await expect(page.getByText("Slash Def")).toBeVisible();

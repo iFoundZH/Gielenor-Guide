@@ -114,7 +114,8 @@ defRoll = (magicLevel + 9) × (magicDefBonus + 64)`} />
 else:
   accuracy = atkRoll / (2 × (defRoll + 1))`} />
           <Note>
-            <strong>Double accuracy roll</strong> (Fang, N7 crossbow, Drygore): accuracy = 1 - (1 - acc)&sup2;
+            <strong>Double accuracy roll</strong> (N7 crossbow, Drygore): accuracy = 1 - (1 - acc)&sup2;<br />
+            <strong>Fang exact double roll</strong>: A&gt;D: 1-(D+2)(2D+3)/((A+1)&sup2;&times;6) | A&le;D: A(4A+5)/(6(A+1)(D+1))
           </Note>
         </FormulaSection>
 
@@ -132,9 +133,13 @@ DPS = (maxHit / 2 × accuracy) / (speed × 0.6)
 // Always-max (N6 crossbow):
 DPS = (maxHit × accuracy) / (speed × 0.6)
 
-// Scythe: 3 independent hits, each with independent accuracy rolls
+// Scythe: hits depend on target size (1×1=1, 2×2=2, 3×3+=3 hits)
 // hit1 = full max, hit2 = FLOOR(max/2), hit3 = FLOOR(max/4)
-DPS = DPS_hit1 + DPS_hit2 + DPS_hit3
+DPS = DPS_hit1 + DPS_hit2 + DPS_hit3  // for 3×3+ targets
+
+// Fang: min hit raised, average = (max + FLOOR(max × 3/20)) / 2
+fangMin = FLOOR(maxHit × 3 / 20)
+DPS = ((maxHit + fangMin) / 2 × accuracy) / (speed × 0.6)
 
 // Tecpatl double hit:
 DPS = standardDPS × 2`} />

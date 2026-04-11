@@ -27,9 +27,9 @@ test.describe("Calculator Page", () => {
     await expect(page.locator("text=Varlamore").first()).toBeVisible();
   });
 
-  test("shows pact selector", async ({ page }) => {
-    await expect(page.locator("h3:has-text('Pacts')")).toBeVisible();
-    await expect(page.locator("button:has-text('All DPS')")).toBeVisible();
+  test("shows pact skill tree", async ({ page }) => {
+    await expect(page.locator("h3:has-text('Pact Tree')")).toBeVisible();
+    await expect(page.getByText("/40 points")).toBeVisible();
   });
 
   test("shows equipment grid", async ({ page }) => {
@@ -65,7 +65,7 @@ test.describe("Calculator Page", () => {
     // Click weapon slot
     await page.locator("button:has-text('Weapon')").first().click();
     // Select whip (always available, no region lock)
-    await page.locator("button:has-text('Abyssal Whip')").click();
+    await page.locator("button:has-text('Abyssal whip')").first().click();
     // DPS should now be calculated
     await expect(page.getByText("DPS (damage per second)")).toBeVisible();
   });
@@ -79,17 +79,20 @@ test.describe("Calculator Page", () => {
   test("pact selection changes DPS", async ({ page }) => {
     // Equip a weapon first
     await page.locator("button:has-text('Weapon')").first().click();
-    await page.locator("button:has-text('Abyssal Whip')").click();
+    await page.locator("button:has-text('Abyssal whip')").first().click();
 
     // Read initial DPS via testid
     const dpsEl = page.getByTestId("dps-value");
     await expect(dpsEl).toBeVisible();
     const initialDps = await dpsEl.textContent();
 
-    // Enable F1 pact (+35% accuracy)
-    await page.locator("button:has-text('F1')").first().click();
+    // Click the root node (node1 — Regenerate) in the SVG
+    await page.locator("[data-testid='node-node1']").click();
 
-    // DPS should change
+    // Click an accuracy node (node7 — +15% accuracy)
+    await page.locator("[data-testid='node-node7']").click();
+
+    // DPS should change (accuracy boost)
     await expect(dpsEl).not.toHaveText(initialDps!);
   });
 

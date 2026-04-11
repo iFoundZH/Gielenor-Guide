@@ -30,6 +30,17 @@ export function DpsResultCard({ result }: Props) {
         <StatBlock label="Speed" value={`${result.speed}t (${(result.speed * 0.6).toFixed(1)}s)`} />
         <StatBlock label="Echo DPS" value={result.echoDps > 0 ? `+${result.echoDps.toFixed(2)}` : "—"} />
       </div>
+
+      <div className="mt-2 text-center">
+        <a
+          href="https://tools.runescape.wiki/osrs-dps/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-[10px] text-osrs-text-dim hover:text-osrs-gold transition-colors"
+        >
+          Compare with Wiki DPS Calculator &rarr;
+        </a>
+      </div>
     </div>
   );
 }

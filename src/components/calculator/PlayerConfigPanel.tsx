@@ -24,6 +24,15 @@ const PRAYERS: { value: PrayerType; label: string; style: CombatStyle | "all" }[
   { value: "mystic-might", label: "Mystic Might", style: "magic" },
 ];
 
+const SPELLS: { value: number; label: string }[] = [
+  { value: 24, label: "Fire Surge (24)" },
+  { value: 30, label: "Ice Barrage (30)" },
+  { value: 28, label: "Blood Barrage (28)" },
+  { value: 22, label: "Ice Burst (22)" },
+  { value: 20, label: "Fire Wave (20)" },
+  { value: 16, label: "Fire Blast (16)" },
+];
+
 const ATTACK_STYLES: { value: AttackStyleBonus; label: string }[] = [
   { value: "accurate", label: "Accurate" },
   { value: "aggressive", label: "Aggressive" },
@@ -112,6 +121,22 @@ export function PlayerConfigPanel({ config, onChange }: Props) {
         options={ATTACK_STYLES}
         onChange={v => update({ attackStyle: v as AttackStyleBonus })}
       />
+
+      {/* Spell (magic only, non-powered staves) */}
+      {config.combatStyle === "magic" && (
+        <div>
+          <label className="text-xs text-osrs-text-dim block mb-1">Spell</label>
+          <select
+            value={config.spellMaxHit ?? 24}
+            onChange={e => update({ spellMaxHit: parseInt(e.target.value) })}
+            className="w-full px-3 py-1.5 bg-osrs-darker border border-osrs-border rounded-lg text-sm text-osrs-text focus:border-osrs-gold focus:outline-none"
+          >
+            {SPELLS.map(opt => (
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
+          </select>
+        </div>
+      )}
 
       {/* Toggles */}
       <div className="space-y-2">

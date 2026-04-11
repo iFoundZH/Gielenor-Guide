@@ -16,7 +16,7 @@ import { optimizeGear } from "@/lib/gear-optimizer";
 import { PlayerConfigPanel } from "@/components/calculator/PlayerConfigPanel";
 import { BossSelector } from "@/components/calculator/BossSelector";
 import { RegionSelector } from "@/components/calculator/RegionSelector";
-import { PactSelector } from "@/components/calculator/PactSelector";
+import { PactSkillTree } from "@/components/calculator/PactSkillTree";
 import { GearGrid } from "@/components/calculator/GearGrid";
 import { ItemPicker } from "@/components/calculator/ItemPicker";
 import { DpsResultCard } from "@/components/calculator/DpsResultCard";
@@ -142,6 +142,14 @@ export default function CalculatorPage() {
         DPS Calculator
       </h1>
 
+      {/* ── FULL-WIDTH PACT TREE ──────────────────────────────── */}
+      <div className="bg-osrs-panel border border-osrs-border rounded-xl p-4 mb-6">
+        <PactSkillTree
+          selected={state.player.activePacts}
+          onChange={p => dispatch({ type: "SET_PLAYER", player: { ...state.player, activePacts: p } })}
+        />
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* ── LEFT PANEL: Configuration ──────────────────────────── */}
         <div className="lg:col-span-3 space-y-6">
@@ -163,13 +171,6 @@ export default function CalculatorPage() {
             <RegionSelector
               selected={state.player.regions}
               onChange={r => dispatch({ type: "SET_PLAYER", player: { ...state.player, regions: r } })}
-            />
-          </div>
-
-          <div className="bg-osrs-panel border border-osrs-border rounded-xl p-4">
-            <PactSelector
-              selected={state.player.activePacts}
-              onChange={p => dispatch({ type: "SET_PLAYER", player: { ...state.player, activePacts: p } })}
             />
           </div>
         </div>

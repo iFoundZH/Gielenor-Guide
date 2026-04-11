@@ -42,6 +42,7 @@ interface CompactBuild {
     pot: string; pry: string; sty: string; cs: string;
     reg: string[]; pacts: string[];
     void: string; slay: boolean;
+    dist?: number; spell?: number;
   };
   gear: { [slot: string]: string | null };
   target?: string;
@@ -60,6 +61,7 @@ export function encodeBuild(
       sty: player.attackStyle, cs: player.combatStyle,
       reg: player.regions, pacts: player.activePacts,
       void: player.voidSet, slay: player.onSlayerTask,
+      dist: player.targetDistance, spell: player.spellMaxHit,
     },
     gear: loadout,
     target: targetId,
@@ -91,6 +93,8 @@ export function decodeBuild(encoded: string): {
       activePacts: compact.p.pacts,
       voidSet: compact.p.void as PlayerConfig["voidSet"],
       onSlayerTask: compact.p.slay,
+      targetDistance: compact.p.dist,
+      spellMaxHit: compact.p.spell,
     };
 
     const loadout = compact.gear as { [slot in EquipmentSlot]: string | null };

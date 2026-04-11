@@ -36,20 +36,20 @@ export type WeaponCategory =
 /* ── Equipment Bonuses ───────────────────────────────────────────────── */
 
 export interface EquipmentBonuses {
-  astab: number;   // attack stab
-  aslash: number;  // attack slash
-  acrush: number;  // attack crush
-  aranged: number; // attack ranged
-  amagic: number;  // attack magic
-  dstab: number;   // defence stab
-  dslash: number;  // defence slash
-  dcrush: number;  // defence crush
-  dranged: number; // defence ranged
-  dmagic: number;  // defence magic
-  mstr: number;    // melee strength
-  rstr: number;    // ranged strength
-  mdmg: number;    // magic damage % (integer, e.g. 15 = 15%)
-  prayer: number;  // prayer bonus
+  astab: number;
+  aslash: number;
+  acrush: number;
+  aranged: number;
+  amagic: number;
+  dstab: number;
+  dslash: number;
+  dcrush: number;
+  dranged: number;
+  dmagic: number;
+  mstr: number;
+  rstr: number;
+  mdmg: number;
+  prayer: number;
 }
 
 /* ── Items ────────────────────────────────────────────────────────────── */
@@ -59,47 +59,147 @@ export interface Item {
   name: string;
   slot: EquipmentSlot;
   bonuses: EquipmentBonuses;
-  region?: string;          // region required to access (undefined = always available)
-  isTwoHanded?: boolean;    // true → blocks shield slot
+  region?: string;
+  isTwoHanded?: boolean;
   weaponCategory?: WeaponCategory;
-  attackSpeed?: number;     // ticks between attacks (e.g. 4 = 2.4s)
+  attackSpeed?: number;
   combatStyle?: CombatStyle;
-  attackType?: AttackType;  // primary attack type for this weapon
-  passive?: string;         // human-readable passive effect description
+  attackType?: AttackType;
+  passive?: string;
 }
 
-/* ── Pacts ────────────────────────────────────────────────────────────── */
+/* ── Pacts (Skill Tree) ────────────────────────────────────────────────── */
 
-export type PactModifierType =
-  | "accuracy-percent"       // flat accuracy % boost
-  | "damage-percent"         // multiplicative damage modifier
-  | "speed-ticks"            // attack speed change in ticks
-  | "max-hit-flat"           // flat max hit addition
-  | "strength-percent"       // % of stat added as strength
-  | "echo-percent"           // echo cascade damage modifier
-  | "echo-never-miss"        // echo attacks have 100% accuracy
-  | "always-max"             // always hit max
-  | "double-roll"            // double accuracy roll
-  | "bonus-hit-percent"      // extra hit at % of max
-  | "blindbag-percent"       // % chance of bonus damage
-  | "min-hit-per-tile"       // minimum hit based on distance
-  | "flat-dps"               // flat DPS addition (Flask)
-  | "custom";                // complex modifier handled in engine
+export const PACT_POINT_LIMIT = 40;
 
-export interface PactModifier {
-  type: PactModifierType;
-  value: number;
-  condition?: string;       // e.g. "crossbow", "light-melee", "halberd", "bow", "powered-staff", "spell"
+export type PactNodeSize = "node_minor" | "node_major" | "node_capstone";
+
+export type PactBranch = "melee" | "ranged" | "magic" | null;
+
+export type PactEffectType =
+  | "talent_regen_ammo"
+  | "talent_all_style_accuracy"
+  | "talent_defence_boost"
+  | "talent_percentage_ranged_damage"
+  | "talent_percentage_melee_damage"
+  | "talent_percentage_magic_damage"
+  | "talent_ranged_regen_echo_chance"
+  | "talent_bow_always_pass_accuracy"
+  | "talent_crossbow_echo_reproc_chance"
+  | "talent_thrown_maxhit_echoes"
+  | "talent_ranged_echo_cyclical"
+  | "talent_bow_fast_hits"
+  | "talent_crossbow_slow_big_hits"
+  | "talent_thrown_weapon_melee_str_scale"
+  | "talent_buffed_ranged_prayers"
+  | "talent_ranged_strength_hp_difference"
+  | "talent_bow_min_hit_stacking_increase"
+  | "talent_bow_max_hit_stacking_increase"
+  | "talent_crossbow_max_hit"
+  | "talent_crossbow_double_accuracy_roll"
+  | "talent_thrown_weapon_accuracy"
+  | "talent_thrown_weapon_multi"
+  | "talent_distance_melee_minhit"
+  | "talent_melee_range_multiplier"
+  | "talent_light_weapon_doublehit"
+  | "talent_free_random_weapon_attack_chance"
+  | "talent_thorns_damage"
+  | "talent_offhand_stat_boost"
+  | "talent_multi_hit_str_increase"
+  | "talent_light_weapon_faster"
+  | "talent_melee_strength_prayer_bonus"
+  | "talent_2h_melee_echos"
+  | "talent_percentage_melee_maxhit_distance"
+  | "talent_overheal_consumption_boost"
+  | "talent_thorns_double_hit"
+  | "talent_hit_restore_spec_energy"
+  | "talent_unique_blindbag_damage"
+  | "talent_unique_blindbag_chance"
+  | "talent_melee_range_conditional_boost"
+  | "talent_regen_magic_level_boost"
+  | "talent_magic_attack_speed_traditional"
+  | "talent_magic_attack_speed_powered"
+  | "talent_air_spell_damage_active_prayers"
+  | "talent_air_spell_max_hit_prayer_bonus"
+  | "talent_water_spell_damage_high_hp"
+  | "talent_water_spell_bouce_heal"
+  | "talent_fire_hp_consume_for_damage"
+  | "talent_fire_spell_burn_bounce"
+  | "talent_earth_reduce_defence"
+  | "talent_earth_scale_defence_stat"
+  | "talent_smoke_counts_as_air"
+  | "talent_ice_counts_as_water"
+  | "talent_blood_counts_as_fire"
+  | "talent_shadow_counts_as_earth"
+  | "talent_firerune_regen_damage_boost"
+  | "talent_regen_stave_charges_air"
+  | "talent_regen_stave_charges_water"
+  | "talent_regen_stave_charges_fire"
+  | "talent_regen_stave_charges_earth"
+  | "talent_max_accuracy_roll_from_range"
+  | "talent_overhealing_via_talents"
+  | "talent_max_hit_style_swap"
+  | "talent_shield_reflect"
+  | "talent_spec_for_free"
+  | "talent_restore_sa_energy_from_distance"
+  | "talent_prayer_pen_all"
+  | "talent_prayer_restore_no_overhead"
+  | "talent_shield_block_heal"
+  | "talent_defence_recoil_scaling"
+  | "talent_melee_distance_healing_chance"
+  | "talent_airrune_regen_prayer_restore"
+  | "talent_waterrune_regen_healing"
+  | "talent_earthrune_regen_defence_boost";
+
+export interface PactEffect {
+  type: PactEffectType;
+  value: number | boolean;
+  unsupported?: boolean;
 }
 
 export interface PactNode {
   id: string;
   name: string;
   description: string;
+  branch: PactBranch;
+  size: PactNodeSize;
+  effects: PactEffect[];
+  linkedNodes: string[];
+  position: { x: number; y: number };
+}
+
+/* ── Legacy Pact Types (DPS engine compatibility) ─────────────────────── */
+
+export type PactModifierType =
+  | "accuracy-percent"
+  | "damage-percent"
+  | "speed-ticks"
+  | "max-hit-flat"
+  | "strength-percent"
+  | "echo-percent"
+  | "echo-never-miss"
+  | "always-max"
+  | "double-roll"
+  | "bonus-hit-percent"
+  | "blindbag-percent"
+  | "min-hit-per-tile"
+  | "flat-dps"
+  | "custom";
+
+export interface PactModifier {
+  type: PactModifierType;
+  value: number;
+  condition?: string;
+}
+
+export interface LegacyPactNode {
+  id: string;
+  name: string;
+  description: string;
   category: string;
   dpsRelevant: boolean;
   modifiers: PactModifier[];
-  prerequisites?: string[]; // IDs of prerequisite pacts
+  prerequisites?: string[];
 }
 
 /* ── Boss Presets ─────────────────────────────────────────────────────── */
@@ -113,9 +213,10 @@ export interface BossPreset {
   dcrush: number;
   dranged: number;
   dmagic: number;
-  magicLevel: number;   // used for magic defence roll
+  magicLevel: number;
   region?: string;
   hp: number;
+  size?: number;
   elementalWeakness?: AttackType;
   elementalWeaknessPercent?: number;
   isDragon?: boolean;
@@ -138,18 +239,15 @@ export type PotionType =
 
 export type PrayerType =
   | "none"
-  // melee
   | "piety"
   | "chivalry"
   | "ultimate-strength"
   | "superhuman-strength"
   | "burst-of-strength"
-  // ranged
   | "rigour"
   | "eagle-eye"
   | "hawk-eye"
   | "sharp-eye"
-  // magic
   | "augury"
   | "mystic-might"
   | "mystic-lore"
@@ -169,11 +267,12 @@ export interface PlayerConfig {
   prayerType: PrayerType;
   attackStyle: AttackStyleBonus;
   combatStyle: CombatStyle;
-  regions: string[];         // unlocked region IDs
-  activePacts: string[];     // active pact IDs
+  regions: string[];
+  activePacts: string[];
   voidSet: "none" | "void" | "elite-void";
   onSlayerTask: boolean;
-  targetDistance?: number;    // tiles from target (for halberd/tbow pacts)
+  targetDistance?: number;
+  spellMaxHit?: number;
 }
 
 /* ── Build Loadout ───────────────────────────────────────────────────── */
@@ -198,6 +297,9 @@ export interface DpsContext {
   player: PlayerConfig;
   loadout: BuildLoadout;
   target: BossPreset;
+  pactEffects?: import("@/lib/pact-effects").AggregatedPactEffects;
+  _fangAtkRoll?: number;
+  _fangDefRoll?: number;
 }
 
 /* ── DPS Result (engine output) ──────────────────────────────────────── */
@@ -220,14 +322,14 @@ export interface DpsBreakdown {
   attackSpeed: number;
   baseDps: number;
   echoDps: number;
-  bonusDps: number;     // from passives like D2, D3, Flask
+  bonusDps: number;
 }
 
 export interface DpsResult {
-  dps: number;          // total DPS including all modifiers
+  dps: number;
   maxHit: number;
   accuracy: number;
-  speed: number;        // ticks
+  speed: number;
   echoDps: number;
   breakdown: DpsBreakdown;
 }
@@ -237,8 +339,8 @@ export interface DpsResult {
 export interface OptimizerConfig {
   player: PlayerConfig;
   target: BossPreset;
-  lockedSlots: Partial<BuildLoadout>;  // slots the user has forced
-  topN: number;                         // how many results to return
+  lockedSlots: Partial<BuildLoadout>;
+  topN: number;
 }
 
 export interface OptimizerResult {
@@ -253,6 +355,6 @@ export interface SavedBuild {
   name: string;
   createdAt: number;
   player: PlayerConfig;
-  loadout: { [slot in EquipmentSlot]: string | null }; // item IDs
+  loadout: { [slot in EquipmentSlot]: string | null };
   targetId?: string;
 }

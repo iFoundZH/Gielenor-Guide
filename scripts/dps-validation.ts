@@ -424,35 +424,43 @@ section("TEST 6: Magic — Shadow + full mage gear vs Wardens P3, Augury, Magic 
 // TEST 7: Scythe of Vitur — 3-hit mechanic
 // ═══════════════════════════════════════════════════════════════════════
 
-section("TEST 7: Scythe — 3-hit mechanic vs Custom");
+section("TEST 7: Scythe — size-dependent hits vs Custom(1x1) and Graardor(3x3)");
 {
+  // Custom target: size=1 → scythe only hits once
   // Scythe: 5t, slash, mstr=75, aslash=125
-  // No potion, no prayer, accurate style
-  // EffStr: 99+0+8=107
-  // Max hit: floor(0.5+107*(75+64)/640) = floor(0.5+107*139/640) = floor(0.5+23.234) = floor(23.734) = 23
-  //
-  // EffAtk: 99+3+8=110
-  // AtkRoll: 110*(125+64)=110*189=20790
-  // DefRoll: 640
-  // Acc: 1-642/(2*20791) = 1-642/41582 = 0.98456
-  //
-  // Scythe hits:
-  // hit1: max=23, avg=23/2*acc = 11.5*0.98456 = 11.322
-  // hit2: max=floor(23/2)=11, avg=11/2*acc = 5.5*0.98456 = 5.415
-  // hit3: max=floor(23/4)=5, avg=5/2*acc = 2.5*0.98456 = 2.461
-  // Total avg per attack = 19.198
-  // DPS = 19.198/(5*0.6) = 19.198/3.0 = 6.399
-
-  const ctx = makeCtx(
+  // EffStr: 99+0+8=107, Max hit: 23, AtkRoll: 20790, DefRoll: 640, Acc: 0.98456
+  // 1x1: DPS = (23/2*0.98456)/3.0 = 11.322/3.0 = 3.774
+  const ctx1 = makeCtx(
     { combatStyle: "melee", attackStyle: "accurate" },
     { weapon: getItem("scythe")! },
-    customTarget,
+    customTarget, // size=1
   );
-  const result = calculateDps(ctx);
+  const r1 = calculateDps(ctx1);
+  assertEqual(r1.maxHit, 23, "T7a: scythe max hit");
+  assertClose(r1.dps, 3.774, "T7a: scythe vs 1x1 (single hit only)", 0.05);
 
-  assertEqual(result.maxHit, 23, "T7: scythe max hit");
-  assertClose(result.accuracy, 0.98456, "T7: accuracy", 0.001);
-  assertClose(result.dps, 6.399, "T7: scythe DPS", 0.05);
+  // Graardor (large boss, default size=3) → all 3 hits
+  // DefRoll stab: (250+9)*(90+64) = 39886, but scythe is slash
+  // DefRoll slash: (250+9)*(90+64)=39886 — Graardor dslash=90
+  // Acc: AtkRoll=20790 < 39886 → 20790/(2*39887) = 0.26053
+  // hit1: 23/2 * 0.26053 = 2.996
+  // hit2: 11/2 * 0.26053 = 1.433
+  // hit3: 5/2  * 0.26053 = 0.651
+  // Total avg/attack = 5.080, DPS = 5.080/3.0 = 1.693
+  const graardor = getBoss("graardor")!;
+  const ctx3 = makeCtx(
+    { combatStyle: "melee", attackStyle: "accurate" },
+    { weapon: getItem("scythe")! },
+    graardor,
+  );
+  const r3 = calculateDps(ctx3);
+  assertClose(r3.dps, 1.693, "T7b: scythe vs 3x3 (all 3 hits)", 0.05);
+
+  // Sanity: 3x3 DPS should be roughly (max + floor(max/2) + floor(max/4)) / max of single-hit
+  // With max=23: (23+11+5)/23 = 39/23 ≈ 1.696 (floor rounds down from theoretical 1.75)
+  const ratio3v1 = r3.dps / (r3.maxHit / 2 * r3.accuracy / (r3.speed * 0.6));
+  const expectedRatio = (23 + Math.floor(23/2) + Math.floor(23/4)) / 23;
+  assertClose(ratio3v1, expectedRatio, "T7c: 3-hit ratio matches floor arithmetic", 0.01);
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -494,10 +502,14 @@ section("TEST 8: Fang — double roll + damage compression vs Graardor");
   assertEqual(result.maxHit, 34, "T8: final max hit (after 0.85x)");
   assertEqual(result.breakdown.defenceRoll, 39886, "T8: defence roll");
   assertClose(result.breakdown.baseAccuracy, 0.32200, "T8: base accuracy", 0.005);
-  assertClose(result.accuracy, 0.54032, "T8: double-roll accuracy", 0.005);
+  // Exact Fang accuracy: A=25688 < D=39886 → A*(4A+5)/(6*(A+1)*(D+1))
+  // = 25688*(102757)/(6*25689*39887) = 25688*102757/(6149826108) ≈ 0.42907
+  // (vs approximate 1-(1-0.322)^2 = 0.54032 — the exact formula is lower for A<D)
+  const fangExactAcc = 25688 * (4*25688+5) / (6 * (25688+1) * (39886+1));
+  assertClose(result.accuracy, fangExactAcc, "T8: exact fang accuracy", 0.002);
   // Fang avg = (34 + floor(34*3/20)) / 2 = (34+5)/2 = 19.5
-  // DPS = 19.5 * 0.54032 / 3.0 = 3.512
-  assertClose(result.dps, 3.512, "T8: fang DPS", 0.1);
+  // DPS = 19.5 * fangExactAcc / 3.0
+  assertClose(result.dps, 19.5 * fangExactAcc / 3.0, "T8: fang DPS (exact)", 0.05);
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -1195,6 +1207,520 @@ section("TEST 25: Shadow tripling of magic attack and damage %");
   // EffAtk: 99+0+8=107 (autocast=0, no prayer)
   // AtkRoll: 107*(171+64)=107*235=25145
   assertEqual(result.breakdown.attackRoll, 25145, "T25: shadow attack roll with tripled amagic");
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// TEST 26: Spell max hit — Ice Barrage (30) vs Fire Surge (24)
+// ═══════════════════════════════════════════════════════════════════════
+
+section("TEST 26: Configurable spell max hit — Ice Barrage vs Fire Surge");
+{
+  // Kodai wand: staff, 5t, amagic=28, mdmg=5
+  // Fire Surge (default 24): floor(24*(1+5/100)) = floor(25.2) = 25
+  const ctxFire = makeCtx(
+    { combatStyle: "magic", attackStyle: "autocast" },
+    { weapon: getItem("kodai")! },
+    customTarget,
+  );
+  assertEqual(calculateMaxHit(ctxFire), 25, "T26a: Fire Surge max hit (kodai, 5% mdmg)");
+
+  // Ice Barrage (30): floor(30*(1+5/100)) = floor(31.5) = 31
+  const ctxIce = makeCtx(
+    { combatStyle: "magic", attackStyle: "autocast", spellMaxHit: 30 },
+    { weapon: getItem("kodai")! },
+    customTarget,
+  );
+  assertEqual(calculateMaxHit(ctxIce), 31, "T26b: Ice Barrage max hit (kodai, 5% mdmg)");
+
+  // Fire Wave (20): floor(20*1.05) = 21
+  const ctxWave = makeCtx(
+    { combatStyle: "magic", attackStyle: "autocast", spellMaxHit: 20 },
+    { weapon: getItem("kodai")! },
+    customTarget,
+  );
+  assertEqual(calculateMaxHit(ctxWave), 21, "T26c: Fire Wave max hit (kodai, 5% mdmg)");
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// TEST 27: Echo — V's Helm (acts as Slayer Helm for all styles)
+// ═══════════════════════════════════════════════════════════════════════
+
+section("TEST 27: V's Helm — slayer helm bonus for melee and ranged");
+{
+  // V's Helm should give same bonus as slayer helm (i) on task
+  // Melee: 7/6 (~16.67%) damage and accuracy
+  const ctxMelee = makeCtx(
+    { combatStyle: "melee", attackStyle: "accurate", onSlayerTask: true },
+    { weapon: getItem("whip")!, head: getItem("echo-vs-helm")! },
+    customTarget,
+  );
+  const rMelee = calculateDps(ctxMelee);
+  const vhelmMeleeChain = rMelee.breakdown.multiplierChain.find(s => s.name.includes("V's Helm"));
+  if (vhelmMeleeChain) {
+    assertClose(vhelmMeleeChain.factor, 7/6, "T27a: V's Helm melee dmg factor", 0.001);
+  } else {
+    failed++; failures.push("  FAIL: T27a: V's Helm not in multiplier chain (melee)");
+  }
+
+  // Ranged: 1.15 (15%) damage and accuracy
+  const ctxRanged = makeCtx(
+    { combatStyle: "ranged", attackStyle: "rapid", onSlayerTask: true },
+    { weapon: getItem("tbow")!, head: getItem("echo-vs-helm")!, ammo: getItem("dragon-arrows")! },
+    customTarget,
+  );
+  const rRanged = calculateDps(ctxRanged);
+  const vhelmRangedChain = rRanged.breakdown.multiplierChain.find(s => s.name.includes("V's Helm"));
+  if (vhelmRangedChain) {
+    assertClose(vhelmRangedChain.factor, 1.15, "T27b: V's Helm ranged dmg factor", 0.001);
+  } else {
+    failed++; failures.push("  FAIL: T27b: V's Helm not in multiplier chain (ranged)");
+  }
+
+  // V's Helm has better stats than slayer helm: mstr=8 vs mstr=3
+  // So V's Helm DPS should be higher than slayer helm DPS for same setup
+  const ctxSlayer = makeCtx(
+    { combatStyle: "melee", attackStyle: "accurate", onSlayerTask: true },
+    { weapon: getItem("whip")!, head: getItem("slayer-helm-i")! },
+    customTarget,
+  );
+  const rSlayer = calculateDps(ctxSlayer);
+  if (rMelee.dps > rSlayer.dps) {
+    passed++;
+  } else {
+    failed++; failures.push(`  FAIL: T27c: V's Helm DPS (${rMelee.dps}) should be > Slayer Helm (${rSlayer.dps})`);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// TEST 28: Echo — Infernal Tecpatl (double hit + demonbane)
+// ═══════════════════════════════════════════════════════════════════════
+
+section("TEST 28: Infernal Tecpatl — double hit and demonbane");
+{
+  // Tecpatl: 2h-melee, 4t, stab, astab=72, mstr=70
+  // No pot/prayer, accurate, vs custom (size 1)
+  // EffStr: 99+0+8=107
+  // Max hit: floor(0.5+107*(70+64)/640) = floor(0.5+107*134/640) = floor(0.5+22.403) = floor(22.903) = 22
+  // Speed: 4t = 2.4s
+  // Acc: very high vs custom
+  //
+  // DPS single hit: (22/2*acc)/2.4
+  // DPS double hit: 2 * single hit (the *= 2 in code)
+  const ctx = makeCtx(
+    { combatStyle: "melee", attackStyle: "accurate" },
+    { weapon: getItem("echo-tecpatl")! },
+    customTarget,
+  );
+  const result = calculateDps(ctx);
+  assertEqual(result.maxHit, 22, "T28a: tecpatl max hit");
+
+  // Single-hit DPS would be (22/2*acc)/2.4
+  const singleHitDps = (22 / 2 * result.accuracy) / 2.4;
+  // Double hit should be ~2x
+  assertClose(result.dps / singleHitDps, 2.0, "T28b: tecpatl double hit = 2x", 0.1);
+
+  // Test demonbane vs K'ril (demon)
+  const kril = getBoss("kril")!;
+  const ctxDemon = makeCtx(
+    { combatStyle: "melee", attackStyle: "accurate" },
+    { weapon: getItem("echo-tecpatl")! },
+    kril,
+  );
+  const rDemon = calculateDps(ctxDemon);
+  const demonChain = rDemon.breakdown.multiplierChain.find(s => s.name.includes("Tecpatl"));
+  if (demonChain) {
+    assertClose(demonChain.factor, 1.10, "T28c: tecpatl demonbane +10%", 0.001);
+  } else {
+    failed++; failures.push("  FAIL: T28c: Tecpatl demonbane not in chain vs demon");
+  }
+
+  // vs non-demon: no demonbane bonus
+  const ctxNoDemon = makeCtx(
+    { combatStyle: "melee", attackStyle: "accurate" },
+    { weapon: getItem("echo-tecpatl")! },
+    getBoss("graardor")!, // not a demon
+  );
+  const rNoDemon = calculateDps(ctxNoDemon);
+  const noDemonChain = rNoDemon.breakdown.multiplierChain.find(s => s.name.includes("Tecpatl"));
+  if (!noDemonChain) {
+    passed++;
+  } else {
+    failed++; failures.push("  FAIL: T28d: Tecpatl demonbane applied to non-demon!");
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// TEST 29: Echo — Fang of the Hound (5% fire proc)
+// ═══════════════════════════════════════════════════════════════════════
+
+section("TEST 29: Fang of the Hound — 5% fire proc");
+{
+  // FotH: 1h-light, 3t, stab, astab=60, mstr=20
+  // EffStr: 107, Max hit: floor(0.5+107*(20+64)/640) = floor(0.5+107*84/640) = floor(0.5+14.044) = floor(14.544) = 14
+  // Speed: 3t = 1.8s
+  // Base DPS = (14/2*acc)/1.8
+  // Bonus (5% proc): 0.05 * (14/2*acc)/1.8
+  // Total should be 1.05x base
+
+  const ctx = makeCtx(
+    { combatStyle: "melee", attackStyle: "accurate" },
+    { weapon: getItem("echo-fang-hound")! },
+    customTarget,
+  );
+  const result = calculateDps(ctx);
+  assertEqual(result.maxHit, 14, "T29a: FotH max hit");
+  assertEqual(result.speed, 3, "T29b: FotH speed (3t)");
+
+  // bonusDps should be ~5% of baseDps
+  assertClose(result.breakdown.bonusDps / result.breakdown.baseDps, 0.05, "T29c: FotH 5% proc ratio", 0.005);
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// TEST 30: Echo — Shadowflame Quadrant (40% spell damage)
+// ═══════════════════════════════════════════════════════════════════════
+
+section("TEST 30: Shadowflame Quadrant — 40% spell damage bonus");
+{
+  // Shadowflame: staff, 5t, magic, amagic=25, mdmg=15
+  // Fire Surge base=24, mdmg=15 → floor(24*(1+15/100)) = floor(24*1.15) = floor(27.6) = 27
+  // Then 40% bonus: floor(27*1.40) = floor(37.8) = 37
+  const ctx = makeCtx(
+    { combatStyle: "magic", attackStyle: "autocast" },
+    { weapon: getItem("echo-shadowflame")! },
+    customTarget,
+  );
+  const result = calculateDps(ctx);
+  assertEqual(result.breakdown.baseMaxHit, 27, "T30a: shadowflame base max hit");
+  assertEqual(result.maxHit, 37, "T30b: shadowflame final max (after 40%)");
+  const sfChain = result.breakdown.multiplierChain.find(s => s.name.includes("Shadowflame"));
+  if (sfChain) {
+    assertClose(sfChain.factor, 1.40, "T30c: shadowflame 40% factor", 0.001);
+  } else {
+    failed++; failures.push("  FAIL: T30c: Shadowflame not in multiplier chain");
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// TEST 31: Echo — Drygore Blowpipe (double roll, 2t speed)
+// ═══════════════════════════════════════════════════════════════════════
+
+section("TEST 31: Drygore Blowpipe — double roll + 2t speed");
+{
+  // Drygore: blowpipe, 2t, ranged, aranged=50, rstr=10
+  // Speed: 2t = 1.2s (fastest weapon in game)
+  // Double accuracy roll
+  const ctx = makeCtx(
+    { combatStyle: "ranged", attackStyle: "rapid" },
+    { weapon: getItem("echo-drygore-blowpipe")! },
+    customTarget,
+  );
+  const result = calculateDps(ctx);
+  // Speed: blowpipe is already at 2t; rapid shouldn't apply since rapid only triggers for ranged
+  // Actually rapid DOES apply: 2-1=1. But floor min is 1.
+  assertEqual(result.speed, 1, "T31a: drygore speed (2t - 1 rapid = 1t min)");
+
+  // Double roll should improve accuracy
+  if (result.accuracy > result.breakdown.baseAccuracy) {
+    passed++;
+  } else {
+    failed++; failures.push("  FAIL: T31b: Drygore double roll not improving accuracy");
+  }
+
+  // vs a high-def boss where double roll matters more
+  const graardor = getBoss("graardor")!;
+  const ctxBoss = makeCtx(
+    { combatStyle: "ranged", attackStyle: "rapid" },
+    { weapon: getItem("echo-drygore-blowpipe")! },
+    graardor,
+  );
+  const rBoss = calculateDps(ctxBoss);
+  const approxDouble = 1 - (1 - rBoss.breakdown.baseAccuracy) ** 2;
+  assertClose(rBoss.accuracy, approxDouble, "T31c: drygore double roll ≈ 1-(1-p)^2", 0.01);
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// TEST 32: Echo — Lithic Sceptre (powered staff formula)
+// ═══════════════════════════════════════════════════════════════════════
+
+section("TEST 32: Lithic Sceptre — powered staff formula");
+{
+  // Lithic: powered-staff, 4t, amagic=25, mdmg=4
+  // Same formula as sang: floor(magic/3)-1
+  // At 99: floor(99/3)-1 = 32, then floor(32*(1+4/100)) = floor(32*1.04) = floor(33.28) = 33
+  const ctx = makeCtx(
+    { combatStyle: "magic", attackStyle: "autocast" },
+    { weapon: getItem("echo-lithic-sceptre")! },
+    customTarget,
+  );
+  const result = calculateDps(ctx);
+  assertEqual(result.maxHit, 33, "T32a: lithic sceptre max hit");
+  assertEqual(result.speed, 4, "T32b: lithic sceptre speed (4t)");
+
+  // Should use same base formula as sang (both floor(magic/3)-1)
+  const ctxSang = makeCtx(
+    { combatStyle: "magic", attackStyle: "autocast" },
+    { weapon: getItem("sang")! },
+    customTarget,
+  );
+  const rSang = calculateDps(ctxSang);
+  // Sang has mdmg=0 from weapon. Lithic has mdmg=4. So lithic max > sang max.
+  if (result.maxHit >= rSang.maxHit) {
+    passed++;
+  } else {
+    failed++; failures.push(`  FAIL: T32c: Lithic (${result.maxHit}) should >= Sang (${rSang.maxHit})`);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// TEST 33: Echo — Nature's Recurve (bow, no DPS passive)
+// ═══════════════════════════════════════════════════════════════════════
+
+section("TEST 33: Nature's Recurve — standard bow DPS");
+{
+  // Nature's Recurve: bow, 4t, aranged=95, rstr=4
+  // Healing passive only — no DPS bonus, just a standard bow
+  // Rapid: 4-1=3t
+  const ctx = makeCtx(
+    { combatStyle: "ranged", attackStyle: "rapid" },
+    { weapon: getItem("echo-natures-recurve")!, ammo: getItem("rune-arrows")! },
+    customTarget,
+  );
+  const result = calculateDps(ctx);
+  assertEqual(result.speed, 3, "T33a: nature's recurve speed (4-1=3t rapid)");
+  // rstr: 4+49=53. Max hit: floor(0.5+107*(53+64)/640) = floor(0.5+107*117/640) = floor(0.5+19.567) = floor(20.067) = 20
+  assertEqual(result.maxHit, 20, "T33b: nature's recurve max hit (with rune arrows)");
+  // DPS should be straightforward: (20/2*acc)/1.8
+  const expectedDps = (20 / 2 * result.accuracy) / (3 * 0.6);
+  assertClose(result.dps, expectedDps, "T33c: nature's recurve = standard DPS (no bonus)", 0.01);
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// TEST 34: Echo — King's Barrage (crossbow mechanics)
+// ═══════════════════════════════════════════════════════════════════════
+
+section("TEST 34: King's Barrage — crossbow DPS");
+{
+  // King's Barrage: crossbow, 6t, aranged=130, rstr=14
+  // The 2-bolt passive (halved max each) averages to same DPS as single hit
+  // So DPS calc is standard crossbow behavior
+  const ctx = makeCtx(
+    { combatStyle: "ranged", attackStyle: "rapid" },
+    { weapon: getItem("echo-kings-barrage")!, ammo: getItem("ruby-bolts-e")! },
+    customTarget,
+  );
+  const result = calculateDps(ctx);
+  assertEqual(result.speed, 5, "T34a: king's barrage speed (6-1=5t rapid)");
+  // rstr: 14+122=136. Max hit: floor(0.5+107*(136+64)/640) = floor(0.5+107*200/640) = floor(0.5+33.4375) = floor(33.9375) = 33
+  assertEqual(result.maxHit, 33, "T34b: king's barrage max hit");
+  // Should have bolt spec bonus DPS from ruby bolts
+  if (result.breakdown.bonusDps > 0) {
+    passed++;
+  } else {
+    failed++; failures.push("  FAIL: T34c: King's Barrage should have ruby bolt spec DPS");
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// TEST 35: Echo — Devil's Element (elemental weakness)
+// ═══════════════════════════════════════════════════════════════════════
+
+section("TEST 35: Devil's Element — elemental weakness bonus");
+{
+  // Devil's Element: shield, amagic=20, mdmg=6
+  // +30% damage on elemental weakness spells
+  // Need a target with elementalWeakness === "magic"
+  // Create a custom target with magic weakness
+  const weakTarget: BossPreset = {
+    id: "test-weak", name: "Test", defenceLevel: 100, magicLevel: 100,
+    dstab: 0, dslash: 0, dcrush: 0, dranged: 0, dmagic: 0,
+    hp: 300, elementalWeakness: "magic",
+  };
+
+  // Kodai + Devil's Element: mdmg=5+6=11
+  // Fire Surge: floor(24*(1+11/100))=floor(24*1.11)=floor(26.64)=26
+  // Devil's +30%: floor(26*1.30)=floor(33.8)=33
+  const ctx = makeCtx(
+    { combatStyle: "magic", attackStyle: "autocast" },
+    { weapon: getItem("kodai")!, shield: getItem("echo-devils-element")! },
+    weakTarget,
+  );
+  const result = calculateDps(ctx);
+  assertEqual(result.maxHit, 33, "T35a: devil's element max hit with weakness");
+
+  const devilChain = result.breakdown.multiplierChain.find(s => s.name.includes("Devil"));
+  if (devilChain) {
+    assertClose(devilChain.factor, 1.30, "T35b: devil's element +30% factor", 0.001);
+  } else {
+    failed++; failures.push("  FAIL: T35b: Devil's Element not in chain vs weak target");
+  }
+
+  // Without elemental weakness: no bonus
+  const noWeakCtx = makeCtx(
+    { combatStyle: "magic", attackStyle: "autocast" },
+    { weapon: getItem("kodai")!, shield: getItem("echo-devils-element")! },
+    customTarget, // no elemental weakness
+  );
+  const rNoWeak = calculateDps(noWeakCtx);
+  assertEqual(rNoWeak.maxHit, 26, "T35c: devil's element no bonus without weakness");
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// TEST 36: Fang exact accuracy vs approximate — verify formula difference
+// ═══════════════════════════════════════════════════════════════════════
+
+section("TEST 36: Fang exact vs approximate accuracy formula comparison");
+{
+  // High accuracy scenario (A > D): exact should differ from 1-(1-p)^2
+  // Fang, piety, super combat vs custom target
+  const ctx = makeCtx(
+    { combatStyle: "melee", attackStyle: "accurate", potion: "super-combat", prayerType: "piety" },
+    { weapon: getItem("fang")! },
+    customTarget,
+  );
+  const result = calculateDps(ctx);
+  // A >> D case: fang exact should still be very high
+  // baseAcc should be very close to 1.0 (whip-like accuracy vs 0 def)
+  // For A>>D: exact = 1-(D+2)*(2D+3)/((A+1)^2*6)
+  // This should be slightly different from 1-(1-p)^2
+  const approx = 1 - (1 - result.breakdown.baseAccuracy) ** 2;
+  // Both should be very high (>0.99) but exact is slightly more precise
+  if (result.accuracy > 0.99 && Math.abs(result.accuracy - approx) < 0.01) {
+    passed++;
+  } else {
+    failed++; failures.push(`  FAIL: T36a: Fang high-acc scenario: exact=${result.accuracy}, approx=${approx}`);
+  }
+
+  // Low accuracy scenario (A < D): larger difference
+  const nightmare = getBoss("nightmare")!; // high def
+  const ctxHard = makeCtx(
+    { combatStyle: "melee", attackStyle: "accurate" },
+    { weapon: getItem("fang")! },
+    nightmare,
+  );
+  const rHard = calculateDps(ctxHard);
+  const approxHard = 1 - (1 - rHard.breakdown.baseAccuracy) ** 2;
+  // For A<D, exact gives: A*(4A+5)/(6*(A+1)*(D+1))
+  // This should be LOWER than the approximate formula
+  if (rHard.accuracy < approxHard) {
+    passed++;
+    console.log(`  INFO: Fang A<D: exact=${rHard.accuracy.toFixed(5)}, approx=${approxHard.toFixed(5)} (exact is lower, correct)`);
+  } else {
+    failed++; failures.push(`  FAIL: T36b: Fang exact (${rHard.accuracy}) should be < approx (${approxHard}) for A<D`);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// TEST 37: Sanity checks — DPS ordering makes sense
+// ═══════════════════════════════════════════════════════════════════════
+
+section("TEST 37: Sanity checks — DPS orderings");
+{
+  const maxGear = {
+    potion: "super-combat" as const,
+    prayerType: "piety" as const,
+    combatStyle: "melee" as const,
+    attackStyle: "accurate" as const,
+  };
+
+  // Rapier > Whip (rapier has higher stats)
+  const rRapier = calculateDps(makeCtx(maxGear, { weapon: getItem("rapier")! }, customTarget));
+  const rWhip = calculateDps(makeCtx(maxGear, { weapon: getItem("whip")! }, customTarget));
+  if (rRapier.dps > rWhip.dps) { passed++; } else {
+    failed++; failures.push(`  FAIL: T37a: Rapier (${rRapier.dps}) should > Whip (${rWhip.dps})`);
+  }
+
+  // Scythe vs 3x3 boss should beat Rapier (due to 1.75x hits)
+  const rScythe3 = calculateDps(makeCtx(maxGear, { weapon: getItem("scythe")! }, getBoss("graardor")!));
+  const rRapierBoss = calculateDps(makeCtx(maxGear, { weapon: getItem("rapier")! }, getBoss("graardor")!));
+  if (rScythe3.dps > rRapierBoss.dps) { passed++; } else {
+    failed++; failures.push(`  FAIL: T37b: Scythe 3x3 (${rScythe3.dps}) should > Rapier (${rRapierBoss.dps}) vs Graardor`);
+  }
+
+  // Shadow with gear should beat Trident with gear (Shadow triples equip bonuses)
+  // Without gear, Trident wins on speed (4t vs 5t). With gear, Shadow's tripling dominates.
+  const mageGear = {
+    neck: getItem("occult")!,
+    cape: getItem("imbued-god-cape")!,
+    hands: getItem("tormented")!,
+    ring: getItem("magus")!,
+    head: getItem("ancestral-hat")!,
+    body: getItem("ancestral-top")!,
+    legs: getItem("ancestral-bottom")!,
+  };
+  const rShadow = calculateDps(makeCtx(
+    { combatStyle: "magic", attackStyle: "autocast", prayerType: "augury" },
+    { weapon: getItem("shadow")!, ...mageGear }, getBoss("wardens-p3")!,
+  ));
+  const rTrident = calculateDps(makeCtx(
+    { combatStyle: "magic", attackStyle: "autocast", prayerType: "augury" },
+    { weapon: getItem("trident-swamp")!, ...mageGear }, getBoss("wardens-p3")!,
+  ));
+  if (rShadow.dps > rTrident.dps) { passed++; } else {
+    failed++; failures.push(`  FAIL: T37c: Shadow+gear (${rShadow.dps}) should > Trident+gear (${rTrident.dps})`);
+  }
+
+  // Arclight should beat Rapier vs demons (due to 70% bonus)
+  const rArclight = calculateDps(makeCtx(maxGear, { weapon: getItem("arclight")! }, getBoss("kril")!));
+  const rRapierDemon = calculateDps(makeCtx(maxGear, { weapon: getItem("rapier")! }, getBoss("kril")!));
+  if (rArclight.dps > rRapierDemon.dps) { passed++; } else {
+    failed++; failures.push(`  FAIL: T37d: Arclight (${rArclight.dps}) should > Rapier (${rRapierDemon.dps}) vs demon`);
+  }
+
+  // DHL should beat Rapier vs dragons
+  const rDhl = calculateDps(makeCtx(maxGear, { weapon: getItem("dhl")! }, getBoss("vorkath")!));
+  const rRapierDragon = calculateDps(makeCtx(maxGear, { weapon: getItem("rapier")! }, getBoss("vorkath")!));
+  if (rDhl.dps > rRapierDragon.dps) { passed++; } else {
+    failed++; failures.push(`  FAIL: T37e: DHL (${rDhl.dps}) should > Rapier (${rRapierDragon.dps}) vs dragon`);
+  }
+
+  // Tecpatl double hit should roughly double DPS of similar weapon
+  const rTecpatl = calculateDps(makeCtx(maxGear, { weapon: getItem("echo-tecpatl")! }, customTarget));
+  // Compare to a 4t weapon with similar str: inq mace (mstr=89 vs tecpatl 70)
+  // Tecpatl has lower str but double hit, should still be higher
+  const rMace = calculateDps(makeCtx(maxGear, { weapon: getItem("inq-mace")! }, customTarget));
+  if (rTecpatl.dps > rMace.dps) { passed++; } else {
+    failed++; failures.push(`  FAIL: T37f: Tecpatl 2x (${rTecpatl.dps}) should > Inq mace (${rMace.dps})`);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// TEST 38: DPS is non-negative and non-NaN for all weapons
+// ═══════════════════════════════════════════════════════════════════════
+
+section("TEST 38: All weapons produce valid DPS");
+{
+  const weapons = [
+    "whip", "rapier", "scythe", "shadow", "tbow", "fang", "saeldor", "inq-mace",
+    "zcb", "acb", "dcb", "dhcb", "blowpipe", "bowfa", "msb-i", "dhl", "arclight",
+    "keris-breaching", "crystal-halberd", "sang", "trident-swamp", "kodai", "harm-staff",
+    "echo-vs-helm", "echo-kings-barrage", "echo-tecpatl", "echo-fang-hound",
+    "echo-shadowflame", "echo-natures-recurve", "echo-lithic-sceptre", "echo-drygore-blowpipe",
+  ];
+  let allValid = true;
+  for (const wId of weapons) {
+    const w = getItem(wId);
+    if (!w) { failed++; failures.push(`  FAIL: T38: Item ${wId} not found`); allValid = false; continue; }
+    const style = w.combatStyle ?? "melee";
+    const atkStyle = style === "ranged" ? "rapid" as const : style === "magic" ? "autocast" as const : "accurate" as const;
+    const ctx = makeCtx(
+      { combatStyle: style, attackStyle: atkStyle },
+      { weapon: w },
+      customTarget,
+    );
+    const result = calculateDps(ctx);
+    if (isNaN(result.dps) || result.dps < 0) {
+      failed++; failures.push(`  FAIL: T38: ${w.name} produced invalid DPS: ${result.dps}`);
+      allValid = false;
+    }
+    if (result.dps === 0 && w.slot === "weapon") {
+      failed++; failures.push(`  FAIL: T38: ${w.name} produced 0 DPS (should be positive)`);
+      allValid = false;
+    }
+  }
+  if (allValid) {
+    passed++;
+    console.log(`  OK: All ${weapons.length} weapons produce valid positive DPS`);
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════════════
