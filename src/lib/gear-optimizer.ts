@@ -1,13 +1,21 @@
 import type {
   OptimizerConfig,
   OptimizerResult,
+  OptimizedConfig,
   BuildLoadout,
   Item,
   EquipmentSlot,
   CombatStyle,
+  PlayerConfig,
+  PotionType,
+  PrayerType,
+  AttackStyleBonus,
+  BossPreset,
 } from "@/types/dps";
+import { PACT_POINT_LIMIT } from "@/types/dps";
 import { ITEMS } from "@/data/items";
 import { calculateDps } from "@/lib/dps-engine";
+import { getAllNodes, canSelectNode } from "@/data/pacts";
 
 // ═══════════════════════════════════════════════════════════════════════
 // PUBLIC API
@@ -47,6 +55,242 @@ export function optimizeGear(config: OptimizerConfig): OptimizerResult[] {
   }
 
   return heap.sort((a, b) => b.result.dps - a.result.dps);
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// FULL-SPECTRUM OPTIMIZER
+// Searches potions, prayers, attack styles, void, and pacts alongside gear.
+// "auto" values get searched; concrete values stay locked.
+// ═══════════════════════════════════════════════════════════════════════
+
+interface ConfigCombo {
+  potion: Exclude<PotionType, "auto">;
+  prayerType: Exclude<PrayerType, "auto">;
+  attackStyle: Exclude<AttackStyleBonus, "auto">;
+  voidSet: "none" | "void" | "elite-void";
+}
+
+export function optimizeBuild(config: OptimizerConfig): OptimizerResult[] {
+  const { player, target, lockedSlots, topN } = config;
+  const style = player.combatStyle;
+
+  // Phase 1: Enumerate all config combos for "auto" fields
+  const combos = enumerateConfigCombos(player);
+
+  // Phase 2: Quick rank — test top 3 weapons with greedy fill for each combo
+  const ranked = quickRankCombos(combos, player, target, lockedSlots, style);
+
+  // Phase 3: Full gear optimize for top 5 combos
+  const topCombos = ranked.slice(0, 5);
+  const heap: OptimizerResult[] = [];
+
+  for (const { combo } of topCombos) {
+    const resolved = resolvePlayer(player, combo);
+    const results = optimizeGear({
+      player: resolved,
+      target,
+      lockedSlots,
+      topN,
+    });
+
+    // Tag each result with the optimized config
+    const optConfig = buildOptimizedConfig(player, combo);
+    for (const r of results) {
+      r.optimizedConfig = optConfig;
+      insertIntoHeap(heap, r, topN);
+    }
+  }
+
+  // Phase 4: Pact greedy search (if activePacts is empty = auto)
+  if (player.activePacts.length === 0 && heap.length > 0) {
+    const best = heap.reduce((a, b) => a.result.dps > b.result.dps ? a : b);
+    const bestCombo = topCombos[0]?.combo;
+    if (bestCombo) {
+      const resolved = resolvePlayer(player, bestCombo);
+      const optimizedPacts = optimizePactsGreedy(resolved, best.loadout, target);
+      if (optimizedPacts.length > 0) {
+        // Re-run gear optimizer with optimized pacts
+        const pactPlayer = { ...resolved, activePacts: optimizedPacts };
+        const pactResults = optimizeGear({
+          player: pactPlayer,
+          target,
+          lockedSlots,
+          topN,
+        });
+        const optConfig = { ...buildOptimizedConfig(player, bestCombo), activePacts: optimizedPacts };
+        for (const r of pactResults) {
+          r.optimizedConfig = optConfig;
+          insertIntoHeap(heap, r, topN);
+        }
+      }
+    }
+  }
+
+  return heap.sort((a, b) => b.result.dps - a.result.dps);
+}
+
+function getValidPotions(style: CombatStyle): Exclude<PotionType, "auto">[] {
+  switch (style) {
+    case "melee":
+      return ["super-combat", "overload", "smelling-salts", "none"];
+    case "ranged":
+      return ["ranging", "overload", "smelling-salts", "none"];
+    case "magic":
+      return ["magic", "overload", "smelling-salts", "none"];
+  }
+}
+
+function getValidPrayers(style: CombatStyle): Exclude<PrayerType, "auto">[] {
+  switch (style) {
+    case "melee":
+      return ["piety", "chivalry", "none"];
+    case "ranged":
+      return ["rigour", "eagle-eye", "none"];
+    case "magic":
+      return ["augury", "mystic-might", "none"];
+  }
+}
+
+function getValidAttackStyles(style: CombatStyle): Exclude<AttackStyleBonus, "auto">[] {
+  switch (style) {
+    case "melee":
+      return ["aggressive", "accurate", "controlled"];
+    case "ranged":
+      return ["rapid", "accurate", "longrange"];
+    case "magic":
+      return ["autocast", "accurate", "longrange"];
+  }
+}
+
+function enumerateConfigCombos(player: PlayerConfig): ConfigCombo[] {
+  const style = player.combatStyle;
+  const potions = player.potion === "auto" ? getValidPotions(style) : [player.potion];
+  const prayers = player.prayerType === "auto" ? getValidPrayers(style) : [player.prayerType];
+  const styles = player.attackStyle === "auto" ? getValidAttackStyles(style) : [player.attackStyle];
+  const voids: ("none" | "void" | "elite-void")[] =
+    player.voidSet === "auto" ? ["none", "void", "elite-void"] : [player.voidSet];
+
+  const combos: ConfigCombo[] = [];
+  for (const potion of potions) {
+    for (const prayerType of prayers) {
+      for (const attackStyle of styles) {
+        for (const voidSet of voids) {
+          combos.push({ potion, prayerType, attackStyle, voidSet });
+        }
+      }
+    }
+  }
+  return combos;
+}
+
+function resolvePlayer(player: PlayerConfig, combo: ConfigCombo): PlayerConfig {
+  return {
+    ...player,
+    potion: combo.potion,
+    prayerType: combo.prayerType,
+    attackStyle: combo.attackStyle,
+    voidSet: combo.voidSet,
+  };
+}
+
+function buildOptimizedConfig(player: PlayerConfig, combo: ConfigCombo): OptimizedConfig {
+  const opt: OptimizedConfig = {};
+  if (player.potion === "auto") opt.potion = combo.potion;
+  if (player.prayerType === "auto") opt.prayerType = combo.prayerType;
+  if (player.attackStyle === "auto") opt.attackStyle = combo.attackStyle;
+  if (player.voidSet === "auto") opt.voidSet = combo.voidSet;
+  return opt;
+}
+
+function quickRankCombos(
+  combos: ConfigCombo[],
+  player: PlayerConfig,
+  target: BossPreset,
+  locked: Partial<BuildLoadout>,
+  style: CombatStyle,
+): { combo: ConfigCombo; dps: number }[] {
+  const regions = player.regions;
+  const slotItems = getSlotCandidates(style, regions, locked);
+
+  // Pick top 3 weapons by offensive score
+  const weaponScores = slotItems.weapon.map(w => ({ w, score: offensiveScore(w, style) }));
+  weaponScores.sort((a, b) => b.score - a.score);
+  const topWeapons = weaponScores.slice(0, 3).map(ws => ws.w);
+
+  const results: { combo: ConfigCombo; dps: number }[] = [];
+
+  for (const combo of combos) {
+    const resolved = resolvePlayer(player, combo);
+    let bestDps = 0;
+
+    for (const weapon of topWeapons) {
+      const shields = weapon.isTwoHanded ? [null] : slotItems.shield;
+      const shield = shields.length > 0 ? shields[0] : null;
+      const loadout = buildBestLoadout(slotItems, weapon, shield, locked);
+
+      const result = calculateDps({ player: resolved, loadout, target });
+      if (result.dps > bestDps) bestDps = result.dps;
+    }
+
+    results.push({ combo, dps: bestDps });
+  }
+
+  results.sort((a, b) => b.dps - a.dps);
+  return results;
+}
+
+function optimizePactsGreedy(
+  player: PlayerConfig,
+  loadout: BuildLoadout,
+  target: BossPreset,
+): string[] {
+  const allNodes = getAllNodes();
+  const selected = new Set<string>();
+  let currentDps = calculateDps({
+    player: { ...player, activePacts: [] },
+    loadout,
+    target,
+  }).dps;
+
+  // Must start with root
+  const ROOT = "node1";
+  selected.add(ROOT);
+  const withRoot = calculateDps({
+    player: { ...player, activePacts: [ROOT] },
+    loadout,
+    target,
+  }).dps;
+  if (withRoot > currentDps) currentDps = withRoot;
+
+  // Greedy: add best frontier node until budget or no improvement
+  for (let i = 1; i < PACT_POINT_LIMIT; i++) {
+    let bestNode: string | null = null;
+    let bestGain = 0;
+
+    for (const node of allNodes) {
+      if (selected.has(node.id)) continue;
+      if (!canSelectNode(node.id, selected)) continue;
+
+      const trial = [...selected, node.id];
+      const trialDps = calculateDps({
+        player: { ...player, activePacts: trial },
+        loadout,
+        target,
+      }).dps;
+
+      const gain = trialDps - currentDps;
+      if (gain > bestGain) {
+        bestGain = gain;
+        bestNode = node.id;
+      }
+    }
+
+    if (!bestNode || bestGain <= 0) break;
+    selected.add(bestNode);
+    currentDps += bestGain;
+  }
+
+  return [...selected];
 }
 
 // ═══════════════════════════════════════════════════════════════════════

@@ -1359,8 +1359,8 @@ section("TEST 29: Fang of the Hound — 5% fire proc");
   // EffStr: 107, Max hit: floor(0.5+107*(20+64)/640) = floor(0.5+107*84/640) = floor(0.5+14.044) = floor(14.544) = 14
   // Speed: 3t = 1.8s
   // Base DPS = (14/2*acc)/1.8
-  // Bonus (5% proc): 0.05 * (14/2*acc)/1.8
-  // Total should be 1.05x base
+  // Fire proc: base max 10, always hits, mdmg=0 → fireMax=10
+  // Bonus: 0.05 * (10/2) / 1.8 = 0.1389
 
   const ctx = makeCtx(
     { combatStyle: "melee", attackStyle: "accurate" },
@@ -1371,8 +1371,9 @@ section("TEST 29: Fang of the Hound — 5% fire proc");
   assertEqual(result.maxHit, 14, "T29a: FotH max hit");
   assertEqual(result.speed, 3, "T29b: FotH speed (3t)");
 
-  // bonusDps should be ~5% of baseDps
-  assertClose(result.breakdown.bonusDps / result.breakdown.baseDps, 0.05, "T29c: FotH 5% proc ratio", 0.005);
+  // bonusDps = 0.05 * (10/2) / 1.8 ≈ 0.1389 (fire proc always hits, base max 10)
+  const expectedFireDps = 0.05 * (10 / 2) / 1.8;
+  assertClose(result.breakdown.bonusDps, expectedFireDps, "T29c: FotH fire proc DPS", 0.001);
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -1444,30 +1445,30 @@ section("TEST 31: Drygore Blowpipe — double roll + 2t speed");
 
 section("TEST 32: Lithic Sceptre — powered staff formula");
 {
-  // Lithic: powered-staff, 4t, amagic=25, mdmg=4
-  // Same formula as sang: floor(magic/3)-1
-  // At 99: floor(99/3)-1 = 32, then floor(32*(1+4/100)) = floor(32*1.04) = floor(33.28) = 33
+  // Lithic: powered-staff, 4t, amagic=25, mdmg=0
+  // Wiki formula: max(10, floor(magic/3) - 10)
+  // At 99: max(10, floor(99/3)-10) = max(10, 23) = 23, then floor(23*(1+0/100)) = 23
   const ctx = makeCtx(
     { combatStyle: "magic", attackStyle: "autocast" },
     { weapon: getItem("echo-lithic-sceptre")! },
     customTarget,
   );
   const result = calculateDps(ctx);
-  assertEqual(result.maxHit, 33, "T32a: lithic sceptre max hit");
+  assertEqual(result.maxHit, 23, "T32a: lithic sceptre max hit");
   assertEqual(result.speed, 4, "T32b: lithic sceptre speed (4t)");
 
-  // Should use same base formula as sang (both floor(magic/3)-1)
+  // Lithic has lower base than sang (23 vs 32) but compensates via shatter stacks (not modelled)
   const ctxSang = makeCtx(
     { combatStyle: "magic", attackStyle: "autocast" },
     { weapon: getItem("sang")! },
     customTarget,
   );
   const rSang = calculateDps(ctxSang);
-  // Sang has mdmg=0 from weapon. Lithic has mdmg=4. So lithic max > sang max.
-  if (result.maxHit >= rSang.maxHit) {
+  // Sang: floor(99/3)-1 = 32 base, Lithic: max(10,23) = 23 base → lithic < sang
+  if (result.maxHit < rSang.maxHit) {
     passed++;
   } else {
-    failed++; failures.push(`  FAIL: T32c: Lithic (${result.maxHit}) should >= Sang (${rSang.maxHit})`);
+    failed++; failures.push(`  FAIL: T32c: Lithic (${result.maxHit}) should < Sang (${rSang.maxHit}) without stacks`);
   }
 }
 
@@ -1536,16 +1537,16 @@ section("TEST 35: Devil's Element — elemental weakness bonus");
     hp: 300, elementalWeakness: "magic",
   };
 
-  // Kodai + Devil's Element: mdmg=5+6=11
-  // Fire Surge: floor(24*(1+11/100))=floor(24*1.11)=floor(26.64)=26
-  // Devil's +30%: floor(26*1.30)=floor(33.8)=33
+  // Kodai (mdmg=15) + Devil's Element (mdmg=6): total mdmg=21
+  // Fire Surge: floor(24*(1+21/100))=floor(24*1.21)=floor(29.04)=29
+  // Devil's +30%: floor(29*1.30)=floor(37.7)=37
   const ctx = makeCtx(
     { combatStyle: "magic", attackStyle: "autocast" },
     { weapon: getItem("kodai")!, shield: getItem("echo-devils-element")! },
     weakTarget,
   );
   const result = calculateDps(ctx);
-  assertEqual(result.maxHit, 33, "T35a: devil's element max hit with weakness");
+  assertEqual(result.maxHit, 37, "T35a: devil's element max hit with weakness");
 
   const devilChain = result.breakdown.multiplierChain.find(s => s.name.includes("Devil"));
   if (devilChain) {
@@ -1554,14 +1555,15 @@ section("TEST 35: Devil's Element — elemental weakness bonus");
     failed++; failures.push("  FAIL: T35b: Devil's Element not in chain vs weak target");
   }
 
-  // Without elemental weakness: no bonus
+  // Without elemental weakness: Devil's Element still adds +30% (it creates weakness on ALL elements)
   const noWeakCtx = makeCtx(
     { combatStyle: "magic", attackStyle: "autocast" },
     { weapon: getItem("kodai")!, shield: getItem("echo-devils-element")! },
-    customTarget, // no elemental weakness
+    customTarget, // no inherent elemental weakness — Devil's Element adds it
   );
   const rNoWeak = calculateDps(noWeakCtx);
-  assertEqual(rNoWeak.maxHit, 26, "T35c: devil's element no bonus without weakness");
+  // Kodai (15) + Devil's (6) = 21 mdmg, base=floor(24*1.21)=29, +30% = floor(29*1.30) = 37
+  assertEqual(rNoWeak.maxHit, 37, "T35c: devil's element applies +30% even without target weakness");
 }
 
 // ═══════════════════════════════════════════════════════════════════════

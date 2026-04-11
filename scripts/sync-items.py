@@ -137,7 +137,8 @@ VERSION_PREFERENCES = [
     "Charged",
     "Active",
     "Full",
-    "(100)",      # Full charge barrows
+    "Undamaged",  # Barrows undamaged
+    "100",        # Full charge barrows
     "Normal",
 ]
 
@@ -152,8 +153,12 @@ VERSION_EXCLUDES = [
     "Deactivated",
     "Uncharged",
     "Empty",
-    "Damaged",
 ]
+
+# Exact version names to exclude (not substring match)
+VERSION_EXCLUDES_EXACT = {
+    "Damaged",   # Exclude "Damaged" but NOT "Undamaged"
+}
 
 
 def val(v):
@@ -173,6 +178,8 @@ def should_exclude(item):
     for excl in VERSION_EXCLUDES:
         if excl.lower() in version.lower():
             return True
+    if version in VERSION_EXCLUDES_EXACT:
+        return True
     return False
 
 
@@ -345,13 +352,16 @@ def pick_best_version(items):
             elif pref != "" and pref.lower() in version.lower():
                 return item
 
-    # Fallback: pick the one with highest total offensive stats
+    # Fallback: pick the one with highest total stats (offensive + defensive + bonuses)
     def total_stats(item):
         o = item["offensive"]
+        d = item["defensive"]
         b = item["bonuses"]
         return (
             val(o["stab"]) + val(o["slash"]) + val(o["crush"]) +
             val(o["ranged"]) + val(o["magic"]) +
+            val(d["stab"]) + val(d["slash"]) + val(d["crush"]) +
+            val(d["ranged"]) + val(d["magic"]) +
             val(b["str"]) + val(b["ranged_str"]) + val(b["magic_str"]) +
             val(b["prayer"])
         )

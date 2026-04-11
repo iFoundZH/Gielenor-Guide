@@ -8,11 +8,16 @@ import type {
   EquipmentSlot,
   Item,
   OptimizerResult,
+  OptimizedConfig,
   DpsResult,
+  CombatStyle,
+  PotionType,
+  PrayerType,
+  AttackStyleBonus,
 } from "@/types/dps";
 import { BOSS_PRESETS } from "@/data/boss-presets";
 import { calculateDps } from "@/lib/dps-engine";
-import { optimizeGear } from "@/lib/gear-optimizer";
+import { optimizeBuild } from "@/lib/gear-optimizer";
 import { PlayerConfigPanel } from "@/components/calculator/PlayerConfigPanel";
 import { BossSelector } from "@/components/calculator/BossSelector";
 import { RegionSelector } from "@/components/calculator/RegionSelector";
@@ -36,10 +41,10 @@ interface CalcState {
 
 const DEFAULT_PLAYER: PlayerConfig = {
   attack: 99, strength: 99, defence: 99, ranged: 99, magic: 99, prayer: 99, hitpoints: 99,
-  potion: "super-combat", prayerType: "piety", attackStyle: "aggressive", combatStyle: "melee",
+  potion: "auto", prayerType: "auto", attackStyle: "auto", combatStyle: "melee",
   regions: ["varlamore", "karamja", "misthalin"],
   activePacts: [],
-  voidSet: "none", onSlayerTask: false, targetDistance: 1,
+  voidSet: "auto", onSlayerTask: false, targetDistance: 1,
 };
 
 const EMPTY_LOADOUT: BuildLoadout = {
@@ -80,6 +85,37 @@ function reducer(state: CalcState, action: Action): CalcState {
 }
 
 // ═══════════════════════════════════════════════════════════════════════
+// AUTO RESOLUTION
+// ═══════════════════════════════════════════════════════════════════════
+
+function resolveAutoDefaults(style: CombatStyle): {
+  potion: Exclude<PotionType, "auto">;
+  prayerType: Exclude<PrayerType, "auto">;
+  attackStyle: Exclude<AttackStyleBonus, "auto">;
+  voidSet: "none" | "void" | "elite-void";
+} {
+  switch (style) {
+    case "melee":
+      return { potion: "super-combat", prayerType: "piety", attackStyle: "aggressive", voidSet: "none" };
+    case "ranged":
+      return { potion: "ranging", prayerType: "rigour", attackStyle: "rapid", voidSet: "none" };
+    case "magic":
+      return { potion: "magic", prayerType: "augury", attackStyle: "autocast", voidSet: "none" };
+  }
+}
+
+function resolveAutoForDisplay(player: PlayerConfig): PlayerConfig {
+  const defaults = resolveAutoDefaults(player.combatStyle);
+  return {
+    ...player,
+    potion: player.potion === "auto" ? defaults.potion : player.potion,
+    prayerType: player.prayerType === "auto" ? defaults.prayerType : player.prayerType,
+    attackStyle: player.attackStyle === "auto" ? defaults.attackStyle : player.attackStyle,
+    voidSet: player.voidSet === "auto" ? defaults.voidSet : player.voidSet,
+  };
+}
+
+// ═══════════════════════════════════════════════════════════════════════
 // PAGE
 // ═══════════════════════════════════════════════════════════════════════
 
@@ -95,11 +131,11 @@ export default function CalculatorPage() {
   const [optimizerResults, setOptimizerResults] = useState<OptimizerResult[]>([]);
   const [isOptimizing, setIsOptimizing] = useState(false);
 
-  // Compute DPS reactively
+  // Compute DPS reactively (resolve auto values for live display)
   const dpsResult: DpsResult | null = useMemo(() => {
     if (!state.loadout.weapon) return null;
     return calculateDps({
-      player: state.player,
+      player: resolveAutoForDisplay(state.player),
       loadout: state.loadout,
       target: state.target,
     });
@@ -116,7 +152,7 @@ export default function CalculatorPage() {
         }
       }
 
-      const results = optimizeGear({
+      const results = optimizeBuild({
         player: state.player,
         target: state.target,
         lockedSlots: lockedLoadout,
@@ -126,12 +162,26 @@ export default function CalculatorPage() {
       setOptimizerResults(results);
       setIsOptimizing(false);
 
-      // Auto-load the best result
+      // Auto-load the best result (loadout + optimized config)
       if (results.length > 0) {
         dispatch({ type: "SET_LOADOUT", loadout: results[0].loadout });
+        applyOptimizedConfig(results[0].optimizedConfig);
       }
     }, 10);
   }, [state.player, state.target, state.lockedSlots, state.loadout]);
+
+  const applyOptimizedConfig = useCallback((opt?: OptimizedConfig) => {
+    if (!opt) return;
+    const updates: Partial<PlayerConfig> = {};
+    if (opt.potion) updates.potion = opt.potion;
+    if (opt.prayerType) updates.prayerType = opt.prayerType;
+    if (opt.attackStyle) updates.attackStyle = opt.attackStyle;
+    if (opt.voidSet) updates.voidSet = opt.voidSet;
+    if (opt.activePacts) updates.activePacts = opt.activePacts;
+    if (Object.keys(updates).length > 0) {
+      dispatch({ type: "SET_PLAYER", player: { ...state.player, ...updates } });
+    }
+  }, [state.player]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
@@ -181,7 +231,10 @@ export default function CalculatorPage() {
             <TopBuildsPanel
               results={optimizerResults}
               isRunning={isOptimizing}
-              onSelect={loadout => dispatch({ type: "SET_LOADOUT", loadout })}
+              onSelect={(loadout, optimizedConfig) => {
+                dispatch({ type: "SET_LOADOUT", loadout });
+                applyOptimizedConfig(optimizedConfig);
+              }}
               onOptimize={handleOptimize}
             />
           </div>

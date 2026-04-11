@@ -14,6 +14,7 @@ npm run build            # Production build (static export to /out/)
 npm run lint             # ESLint (flat config: TS, React hooks, Next.js rules)
 npm run test             # Run all Playwright E2E tests (36 tests, 5 spec files)
 npm run test:ui          # Interactive Playwright test runner
+npm run sync:items       # Sync equipment data from wiki (requires Python 3)
 ```
 
 ## Testing

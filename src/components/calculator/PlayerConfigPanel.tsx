@@ -3,6 +3,7 @@
 import type { PlayerConfig, CombatStyle, PotionType, PrayerType, AttackStyleBonus } from "@/types/dps";
 
 const POTIONS: { value: PotionType; label: string }[] = [
+  { value: "auto", label: "Auto (best)" },
   { value: "none", label: "None" },
   { value: "super-combat", label: "Super Combat" },
   { value: "super-attack", label: "Super Attack" },
@@ -14,6 +15,7 @@ const POTIONS: { value: PotionType; label: string }[] = [
 ];
 
 const PRAYERS: { value: PrayerType; label: string; style: CombatStyle | "all" }[] = [
+  { value: "auto", label: "Auto (best)", style: "all" },
   { value: "none", label: "None", style: "all" },
   { value: "piety", label: "Piety", style: "melee" },
   { value: "chivalry", label: "Chivalry", style: "melee" },
@@ -34,6 +36,7 @@ const SPELLS: { value: number; label: string }[] = [
 ];
 
 const ATTACK_STYLES: { value: AttackStyleBonus; label: string }[] = [
+  { value: "auto", label: "Auto (best)" },
   { value: "accurate", label: "Accurate" },
   { value: "aggressive", label: "Aggressive" },
   { value: "controlled", label: "Controlled" },
@@ -66,9 +69,9 @@ export function PlayerConfigPanel({ config, onChange }: Props) {
             key={style}
             onClick={() => update({
               combatStyle: style,
-              prayerType: "none",
-              potion: "none",
-              attackStyle: style === "ranged" ? "rapid" : style === "magic" ? "autocast" : "aggressive",
+              prayerType: "auto",
+              potion: "auto",
+              attackStyle: "auto",
             })}
             className={`flex-1 px-3 py-2 text-xs font-medium rounded-lg capitalize transition-all ${
               config.combatStyle === style
@@ -149,6 +152,7 @@ export function PlayerConfigPanel({ config, onChange }: Props) {
           label="Void"
           value={config.voidSet}
           options={[
+            { value: "auto", label: "Auto (best)" },
             { value: "none", label: "None" },
             { value: "void", label: "Void Knight" },
             { value: "elite-void", label: "Elite Void" },

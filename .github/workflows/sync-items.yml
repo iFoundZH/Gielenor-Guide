@@ -1,0 +1,50 @@
+name: Sync Wiki Items
+
+on:
+  schedule:
+    - cron: "0 6 * * 1" # Every Monday at 6:00 UTC
+  workflow_dispatch: # Allow manual trigger
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run item sync
+        run: python3 scripts/sync-items.py
+
+      - name: Check for changes
+        id: diff
+        run: |
+          git diff --quiet src/data/equipment-db.json && echo "changed=false" >> "$GITHUB_OUTPUT" || echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Count items
+        if: steps.diff.outputs.changed == 'true'
+        id: count
+        run: |
+          COUNT=$(python3 -c "import json; print(len(json.load(open('src/data/equipment-db.json'))))")
+          echo "count=$COUNT" >> "$GITHUB_OUTPUT"
+
+      - name: Create Pull Request
+        if: steps.diff.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          commit-message: "chore: sync equipment data from wiki (${{ steps.count.outputs.count }} items)"
+          title: "chore: sync equipment data from wiki (${{ steps.count.outputs.count }} items)"
+          body: |
+            Automated weekly sync from [weirdgloop/osrs-dps-calc](https://github.com/weirdgloop/osrs-dps-calc) equipment database.
+
+            **Items:** ${{ steps.count.outputs.count }}
+
+            Run `npm run sync:items` locally to verify.
+          branch: auto/sync-items
+          delete-branch: true

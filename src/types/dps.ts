@@ -194,6 +194,7 @@ export interface BossPreset {
 /* ── Player Config ───────────────────────────────────────────────────── */
 
 export type PotionType =
+  | "auto"
   | "none"
   | "super-attack"
   | "super-strength"
@@ -204,6 +205,7 @@ export type PotionType =
   | "smelling-salts";
 
 export type PrayerType =
+  | "auto"
   | "none"
   | "piety"
   | "chivalry"
@@ -219,7 +221,7 @@ export type PrayerType =
   | "mystic-lore"
   | "mystic-will";
 
-export type AttackStyleBonus = "accurate" | "aggressive" | "controlled" | "defensive" | "rapid" | "longrange" | "autocast";
+export type AttackStyleBonus = "auto" | "accurate" | "aggressive" | "controlled" | "defensive" | "rapid" | "longrange" | "autocast";
 
 export interface PlayerConfig {
   attack: number;
@@ -235,7 +237,7 @@ export interface PlayerConfig {
   combatStyle: CombatStyle;
   regions: string[];
   activePacts: string[];
-  voidSet: "none" | "void" | "elite-void";
+  voidSet: "auto" | "none" | "void" | "elite-void";
   onSlayerTask: boolean;
   targetDistance?: number;
   spellMaxHit?: number;
@@ -302,6 +304,14 @@ export interface DpsResult {
 
 /* ── Gear Optimizer ──────────────────────────────────────────────────── */
 
+export interface OptimizedConfig {
+  potion?: PotionType;
+  prayerType?: PrayerType;
+  attackStyle?: AttackStyleBonus;
+  voidSet?: "none" | "void" | "elite-void";
+  activePacts?: string[];
+}
+
 export interface OptimizerConfig {
   player: PlayerConfig;
   target: BossPreset;
@@ -312,6 +322,7 @@ export interface OptimizerConfig {
 export interface OptimizerResult {
   loadout: BuildLoadout;
   result: DpsResult;
+  optimizedConfig?: OptimizedConfig;
 }
 
 /* ── Saved Builds ────────────────────────────────────────────────────── */

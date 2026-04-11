@@ -89,8 +89,9 @@ test.describe("Calculator Page", () => {
     // Click the root node (node1 — Regenerate) in the SVG
     await page.locator("[data-testid='node-node1']").click();
 
-    // Click an accuracy node (node7 — +15% accuracy)
-    await page.locator("[data-testid='node-node7']").click();
+    // Navigate to a DPS-relevant node: node74 (melee minhit) then node72 (light weapon double hit)
+    await page.locator("[data-testid='node-node74']").click();
+    await page.locator("[data-testid='node-node72']").click();
 
     // DPS should change (accuracy boost)
     await expect(dpsEl).not.toHaveText(initialDps!);

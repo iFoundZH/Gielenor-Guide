@@ -1,12 +1,48 @@
 "use client";
 
-import type { OptimizerResult, BuildLoadout } from "@/types/dps";
+import type { OptimizerResult, OptimizedConfig, BuildLoadout } from "@/types/dps";
 
 interface Props {
   results: OptimizerResult[];
   isRunning: boolean;
-  onSelect: (loadout: BuildLoadout) => void;
+  onSelect: (loadout: BuildLoadout, optimizedConfig?: OptimizedConfig) => void;
   onOptimize: () => void;
+}
+
+const LABEL_MAP: Record<string, string> = {
+  "super-combat": "Super Combat",
+  "super-attack": "Super Attack",
+  "super-strength": "Super Strength",
+  "ranging": "Ranging Pot",
+  "magic": "Magic Pot",
+  "overload": "Overload",
+  "smelling-salts": "Smelling Salts",
+  "piety": "Piety",
+  "chivalry": "Chivalry",
+  "rigour": "Rigour",
+  "eagle-eye": "Eagle Eye",
+  "augury": "Augury",
+  "mystic-might": "Mystic Might",
+  "accurate": "Accurate",
+  "aggressive": "Aggressive",
+  "controlled": "Controlled",
+  "defensive": "Defensive",
+  "rapid": "Rapid",
+  "longrange": "Longrange",
+  "autocast": "Autocast",
+  "void": "Void",
+  "elite-void": "Elite Void",
+};
+
+function formatOptimizedConfig(opt?: OptimizedConfig): string | null {
+  if (!opt) return null;
+  const parts: string[] = [];
+  if (opt.prayerType && opt.prayerType !== "none") parts.push(LABEL_MAP[opt.prayerType] ?? opt.prayerType);
+  if (opt.potion && opt.potion !== "none") parts.push(LABEL_MAP[opt.potion] ?? opt.potion);
+  if (opt.attackStyle) parts.push(LABEL_MAP[opt.attackStyle] ?? opt.attackStyle);
+  if (opt.voidSet && opt.voidSet !== "none") parts.push(LABEL_MAP[opt.voidSet] ?? opt.voidSet);
+  if (opt.activePacts && opt.activePacts.length > 0) parts.push(`${opt.activePacts.length} pacts`);
+  return parts.length > 0 ? parts.join(" · ") : null;
 }
 
 export function TopBuildsPanel({ results, isRunning, onSelect, onOptimize }: Props) {
@@ -33,11 +69,12 @@ export function TopBuildsPanel({ results, isRunning, onSelect, onOptimize }: Pro
         {results.map((r, i) => {
           const weapon = r.loadout.weapon;
           const keyItems = getKeyItems(r.loadout);
+          const configLabel = formatOptimizedConfig(r.optimizedConfig);
 
           return (
             <button
               key={i}
-              onClick={() => onSelect(r.loadout)}
+              onClick={() => onSelect(r.loadout, r.optimizedConfig)}
               className="w-full text-left bg-osrs-darker rounded-lg border border-osrs-border hover:border-osrs-gold/40 p-3 transition-all group"
             >
               <div className="flex items-center justify-between mb-1">
@@ -54,6 +91,11 @@ export function TopBuildsPanel({ results, isRunning, onSelect, onOptimize }: Pro
               {keyItems.length > 0 && (
                 <div className="text-[10px] text-osrs-text-dim mt-0.5 truncate">
                   {keyItems.join(" + ")}
+                </div>
+              )}
+              {configLabel && (
+                <div className="text-[10px] text-demon-glow mt-1 truncate">
+                  {configLabel}
                 </div>
               )}
             </button>

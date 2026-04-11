@@ -10,7 +10,8 @@
     "test": "npx playwright test",
     "test:ui": "npx playwright test --ui",
     "test:unit": "vitest run",
-    "test:unit:watch": "vitest"
+    "test:unit:watch": "vitest",
+    "sync:items": "python3 scripts/sync-items.py"
   },
   "dependencies": {
     "@tailwindcss/postcss": "^4.2.2",

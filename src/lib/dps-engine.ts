@@ -16,6 +16,13 @@ import { aggregatePactEffects, type AggregatedPactEffects } from "@/lib/pact-eff
 // ═══════════════════════════════════════════════════════════════════════
 
 export function calculateDps(ctx: DpsContext): DpsResult {
+  if (process.env.NODE_ENV !== "production") {
+    const p = ctx.player;
+    if (p.potion === "auto" || p.prayerType === "auto" || p.attackStyle === "auto" || p.voidSet === "auto") {
+      throw new Error("calculateDps received unresolved 'auto' values — resolve before calling");
+    }
+  }
+
   // Lazily compute aggregated pact effects
   ctx.pactEffects ??= aggregatePactEffects(ctx.player.activePacts);
   const pe = ctx.pactEffects;
@@ -106,9 +113,10 @@ export function calculateDps(ctx: DpsContext): DpsResult {
     baseDps *= 2;
   }
 
-  // Fang of the Hound: 5% chance to proc Flames of Cerberus (bonus fire hit)
+  // Fang of the Hound: 5% Flames of Cerberus proc (base max 10, always hits, scales with mdmg%)
   if (weapon?.id === "echo-fang-hound") {
-    bonusDps += 0.05 * (finalMax / 2 * finalAcc) / interval;
+    const fireMax = Math.floor(10 * (1 + totalBonuses.mdmg / 100));
+    bonusDps += 0.05 * (fireMax / 2) / interval;
   }
 
   // 2H melee echo: 5% chance to trigger a ranged echo
@@ -375,8 +383,9 @@ function getPoweredStaffBaseDamage(weaponId: string, visibleMagic: number): numb
     case "shadow":
       return Math.floor(visibleMagic / 3) + 1;
     case "sang":
-    case "echo-lithic-sceptre":
       return Math.floor(visibleMagic / 3) - 1;
+    case "echo-lithic-sceptre":
+      return Math.max(10, Math.floor(visibleMagic / 3) - 10);
     case "trident-swamp":
       return Math.floor(visibleMagic / 3) - 2;
     default:
@@ -485,8 +494,8 @@ export function getMultiplierChain(ctx: DpsContext, pe: AggregatedPactEffects, _
     chain.push({ name: "Tecpatl vs Demons", factor: 1.10 });
   }
 
-  // 9. Devil's Element elemental weakness (+30%)
-  if (ctx.loadout.shield?.id === "echo-devils-element" && ctx.target.elementalWeakness === "magic") {
+  // 9. Devil's Element: +30% elemental weakness to all elements (elemental spells only, not powered staves)
+  if (ctx.loadout.shield?.id === "echo-devils-element" && style === "magic" && weaponCat !== "powered-staff") {
     chain.push({ name: "Devil's Element", factor: 1.30 });
   }
 
@@ -517,8 +526,8 @@ export function getMultiplierChain(ctx: DpsContext, pe: AggregatedPactEffects, _
     chain.push({ name: "Keris vs Kalphites", factor: 4 / 3 });
   }
 
-  // 15. Crystal armour set bonus with Bow of Faerdhinen
-  if (weapon?.id === "bowfa") {
+  // 15. Crystal armour set bonus (Bow of Faerdhinen, or any weapon with Crystal blessing)
+  if (weapon?.id === "bowfa" || ctx.loadout.ammo?.id === "echo-crystal-blessing") {
     let crystalDmg = 0;
     if (ctx.loadout.head?.id === "crystal-helm") crystalDmg += 0.025;
     if (ctx.loadout.body?.id === "crystal-body") crystalDmg += 0.075;
@@ -668,8 +677,8 @@ export function calculateAttackRoll(ctx: DpsContext, pe: AggregatedPactEffects, 
     roll = Math.floor(roll * 2.0);
   }
 
-  // Crystal armour set accuracy bonus with Bowfa
-  if (weapon?.id === "bowfa") {
+  // Crystal armour set accuracy bonus (Bowfa or any weapon with Crystal blessing)
+  if (weapon?.id === "bowfa" || ctx.loadout.ammo?.id === "echo-crystal-blessing") {
     let crystalAcc = 0;
     if (ctx.loadout.head?.id === "crystal-helm") crystalAcc += 0.05;
     if (ctx.loadout.body?.id === "crystal-body") crystalAcc += 0.15;
