@@ -138,8 +138,8 @@ describe("canSelectNode", () => {
   });
 
   it("adjacent node can be selected", () => {
-    // node7 is linked to node1
-    expect(canSelectNode("node7", new Set(["node1"]))).toBe(true);
+    // node2 is linked to node1
+    expect(canSelectNode("node2", new Set(["node1"]))).toBe(true);
   });
 
   it("non-adjacent node cannot be selected", () => {
@@ -161,8 +161,8 @@ describe("canSelectNode", () => {
   });
 
   it("deep path selection works", () => {
-    // node1 → node7 → node2 → node13
-    const selected = new Set(["node1", "node7", "node2"]);
+    // node1 → node2 → node3 → node6 → node9 → node13
+    const selected = new Set(["node1", "node2", "node3", "node6", "node9"]);
     expect(canSelectNode("node13", selected)).toBe(true);
   });
 });
@@ -182,14 +182,13 @@ describe("canDeselectNode", () => {
   });
 
   it("bridge node cannot be deselected (would disconnect)", () => {
-    // node1 → node7 → node2: removing node7 disconnects node2
-    expect(canDeselectNode("node7", new Set(["node1", "node7", "node2"]))).toBe(false);
+    // node1 → node2 → node3: removing node2 disconnects node3
+    expect(canDeselectNode("node2", new Set(["node1", "node2", "node3"]))).toBe(false);
   });
 
   it("non-bridge internal node can be deselected if alternate path exists", () => {
-    // If there's a cycle in selected nodes, a node may be removable
-    // node1 → node6, node1 → node7: removing node6 doesn't disconnect if node7 is leaf
-    expect(canDeselectNode("node6", new Set(["node1", "node6", "node7"]))).toBe(true);
+    // node1 → node2, node1 → node74: removing node74 doesn't disconnect if node2 is leaf
+    expect(canDeselectNode("node74", new Set(["node1", "node2", "node74"]))).toBe(true);
   });
 
   it("unselected node returns false", () => {
@@ -211,7 +210,7 @@ describe("validateSelection", () => {
   });
 
   it("connected subtree is valid", () => {
-    expect(validateSelection(new Set(["node1", "node7", "node2"])).valid).toBe(true);
+    expect(validateSelection(new Set(["node1", "node2", "node3"])).valid).toBe(true);
   });
 
   it("disconnected selection is invalid", () => {

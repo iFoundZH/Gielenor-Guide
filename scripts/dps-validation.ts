@@ -277,8 +277,8 @@ section("TEST 5: Ranged — TBow + dragon arrows vs Zulrah, Rigour, Ranging pot,
   // DefRoll (ranged attack type vs Zulrah): (300+9)*(50+64) = 309*114 = 35226
   // Accuracy: A>D → 1-(35226+2)/(2*(50804+1)) = 1-35228/101610 = 0.65332
   //
-  // Attack speed: tbow=5, rapid → 5-1=4 → 2.4s
-  // DPS: (76/2*0.65332)/2.4 = (38*0.65332)/2.4 = 24.826/2.4 = 10.344
+  // Attack speed: tbow=6 (wiki DB), rapid → 6-1=5 → 3.0s
+  // DPS: (79/2*0.682)/3.0 = (39.5*0.682)/3.0 = 26.939/3.0 ≈ 8.98
 
   const zulrah = getBoss("zulrah")!;
   const ctx = makeCtx(
@@ -311,7 +311,7 @@ section("TEST 5: Ranged — TBow + dragon arrows vs Zulrah, Rigour, Ranging pot,
   // Accuracy: A>D → 1-(35228)/(2*55466) = 1-35228/110932 = 0.6824
   assertClose(result.breakdown.defenceRoll, 35226, "T5: defence roll", 1);
   assertClose(result.accuracy, 0.682, "T5: accuracy", 0.02);
-  assertClose(result.dps, 11.24, "T5: DPS", 0.3);
+  assertClose(result.dps, 8.98, "T5: DPS", 0.3);
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -341,11 +341,11 @@ section("TEST 6: Magic — Shadow + full mage gear vs Wardens P3, Augury, Magic 
   // Wait - Shadow is 2H so no shield. Can't equip elidinis ward.
   // Let me remove ward.
   // Total amagic: 35+8+35+26+12+15+10+8+8 = 157, tripled = 471
-  // Total mdmg: 0+3+3+3+5+2+5+0+2 = 23, tripled = 69
+  // Total mdmg: 0+3+3+3+5+2+5+1+2 = 24 (eternal has mdmg=1), tripled = 72
   //
   // Magic pot: 4+floor(99*0.10) = 13 → 112
   // Shadow powered staff base: floor(visibleMagic/3)+1 = floor(112/3)+1 = 37+1 = 38
-  // Max hit: floor(38*(1+69/100)) = floor(38*1.69) = floor(64.22) = 64
+  // Max hit: floor(38*(1+72/100)) = floor(38*1.72) = floor(65.36) = 65
   //
   // Augury: acc=1.25, str=1.0 (magic prayers don't boost damage)
   // EffAtkLevel: 99+13=112, floor(112*1.25)=floor(140)=140, +0(autocast?)+8=148
@@ -388,7 +388,7 @@ section("TEST 6: Magic — Shadow + full mage gear vs Wardens P3, Augury, Magic 
   // Wait but that's for the effective STR level which feeds into... actually for powered staves,
   // the max hit uses visible magic level directly, not effective level.
   //
-  // DPS: (64/2*0.99471)/(5*0.6) = (32*0.99471)/3.0 = 31.831/3.0 = 10.610
+  // DPS: (65/2*0.99471)/(5*0.6) = (32.5*0.99471)/3.0 = 32.328/3.0 ≈ 10.776
 
   const wardens = getBoss("wardens-p3")!;
   const ctx = makeCtx(
@@ -409,15 +409,15 @@ section("TEST 6: Magic — Shadow + full mage gear vs Wardens P3, Augury, Magic 
   const result = calculateDps(ctx);
 
   // Shadow visible magic = 99+13 = 112 → base = floor(112/3)+1 = 38
-  // Shadow equipStr = min(100, 23*3) = 69
-  // Max hit = floor(38*(1+69/100)) = floor(38*1.69) = floor(64.22) = 64
-  assertEqual(result.maxHit, 64, "T6: max hit (shadow)");
+  // Shadow equipStr = min(100, 24*3) = 72 (eternal boots mdmg=1)
+  // Max hit = floor(38*(1+72/100)) = floor(38*1.72) = floor(65.36) = 65
+  assertEqual(result.maxHit, 65, "T6: max hit (shadow)");
 
   // Defence roll: (200+9)*(-60+64) = 209*4 = 836
   assertEqual(result.breakdown.defenceRoll, 836, "T6: defence roll");
 
   assertClose(result.accuracy, 0.9947, "T6: accuracy", 0.005);
-  assertClose(result.dps, 10.61, "T6: DPS", 0.15);
+  assertClose(result.dps, 10.78, "T6: DPS", 0.15);
 }
 
 // ═══════════════════════════════════════════════════════════════════════

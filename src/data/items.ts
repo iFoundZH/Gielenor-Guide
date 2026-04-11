@@ -247,6 +247,11 @@ const REGIONS: Record<string, string> = {
   "echo-devils-element": "kandarin",
 };
 
+// ── Stat overrides (wiki (i) variants differ from base DB data) ──
+const STAT_OVERRIDES: Record<string, Partial<EquipmentBonuses>> = {
+  "slayer-helm-i": { mstr: 3, rstr: 3, mdmg: 3 },
+};
+
 // ── Weapon category overrides (for items whose wiki category doesn't map well) ──
 const WEAPON_CAT_OVERRIDES: Record<string, WeaponCategory> = {
   "eclipse-atlatl": "thrown",
@@ -304,6 +309,11 @@ function processItem(raw: RawItem): Item {
     item.weaponCategory = (ourId && WEAPON_CAT_OVERRIDES[ourId]) || raw.weaponCategory;
     item.combatStyle = raw.combatStyle;
     item.attackType = raw.attackType;
+  }
+
+  // Stat overrides
+  if (ourId && STAT_OVERRIDES[ourId]) {
+    item.bonuses = { ...item.bonuses, ...STAT_OVERRIDES[ourId] };
   }
 
   // Passive

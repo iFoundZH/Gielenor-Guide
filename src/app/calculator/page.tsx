@@ -141,6 +141,19 @@ export default function CalculatorPage() {
     });
   }, [state.player, state.loadout, state.target]);
 
+  const applyOptimizedConfig = useCallback((opt?: OptimizedConfig) => {
+    if (!opt) return;
+    const updates: Partial<PlayerConfig> = {};
+    if (opt.potion) updates.potion = opt.potion;
+    if (opt.prayerType) updates.prayerType = opt.prayerType;
+    if (opt.attackStyle) updates.attackStyle = opt.attackStyle;
+    if (opt.voidSet) updates.voidSet = opt.voidSet;
+    if (opt.activePacts) updates.activePacts = opt.activePacts;
+    if (Object.keys(updates).length > 0) {
+      dispatch({ type: "SET_PLAYER", player: { ...state.player, ...updates } });
+    }
+  }, [state.player]);
+
   const handleOptimize = useCallback(() => {
     setIsOptimizing(true);
     // Run optimizer in next tick to avoid blocking UI
@@ -168,20 +181,7 @@ export default function CalculatorPage() {
         applyOptimizedConfig(results[0].optimizedConfig);
       }
     }, 10);
-  }, [state.player, state.target, state.lockedSlots, state.loadout]);
-
-  const applyOptimizedConfig = useCallback((opt?: OptimizedConfig) => {
-    if (!opt) return;
-    const updates: Partial<PlayerConfig> = {};
-    if (opt.potion) updates.potion = opt.potion;
-    if (opt.prayerType) updates.prayerType = opt.prayerType;
-    if (opt.attackStyle) updates.attackStyle = opt.attackStyle;
-    if (opt.voidSet) updates.voidSet = opt.voidSet;
-    if (opt.activePacts) updates.activePacts = opt.activePacts;
-    if (Object.keys(updates).length > 0) {
-      dispatch({ type: "SET_PLAYER", player: { ...state.player, ...updates } });
-    }
-  }, [state.player]);
+  }, [state.player, state.target, state.lockedSlots, state.loadout, applyOptimizedConfig]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">

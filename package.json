@@ -11,7 +11,8 @@
     "test:ui": "npx playwright test --ui",
     "test:unit": "vitest run",
     "test:unit:watch": "vitest",
-    "sync:items": "python3 scripts/sync-items.py"
+    "sync:items": "python3 scripts/sync-items.py",
+    "prepare": "husky"
   },
   "dependencies": {
     "@tailwindcss/postcss": "^4.2.2",
@@ -30,6 +31,7 @@
     "@playwright/test": "^1.58.2",
     "eslint": "^9.39.4",
     "eslint-plugin-react-hooks": "^7.0.1",
+    "husky": "^9.1.7",
     "typescript-eslint": "^8.58.0",
     "vitest": "^4.1.4"
   }

@@ -849,7 +849,7 @@ function getAttackSpeed(ctx: DpsContext, pe: AggregatedPactEffects): number {
 // ECHO CASCADE
 // ═══════════════════════════════════════════════════════════════════════
 
-function calculateEchoDps(ctx: DpsContext, pe: AggregatedPactEffects, baseDps: number, accuracy: number): number {
+function calculateEchoDps(ctx: DpsContext, pe: AggregatedPactEffects, baseDps: number, _accuracy: number): number {
   // Base echo chance from pact nodes
   let echoRate = pe.rangedRegenEchoChance / 100;
   if (echoRate <= 0) return 0;

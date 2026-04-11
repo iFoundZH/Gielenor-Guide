@@ -763,7 +763,7 @@ describe("echo-tecpatl double hit", () => {
 // ═══════════════════════════════════════════════════════════════════════
 
 describe("echo-fang-hound fire proc", () => {
-  it("adds 5% bonus DPS from fire proc", () => {
+  it("adds 5% bonus DPS from fire proc (base max 10, scales with mdmg%)", () => {
     const ctx = makeCtx(
       { combatStyle: "melee", attackStyle: "accurate" },
       { weapon: getItem("echo-fang-hound")! },
@@ -771,8 +771,11 @@ describe("echo-fang-hound fire proc", () => {
     );
     const result = calculateDps(ctx);
 
-    const singleHitDps = (result.maxHit / 2 * result.accuracy) / (result.speed * 0.6);
-    const fireProc = 0.05 * singleHitDps;
+    // Fire proc: base max 10, scaled by mdmg%, 5% chance, always hits
+    const mdmg = result.breakdown.equipmentBonuses?.mdmg ?? 0;
+    const fireMax = Math.floor(10 * (1 + mdmg / 100));
+    const interval = result.speed * 0.6;
+    const fireProc = 0.05 * (fireMax / 2) / interval;
     expect(result.breakdown.bonusDps).toBeCloseTo(fireProc, 3);
   });
 });
