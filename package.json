@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "eslint src/",
     "test": "npx playwright test",
-    "test:ui": "npx playwright test --ui"
+    "test:ui": "npx playwright test --ui",
+    "test:unit": "vitest run",
+    "test:unit:watch": "vitest"
   },
   "dependencies": {
     "@tailwindcss/postcss": "^4.2.2",
@@ -27,6 +29,7 @@
     "@playwright/test": "^1.58.2",
     "eslint": "^9.39.4",
     "eslint-plugin-react-hooks": "^7.0.1",
-    "typescript-eslint": "^8.58.0"
+    "typescript-eslint": "^8.58.0",
+    "vitest": "^4.1.4"
   }
 }
