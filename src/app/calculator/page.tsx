@@ -44,7 +44,7 @@ const DEFAULT_PLAYER: PlayerConfig = {
   potion: "auto", prayerType: "auto", attackStyle: "auto", combatStyle: "melee",
   regions: ["varlamore", "karamja", "misthalin"],
   activePacts: [],
-  voidSet: "none", onSlayerTask: "auto", targetDistance: 1,
+  voidSet: "none", onSlayerTask: "auto",
 };
 
 const EMPTY_LOADOUT: BuildLoadout = {
@@ -89,13 +89,6 @@ function reducer(state: CalcState, action: Action): CalcState {
       // Force slayer task on for bosses that require it
       if (boss.requiresSlayerTask) {
         playerUpdates.onSlayerTask = true;
-      }
-
-      // Auto-set typical fight distance
-      if (boss.typicalDistance !== undefined) {
-        playerUpdates.targetDistance = boss.typicalDistance;
-      } else {
-        playerUpdates.targetDistance = 1;
       }
 
       const hasPlayerChanges = Object.keys(playerUpdates).length > 0;

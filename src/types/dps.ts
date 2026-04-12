@@ -314,6 +314,7 @@ export interface DpsBreakdown {
   bonusDps: number;
   thornsDps: number;
   minHit: number;
+  effectiveDistance: number;
   sustainInfo: string[];
   specInfo?: {
     name: string;

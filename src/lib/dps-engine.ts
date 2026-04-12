@@ -85,10 +85,15 @@ export function calculateDps(ctx: DpsContext): DpsResult {
   }
 
   // Max accuracy roll from range pact: proc chance of min(1, 0.05 * distance)
+  // "Max accuracy" means you roll the maximum on your attack die.
+  // Source: weirdgloop PlayerVsNPCCalc.ts — getMaxAccuracyHitChance()
+  // If atkRoll > defRoll: guaranteed hit (1.0)
+  // If atkRoll <= defRoll: atkRoll / (defRoll + 1)
   if (pe.maxAccuracyRollFromRange) {
     const dist = getEffectiveDistance(ctx, pe);
     const procChance = Math.min(1, 0.05 * dist);
-    finalAcc = procChance + (1 - procChance) * finalAcc;
+    const maxAccHitChance = atkRoll > defRoll ? 1 : atkRoll / (defRoll + 1);
+    finalAcc = procChance * maxAccHitChance + (1 - procChance) * finalAcc;
   }
 
   // Track min hit for display
@@ -227,11 +232,13 @@ export function calculateDps(ctx: DpsContext): DpsResult {
   }
 
   // Air spell max hit prayer bonus: +X% chance to max hit per prayer bonus
+  // Source: weirdgloop — effect chance is DOUBLED against targets weak to air
   if (pe.airSpellMaxHitPrayerBonus > 0 && ctx.player.combatStyle === "magic" && weaponCat !== "powered-staff") {
     const element = resolveSpellElement(ctx, pe);
     if (element === "air") {
       const prayerBonus = totalBonuses.prayer;
-      const maxHitChance = Math.min(1, pe.airSpellMaxHitPrayerBonus * prayerBonus / 100);
+      const weakToAir = ctx.target.elementalWeakness === "air";
+      const maxHitChance = Math.min(1, pe.airSpellMaxHitPrayerBonus * prayerBonus * (weakToAir ? 2 : 1) / 100);
       // Extra DPS from some hits being max instead of avg
       const avgGain = maxHitChance * (finalMax / 2);
       bonusDps += (avgGain * finalAcc) / interval;
@@ -341,6 +348,7 @@ export function calculateDps(ctx: DpsContext): DpsResult {
       bonusDps,
       thornsDps,
       minHit,
+      effectiveDistance: getEffectiveDistance(ctx, pe),
       sustainInfo,
       specInfo,
     },
@@ -1169,9 +1177,11 @@ function applyDoubleRoll(ctx: DpsContext, pe: AggregatedPactEffects, baseAcc: nu
   const weapon = ctx.loadout.weapon;
   const weaponCat = weapon?.weaponCategory;
 
-  // Crossbow double roll pact
+  // Crossbow double roll pact: uses exact Fang discrete formula per weirdgloop
   if (weaponCat === "crossbow" && pe.crossbowDoubleRoll) {
-    return 1 - (1 - baseAcc) * (1 - baseAcc);
+    const atkRoll = ctx._fangAtkRoll ?? 0;
+    const defRoll = ctx._fangDefRoll ?? 0;
+    return fangExactAccuracy(atkRoll, defRoll);
   }
 
   // Osmumten's Fang: exact discrete double-roll
@@ -1200,20 +1210,68 @@ function fangExactAccuracy(attackRoll: number, defenceRoll: number): number {
 }
 
 // ═══════════════════════════════════════════════════════════════════════
-// EFFECTIVE MELEE RANGE
-// ═══════════════════════════════════════════════════════════════════════
+// WEAPON ATTACK RANGE
+// Source: https://oldschool.runescape.wiki/w/Attack_range
+// ══════════════════════════════════════════════��════════════════════════
+
+/** Default attack range by weapon category (rapid/accurate style, not longrange). */
+const WEAPON_CATEGORY_RANGE: Record<string, number> = {
+  "standard": 1,
+  "1h-light": 1,
+  "1h-heavy": 1,
+  "2h-melee": 1,
+  "halberd": 2,
+  "scythe": 1,
+  "bow": 10,           // Longbows/crystal/tbow = 10; shortbows overridden to 7
+  "crossbow": 7,       // Most crossbows; ACB/ZCB overridden to 8
+  "blowpipe": 5,
+  "thrown": 4,          // Knives/axes = 4; darts = 3, atlatl = 6 (overridden)
+  "staff": 10,          // Standard spell casting range
+  "powered-staff": 7,   // Trident/sang/accursed = 7; Shadow = 8 (overridden)
+};
+
+/** Per-weapon range overrides where category default is wrong. */
+const WEAPON_RANGE_OVERRIDES: Record<string, number> = {
+  // Shortbows (range 7, category default is 10)
+  "msb-i": 7,
+  "craws-bow": 7,
+  "webweaver-bow": 7,
+  "seercull": 7,
+  // Crossbows with range 8 (ACB, ZCB)
+  "acb": 8,
+  "zcb": 8,
+  // Ballistas: range 9
+  "heavy-ballista": 9,
+  "light-ballista": 9,
+  // Powered staves with non-default range
+  "shadow": 8,          // Tumeken's shadow
+  "eye-of-ayak": 6,     // Eye of Ayak
+  // Thrown with non-default range
+  "eclipse-atlatl": 6,  // Atlatl range 6
+  "tonalztics": 6,      // Tonalztics of ralos
+};
+
+/**
+ * Get the base attack range of a weapon (before pact modifiers).
+ * Source: https://oldschool.runescape.wiki/w/Attack_range
+ */
+export function getBaseWeaponRange(weapon: Item | null | undefined): number {
+  if (!weapon) return 1;
+  const override = WEAPON_RANGE_OVERRIDES[weapon.id];
+  if (override !== undefined) return override;
+  return WEAPON_CATEGORY_RANGE[weapon.weaponCategory ?? "standard"] ?? 1;
+}
 
 /**
  * Compute effective attack distance for distance-dependent pacts.
- * For melee: weapon range (base × multiplier × conditional boost).
- *   Halberds have base range 2; all other melee weapons have range 1.
- *   Node 43 "2H Range Double" doubles 2H weapon range.
- *   Node 155 "Melee Range Boost" sets range to 7 if ≥ 4.
- * For ranged/magic: user-set targetDistance.
+ * Always uses weapon's max attack range (assumes optimal positioning).
+ * For melee: base weapon range + pact modifiers (node43, node155).
+ * For ranged/magic: weapon's base attack range from wiki data.
  */
 function getEffectiveDistance(ctx: DpsContext, pe: AggregatedPactEffects): number {
+  const weapon = ctx.loadout.weapon;
+
   if (ctx.player.combatStyle === "melee") {
-    const weapon = ctx.loadout.weapon;
     // Base weapon range: halberds = 2, all other melee = 1
     let range = weapon?.weaponCategory === "halberd" ? 2 : 1;
 
@@ -1227,13 +1285,11 @@ function getEffectiveDistance(ctx: DpsContext, pe: AggregatedPactEffects): numbe
       range = 7;
     }
 
-    // For melee, you attack at your weapon's max range (optimal for distance pacts).
-    // Allow user targetDistance if they set it higher for some reason, but they can't
-    // exceed weapon range in practice so use the max of (range, targetDistance).
-    return Math.max(range, ctx.player.targetDistance ?? 1);
+    return range;
   }
 
-  return ctx.player.targetDistance ?? 1;
+  // Ranged/magic: use weapon's base attack range
+  return getBaseWeaponRange(weapon);
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -1301,29 +1357,30 @@ function getAttackSpeed(ctx: DpsContext, pe: AggregatedPactEffects): number {
 // ═══════════════════════════════════════════════════════════════════════
 
 function calculateEchoDps(ctx: DpsContext, pe: AggregatedPactEffects, baseDps: number, _accuracy: number): number {
-  // Base echo chance from pact nodes
-  let echoRate = pe.rangedRegenEchoChance / 100;
-  if (echoRate <= 0) return 0;
+  // Base echo chance from pact nodes (before regen scaling)
+  // Source: weirdgloop PlayerVsNPCCalc.ts — crossbow reproc added to echoChance BEFORE regen scaling
+  let echoChance = pe.rangedRegenEchoChance / 100;
+  if (echoChance <= 0) return 0;
   if (ctx.player.combatStyle !== "ranged") return 0;
 
-  // Multiply echo rate by regen chance (echoes only fire when ammo is regenerated)
-  echoRate *= Math.min(1, pe.regenAmmoChance / 100);
-
-  // Crossbow echo reproc chance
+  // Crossbow echo reproc chance (added to base echo chance, before regen scaling)
   if (ctx.loadout.weapon?.weaponCategory === "crossbow") {
-    echoRate += pe.crossbowEchoReprocChance / 100;
+    echoChance += pe.crossbowEchoReprocChance / 100;
   }
+
+  // Combined rate: base echo chance scaled by regen chance
+  const regenChance = Math.min(1, pe.regenAmmoChance / 100);
+  const echoRate = echoChance * regenChance;
 
   if (echoRate <= 0) return 0;
 
   let echoDps: number;
 
-  // Echo cascade: echoes can trigger more echoes at half chance (up to 4 times)
+  // Echo cascade: each cyclical echo fires independently at half base echo chance (up to 4 total)
+  // Source: weirdgloop PlayerVsNPCCalc.ts — adds 3 copies of echoDist scaled by echoChance/2
   if (pe.rangedEchoCyclical) {
-    const p = echoRate;
-    // Geometric sum: p + p*(p/2) + p*(p/2)*(p/4) + p*(p/2)*(p/4)*(p/8) ≈ p * (1 + p/2 + p^2/8 + p^3/48)
-    const cascadeMult = 1 + p / 2 + (p * p) / 8 + (p * p * p) / 48;
-    echoDps = baseDps * p * cascadeMult;
+    const cascadeMult = 1 + 3 * (echoChance / 2);
+    echoDps = baseDps * echoRate * cascadeMult;
   } else {
     echoDps = baseDps * echoRate;
   }
@@ -1437,9 +1494,11 @@ function buildSustainInfo(ctx: DpsContext, pe: AggregatedPactEffects, _bonuses: 
   if (pe.maxHitStyleSwap) {
     info.push("Max hit from 3+ tiles: next different-style hit +25%");
   }
-  if ((pe.meleeRangeMultiplier > 0 || pe.meleeRangeConditionalBoost) && style === "melee") {
+  {
     const effectiveDist = getEffectiveDistance(ctx, pe);
-    info.push(`Effective melee attack range: ${effectiveDist} tiles`);
+    if (effectiveDist > 1) {
+      info.push(`Attack distance: ${effectiveDist} tiles`);
+    }
   }
 
   // Defensive bonuses display

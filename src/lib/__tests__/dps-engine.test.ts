@@ -15,6 +15,7 @@ import {
   calculateBaseMaxHit,
   getMultiplierChain,
   sumEquipmentBonuses,
+  getBaseWeaponRange,
 } from "@/lib/dps-engine";
 import { aggregatePactEffects } from "@/lib/pact-effects";
 import { getItem } from "@/data/items";
@@ -1415,39 +1416,40 @@ describe("bow always pass accuracy", () => {
 // ═══════════════════════════════════════════════════════════════════════
 
 describe("distance melee min hit", () => {
-  it("distance min hit increases DPS for melee", () => {
+  it("distance min hit increases DPS for melee (whip range 1)", () => {
     // node1 → node74 (distanceMeleeMinHit=3)
+    // Whip has attack range 1, so distance = 1, min = 3 + 3*1 = 6
     const noPact = makeCtx(
-      { combatStyle: "melee", attackStyle: "accurate", targetDistance: 3 },
+      { combatStyle: "melee", attackStyle: "accurate" },
       { weapon: getItem("whip")! },
       custom,
     );
     const withPact = makeCtx(
-      { combatStyle: "melee", attackStyle: "accurate", targetDistance: 3, activePacts: ["node1", "node74"] },
+      { combatStyle: "melee", attackStyle: "accurate", activePacts: ["node1", "node74"] },
       { weapon: getItem("whip")! },
       custom,
     );
     const r1 = calculateDps(noPact);
     const r2 = calculateDps(withPact);
-    // Min hit = 3 + 3*3 = 12
-    expect(r2.breakdown.minHit).toBe(12);
+    // Min hit = 3 + 3*1 = 6 (whip range = 1)
+    expect(r2.breakdown.minHit).toBe(6);
     expect(r2.dps).toBeGreaterThan(r1.dps);
   });
 
-  it("distance min hit at distance 1 is 3+3=6", () => {
+  it("distance min hit with halberd (range 2) is 3+3*2=9", () => {
     const ctx = makeCtx(
-      { combatStyle: "melee", attackStyle: "accurate", targetDistance: 1, activePacts: ["node1", "node74"] },
-      { weapon: getItem("whip")! },
+      { combatStyle: "melee", attackStyle: "accurate", activePacts: ["node1", "node74"] },
+      { weapon: getItem("d-halberd")! },
       custom,
     );
     const result = calculateDps(ctx);
-    // min = 3 + 3*1 = 6
-    expect(result.breakdown.minHit).toBe(6);
+    // min = 3 + 3*2 = 9 (halberd range = 2)
+    expect(result.breakdown.minHit).toBe(9);
   });
 
   it("distance min hit does not apply to ranged", () => {
     const ctx = makeCtx(
-      { combatStyle: "ranged", attackStyle: "rapid", targetDistance: 5, activePacts: ["node1", "node74"] },
+      { combatStyle: "ranged", attackStyle: "rapid", activePacts: ["node1", "node74"] },
       { weapon: getItem("tbow")!, ammo: getItem("dragon-arrows")! },
       custom,
     );
@@ -2704,5 +2706,246 @@ describe("effective melee range", () => {
     const r2 = calculateDps(withPacts);
     // Range 7 with distance pacts should give substantial DPS boost
     expect(r2.dps).toBeGreaterThan(r1.dps * 1.15);
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+// WEAPON ATTACK RANGE — auto-computed from weapon category + overrides
+// Source: https://oldschool.runescape.wiki/w/Attack_range
+// ═══════════════════════════════════════════════════════════════════════
+
+describe("weapon attack range", () => {
+  // Category defaults
+  it("melee weapons have range 1", () => {
+    expect(getBaseWeaponRange(getItem("whip"))).toBe(1);
+    expect(getBaseWeaponRange(getItem("fang"))).toBe(1);
+    expect(getBaseWeaponRange(getItem("scythe"))).toBe(1);
+    expect(getBaseWeaponRange(getItem("rapier"))).toBe(1);
+  });
+
+  it("halberd has range 2", () => {
+    expect(getBaseWeaponRange(getItem("d-halberd"))).toBe(2);
+  });
+
+  it("bows default to range 10 (longbow/crystal/tbow)", () => {
+    expect(getBaseWeaponRange(getItem("tbow"))).toBe(10);
+    expect(getBaseWeaponRange(getItem("bowfa"))).toBe(10);
+    expect(getBaseWeaponRange(getItem("dark-bow"))).toBe(10);
+  });
+
+  it("shortbows overridden to range 7", () => {
+    expect(getBaseWeaponRange(getItem("msb-i"))).toBe(7);
+    expect(getBaseWeaponRange(getItem("craws-bow"))).toBe(7);
+    expect(getBaseWeaponRange(getItem("seercull"))).toBe(7);
+  });
+
+  it("crossbows default to range 7", () => {
+    expect(getBaseWeaponRange(getItem("dcb"))).toBe(7);
+    expect(getBaseWeaponRange(getItem("dhcb"))).toBe(7);
+  });
+
+  it("ACB/ZCB overridden to range 8", () => {
+    expect(getBaseWeaponRange(getItem("acb"))).toBe(8);
+    expect(getBaseWeaponRange(getItem("zcb"))).toBe(8);
+  });
+
+  it("ballistas overridden to range 9", () => {
+    expect(getBaseWeaponRange(getItem("heavy-ballista"))).toBe(9);
+    expect(getBaseWeaponRange(getItem("light-ballista"))).toBe(9);
+  });
+
+  it("blowpipe has range 5", () => {
+    expect(getBaseWeaponRange(getItem("blowpipe"))).toBe(5);
+    expect(getBaseWeaponRange(getItem("echo-drygore-blowpipe"))).toBe(5);
+  });
+
+  it("thrown weapons default to range 4, atlatl overridden to 6", () => {
+    expect(getBaseWeaponRange(getItem("eclipse-atlatl"))).toBe(6);
+  });
+
+  it("staves (spell casting) have range 10", () => {
+    expect(getBaseWeaponRange(getItem("kodai"))).toBe(10);
+    expect(getBaseWeaponRange(getItem("harm-staff"))).toBe(10);
+  });
+
+  it("powered staves default to range 7, shadow overridden to 8", () => {
+    expect(getBaseWeaponRange(getItem("sang"))).toBe(7);
+    expect(getBaseWeaponRange(getItem("trident-swamp"))).toBe(7);
+    expect(getBaseWeaponRange(getItem("shadow"))).toBe(8);
+  });
+
+  it("null weapon returns range 1", () => {
+    expect(getBaseWeaponRange(null)).toBe(1);
+    expect(getBaseWeaponRange(undefined)).toBe(1);
+  });
+});
+
+describe("effective distance in DPS breakdown", () => {
+  it("melee whip: effectiveDistance = 1", () => {
+    const ctx = makeCtx(
+      { combatStyle: "melee", attackStyle: "accurate" },
+      { weapon: getItem("whip")! },
+      custom,
+    );
+    expect(calculateDps(ctx).breakdown.effectiveDistance).toBe(1);
+  });
+
+  it("ranged tbow: effectiveDistance = 10", () => {
+    const ctx = makeCtx(
+      { combatStyle: "ranged", attackStyle: "rapid" },
+      { weapon: getItem("tbow")!, ammo: getItem("dragon-arrows")! },
+      custom,
+    );
+    expect(calculateDps(ctx).breakdown.effectiveDistance).toBe(10);
+  });
+
+  it("ranged crossbow: effectiveDistance = 7", () => {
+    const ctx = makeCtx(
+      { combatStyle: "ranged", attackStyle: "rapid" },
+      { weapon: getItem("dhcb")!, ammo: getItem("ruby-bolts-e")! },
+      custom,
+    );
+    expect(calculateDps(ctx).breakdown.effectiveDistance).toBe(7);
+  });
+
+  it("ranged blowpipe: effectiveDistance = 5", () => {
+    const ctx = makeCtx(
+      { combatStyle: "ranged", attackStyle: "rapid" },
+      { weapon: getItem("blowpipe")!, ammo: getItem("dragon-dart-ammo")! },
+      custom,
+    );
+    expect(calculateDps(ctx).breakdown.effectiveDistance).toBe(5);
+  });
+
+  it("magic shadow: effectiveDistance = 8", () => {
+    const ctx = makeCtx(
+      { combatStyle: "magic", attackStyle: "autocast" },
+      { weapon: getItem("shadow")! },
+      custom,
+    );
+    expect(calculateDps(ctx).breakdown.effectiveDistance).toBe(8);
+  });
+
+  it("magic staff (standard spells): effectiveDistance = 10", () => {
+    const ctx = makeCtx(
+      { combatStyle: "magic", attackStyle: "autocast", spellMaxHit: 24, spellElement: "fire" },
+      { weapon: getItem("kodai")! },
+      custom,
+    );
+    expect(calculateDps(ctx).breakdown.effectiveDistance).toBe(10);
+  });
+
+  it("max accuracy roll from range scales with weapon distance for ranged", () => {
+    // node9: maxAccuracyRollFromRange — 5% per tile chance to auto-hit
+    // tbow at range 10: 50% proc chance
+    const noPact = makeCtx(
+      { combatStyle: "ranged", attackStyle: "rapid" },
+      { weapon: getItem("tbow")!, ammo: getItem("dragon-arrows")! },
+      custom,
+    );
+    const withPact = makeCtx(
+      { combatStyle: "ranged", attackStyle: "rapid", activePacts: ["node1", "node9"] },
+      { weapon: getItem("tbow")!, ammo: getItem("dragon-arrows")! },
+      custom,
+    );
+    const r1 = calculateDps(noPact);
+    const r2 = calculateDps(withPact);
+    // At distance 10, 50% chance to auto-hit → significant accuracy boost
+    expect(r2.breakdown.finalAccuracy).toBeGreaterThan(r1.breakdown.finalAccuracy);
+    expect(r2.dps).toBeGreaterThan(r1.dps);
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+// AIR MAX HIT PRAYER BONUS — weakToAir doubling
+// Source: weirdgloop — effectChance = prayerBonus * (weakToAir ? 2 : 1) / 100
+// ═══════════════════════════════════════════════════════════════════════
+
+describe("air max hit prayer bonus (node109)", () => {
+  // Path: node1→node44→node45→node55→node58→node67→node107→node108→node109
+  const airPacts = ["node1", "node44", "node45", "node55", "node58", "node67", "node107", "node108", "node109"];
+  const noCapstonePacts = airPacts.filter(p => p !== "node109");
+
+  // Custom bosses: same defences, different weakness
+  const airWeakBoss: BossPreset = {
+    id: "test-air-weak", name: "Air Weak", defenceLevel: 1, magicLevel: 1, hp: 100,
+    dstab: 0, dslash: 0, dcrush: 0, dranged: 0,
+    dranged_light: 0, dranged_standard: 0, dranged_heavy: 0,
+    dmagic: 0, elementalWeakness: "air", elementalWeaknessPercent: 30,
+  };
+  const noWeakBoss: BossPreset = {
+    id: "test-no-weak", name: "No Weakness", defenceLevel: 1, magicLevel: 1, hp: 100,
+    dstab: 0, dslash: 0, dcrush: 0, dranged: 0,
+    dranged_light: 0, dranged_standard: 0, dranged_heavy: 0,
+    dmagic: 0,
+  };
+
+  // Items: Crystal Blessing (prayer:5) + Devil's Element (prayer:3) = 8 prayer bonus
+  const gearWithPrayer = {
+    weapon: getItem("kodai")!,
+    shield: getItem("echo-devils-element")!,
+    ammo: getItem("echo-crystal-blessing")!,
+  };
+
+  it("node109 boost is larger vs air-weak target (2x effect chance)", () => {
+    const player = {
+      combatStyle: "magic" as const, attackStyle: "autocast" as const,
+      spellMaxHit: 24, spellElement: "air" as const,
+      prayerType: "augury" as const, activePrayerCount: 1,
+    };
+
+    // DPS boost from adding node109, against air-weak boss
+    const weakWith = calculateDps(makeCtx({ ...player, activePacts: airPacts }, gearWithPrayer, airWeakBoss));
+    const weakWithout = calculateDps(makeCtx({ ...player, activePacts: noCapstonePacts }, gearWithPrayer, airWeakBoss));
+    const weakBoost = weakWith.dps - weakWithout.dps;
+
+    // DPS boost from adding node109, against non-weak boss
+    const normalWith = calculateDps(makeCtx({ ...player, activePacts: airPacts }, gearWithPrayer, noWeakBoss));
+    const normalWithout = calculateDps(makeCtx({ ...player, activePacts: noCapstonePacts }, gearWithPrayer, noWeakBoss));
+    const normalBoost = normalWith.dps - normalWithout.dps;
+
+    // Air-weak boost should be ~2x the normal boost (doubled effectChance)
+    // Prayer bonus = 8: weak effectChance = 16%, normal = 8%
+    expect(weakBoost).toBeGreaterThan(0);
+    expect(normalBoost).toBeGreaterThan(0);
+    expect(weakBoost).toBeGreaterThan(normalBoost * 1.8);
+  });
+
+  it("capstone provides DPS increase with prayer bonus equipment", () => {
+    const player = {
+      combatStyle: "magic" as const, attackStyle: "autocast" as const,
+      spellMaxHit: 24, spellElement: "air" as const,
+      prayerType: "augury" as const, activePrayerCount: 1,
+    };
+
+    // With node109 vs without, prayer=8 from gear
+    const withCapstone = calculateDps(makeCtx({ ...player, activePacts: airPacts }, gearWithPrayer, noWeakBoss));
+    const withoutCapstone = calculateDps(makeCtx({ ...player, activePacts: noCapstonePacts }, gearWithPrayer, noWeakBoss));
+
+    // effectChance = 8/100 = 8% → bonus DPS = 8% of maxHit/2
+    expect(withCapstone.dps).toBeGreaterThan(withoutCapstone.dps);
+  });
+
+  it("smoke=air pact triggers weakToAir doubling", () => {
+    const smokeAirPacts = [...airPacts, "node111"];
+    const smokeNoCapstone = smokeAirPacts.filter(p => p !== "node109");
+    const player = {
+      combatStyle: "magic" as const, attackStyle: "autocast" as const,
+      spellMaxHit: 27, spellElement: "smoke" as const,
+      prayerType: "augury" as const, activePrayerCount: 1,
+    };
+
+    // Boost from node109 against air-weak boss with smoke=air
+    const weakWith = calculateDps(makeCtx({ ...player, activePacts: smokeAirPacts }, gearWithPrayer, airWeakBoss));
+    const weakWithout = calculateDps(makeCtx({ ...player, activePacts: smokeNoCapstone }, gearWithPrayer, airWeakBoss));
+    const weakBoost = weakWith.dps - weakWithout.dps;
+
+    // Boost against non-weak boss
+    const normalWith = calculateDps(makeCtx({ ...player, activePacts: smokeAirPacts }, gearWithPrayer, noWeakBoss));
+    const normalWithout = calculateDps(makeCtx({ ...player, activePacts: smokeNoCapstone }, gearWithPrayer, noWeakBoss));
+    const normalBoost = normalWith.dps - normalWithout.dps;
+
+    // Smoke=air should get doubled effect vs air-weak target
+    expect(weakBoost).toBeGreaterThan(normalBoost * 1.5);
   });
 });

@@ -194,15 +194,6 @@ export function PlayerConfigPanel({ config, onChange, forceSlayerTask, weapon }:
         />
       </div>
 
-      {/* Target Distance */}
-      <StatInput
-        label="Distance (tiles)"
-        value={config.targetDistance ?? 1}
-        onChange={v => update({ targetDistance: v })}
-        min={0}
-        max={15}
-      />
-
       {/* Pact-conditional inputs */}
       {pe && (pe.rangedStrengthHpDifference || pe.fireHpConsumeForDamage || pe.waterSpellDamageHighHp) && (
         <StatInput
