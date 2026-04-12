@@ -62,10 +62,13 @@ test.describe("Calculator Page", () => {
   });
 
   test("selecting a weapon shows DPS result", async ({ page }) => {
-    // Click weapon slot
-    await page.locator("button:has-text('Weapon')").first().click();
-    // Select whip (always available, no region lock)
-    await page.locator("button:has-text('Abyssal whip')").first().click();
+    // Click weapon slot to open picker
+    await page.getByRole("button", { name: /Weapon/ }).first().click();
+    // Search for Dragon scimitar (no region lock, always available)
+    const searchInput = page.getByPlaceholder("Search items...");
+    await searchInput.waitFor({ state: "visible" });
+    await searchInput.fill("Dragon scimitar");
+    await page.getByText("Dragon scimitar").first().click();
     // DPS should now be calculated
     await expect(page.getByText("DPS (damage per second)")).toBeVisible();
   });
@@ -77,9 +80,12 @@ test.describe("Calculator Page", () => {
   });
 
   test("pact selection changes DPS", async ({ page }) => {
-    // Equip a weapon first
-    await page.locator("button:has-text('Weapon')").first().click();
-    await page.locator("button:has-text('Abyssal whip')").first().click();
+    // Equip a weapon first (Dragon scimitar — no region lock)
+    await page.getByRole("button", { name: /Weapon/ }).first().click();
+    const searchInput = page.getByPlaceholder("Search items...");
+    await searchInput.waitFor({ state: "visible" });
+    await searchInput.fill("Dragon scimitar");
+    await page.getByText("Dragon scimitar").first().click();
 
     // Read initial DPS via testid
     const dpsEl = page.getByTestId("dps-value");
