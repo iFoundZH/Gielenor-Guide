@@ -337,7 +337,9 @@ export function optimizeBuild(config: OptimizerConfig): OptimizerResult[] {
           let bestStaffPacts: string[] = [];
           let bestStaffSpell: SpellConfig | undefined;
           for (const { w: staffW } of staffWeapons) {
-            const spellbook = ANCIENT_AUTOCAST_STAVES.has(staffW.id) ? "ancient" : "standard";
+            // Harm staff tests BOTH spellbooks (standard at 4t, ancient at 5t) — give it its own key
+            const spellbook = staffW.id === "harm-staff" ? "harm"
+              : ANCIENT_AUTOCAST_STAVES.has(staffW.id) ? "ancient" : "standard";
             if (testedSpellbooks.has(spellbook)) continue;
             testedSpellbooks.add(spellbook);
 
@@ -587,9 +589,11 @@ export function optimizeBuild(config: OptimizerConfig): OptimizerResult[] {
       if (style === "magic" && r.loadout.weapon) {
         const viableSpells = getViableSpells(r.loadout.weapon);
 
-        // Also test smoke-as-air virtual spell for ancient staves (same as Phase 3)
+        // Also test smoke-as-air virtual spell for ancient-only staves (same as Phase 3).
+        // Skip for harm-staff — it has real Wind Surge (standard air) so the virtual spell
+        // is redundant and would get incorrect 4t speed (ancient spells are 5t on harm).
         const spellsToTest = [...viableSpells];
-        if (ANCIENT_AUTOCAST_STAVES.has(r.loadout.weapon.id)) {
+        if (ANCIENT_AUTOCAST_STAVES.has(r.loadout.weapon.id) && r.loadout.weapon.id !== "harm-staff") {
           const smokeSpell = viableSpells.find(s => s.spellElement === "smoke");
           if (smokeSpell) {
             spellsToTest.push({ spellMaxHit: smokeSpell.spellMaxHit, spellElement: "air" });
@@ -1612,6 +1616,8 @@ const STANDARD_SPELLS: SpellConfig[] = STANDARD_SPELL_DATA;
 function getViableSpells(weapon: Item | null): SpellConfig[] {
   if (!weapon) return [];
   if (weapon.weaponCategory !== "staff") return [];
+  // Harm staff can autocast BOTH standard (at 4t) and ancient (at 5t) spells
+  if (weapon.id === "harm-staff") return [...STANDARD_SPELLS, ...ANCIENT_SPELLS];
   return ANCIENT_AUTOCAST_STAVES.has(weapon.id) ? ANCIENT_SPELLS : STANDARD_SPELLS;
 }
 
@@ -1625,7 +1631,10 @@ function getOptimalSpellConfig(weapon: Item | null, spellElement?: SpellElement)
   if (!weapon) return undefined;
   if (weapon.weaponCategory !== "staff") return undefined;
 
-  const spells = ANCIENT_AUTOCAST_STAVES.has(weapon.id) ? ANCIENT_SPELLS : STANDARD_SPELLS;
+  // Harm staff can autocast both standard and ancient spells
+  const spells = weapon.id === "harm-staff"
+    ? [...STANDARD_SPELLS, ...ANCIENT_SPELLS]
+    : ANCIENT_AUTOCAST_STAVES.has(weapon.id) ? ANCIENT_SPELLS : STANDARD_SPELLS;
 
   // If a specific element is requested and matches this weapon type, use it
   if (spellElement && spellElement !== "none") {

@@ -1244,6 +1244,16 @@ function getAttackSpeed(ctx: DpsContext, pe: AggregatedPactEffects): number {
   const weapon = ctx.loadout.weapon;
   let speed = weapon?.attackSpeed ?? 4;
 
+  // Harmonised nightmare staff: 4t for standard spells only, 5t for ancient spells.
+  // The ATTACK_SPEED_OVERRIDES in items.ts sets harm-staff to 4t unconditionally,
+  // but the harmonised orb passive only reduces standard spell speed.
+  // Source: OSRS Wiki "Harmonised nightmare staff"
+  if (weapon?.id === "harm-staff") {
+    const el = ctx.player.spellElement;
+    const isStandard = el === "fire" || el === "earth" || el === "water" || el === "air";
+    speed = isStandard ? 4 : 5;
+  }
+
   // Rapid style: -1 tick for ranged
   if (ctx.player.attackStyle === "rapid" && ctx.player.combatStyle === "ranged") {
     speed -= 1;
