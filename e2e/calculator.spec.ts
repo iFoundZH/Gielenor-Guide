@@ -72,8 +72,8 @@ test.describe("Calculator Page", () => {
 
   test("optimizer runs and populates results", async ({ page }) => {
     await page.locator("button:has-text('Optimize')").click();
-    // Wait for results — should show at least #1
-    await expect(page.getByText(/^#1 —/)).toBeVisible({ timeout: 15000 });
+    // Wait for results — exhaustive search with all wiki items can take a while
+    await expect(page.getByText(/^#1 —/)).toBeVisible({ timeout: 120000 });
   });
 
   test("pact selection changes DPS", async ({ page }) => {
