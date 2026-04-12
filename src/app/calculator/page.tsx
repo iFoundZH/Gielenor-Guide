@@ -166,7 +166,7 @@ function resolveAutoForDisplay(player: PlayerConfig, target: BossPreset): Player
 export default function CalculatorPage() {
   const [state, dispatch] = useReducer(reducer, {
     player: DEFAULT_PLAYER,
-    target: getBoss("sol-heredit") ?? BOSS_PRESETS[0],
+    target: getBoss("jad") ?? BOSS_PRESETS[0],
     loadout: EMPTY_LOADOUT,
     lockedSlots: new Set<EquipmentSlot>(),
   });

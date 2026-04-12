@@ -31,7 +31,6 @@ import { ANCIENT_SPELLS as ANCIENT_SPELL_DATA, STANDARD_SPELLS as STANDARD_SPELL
 // Module-level counter: tracks ALL calculateDps calls across all optimizer phases.
 // Reset at the start of optimizeBuild, read at the end to report total work done.
 let _totalEvaluations = 0;
-let _beamCalls = 0;
 
 /** Tracked wrapper around calculateDps — increments the global evaluation counter. */
 function evalDpsTracked(params: { player: PlayerConfig; loadout: BuildLoadout; target: BossPreset }): import("@/types/dps").DpsResult {
@@ -231,7 +230,6 @@ interface ConfigCombo {
 
 export function optimizeBuild(config: OptimizerConfig): OptimizerResult[] {
   _totalEvaluations = 0;
-  _beamCalls = 0;
   const { player, target, lockedSlots, topN } = config;
   const style = player.combatStyle;
 
@@ -457,7 +455,6 @@ export function optimizeBuild(config: OptimizerConfig): OptimizerResult[] {
         }
       }
 
-      if (typeof process !== "undefined") process.stderr.write(`[P4] start evals=${_totalEvaluations.toLocaleString()}, configs=${phase4Configs.length}\n`);
       const allPhase4Results: OptimizerResult[] = [];
       for (const p4cfg of phase4Configs) {
         const isAirSpell = p4cfg.spell?.spellElement === "air" || p4cfg.spell?.spellElement === "smoke";
@@ -479,7 +476,6 @@ export function optimizeBuild(config: OptimizerConfig): OptimizerResult[] {
 
       // Iterative refinement: re-optimise pacts (+ spell for magic) against best gear
       // Skip if user locked pacts — nothing to refine
-      if (typeof process !== "undefined") process.stderr.write(`[P4] after gear evals=${_totalEvaluations.toLocaleString()}\n`);
       const sortedP4 = allPhase4Results.sort((a, b) => b.result.dps - a.result.dps);
       const best = sortedP4[0];
       if (best && !userLockedPacts) {
@@ -570,7 +566,6 @@ export function optimizeBuild(config: OptimizerConfig): OptimizerResult[] {
     .sort((a, b) => b.result.dps - a.result.dps)
     .slice(0, topN);
 
-  if (typeof process !== "undefined") process.stderr.write(`[P5] start evals=${_totalEvaluations.toLocaleString()}, builds=${finalResults.length}\n`);
   const userLockedPactsGlobal = player.activePacts.length > 0;
   if (!userLockedPactsGlobal) {
     for (const r of finalResults) {
@@ -658,7 +653,6 @@ export function optimizeBuild(config: OptimizerConfig): OptimizerResult[] {
   // Attach total evaluation count across ALL phases (pact beam, gear search, refinement, etc.)
   if (sorted.length > 0) {
     sorted[0].totalEvaluations = _totalEvaluations;
-    (sorted[0] as Record<string, unknown>)._beamCalls = _beamCalls;
   }
 
   return sorted;
@@ -998,8 +992,6 @@ function optimizePactsBeam(
   /** Enable capstone injection post-processing (expensive — only for final per-build refinement) */
   enableCapstoneInjection: boolean = false,
 ): string[][] {
-  _beamCalls++;
-  const _beamStart = _totalEvaluations;
   const BEAM_WIDTH = 6;
   const NUM_RESULTS = 3;
   const allNodes = getAllNodes();
@@ -1132,8 +1124,6 @@ function optimizePactsBeam(
   // for halberds requires traversing node88 which has minimal DPS value on its own).
   // Only enabled for final per-build refinement (Phase 5) to avoid N^2 blowup.
   if (!enableCapstoneInjection) {
-    // eslint-disable-next-line no-console
-    if (typeof process !== "undefined") process.stderr.write(`[beam#${_beamCalls}] ${(_totalEvaluations - _beamStart).toLocaleString()} evals, fixed=${!!fixedLoadout}, qw=${quickWeapons.length}\n`);
     beam.sort((a, b) => b.dps - a.dps);
     return beam.slice(0, NUM_RESULTS).map(e => [...e.selected]);
   }
@@ -1192,8 +1182,6 @@ function optimizePactsBeam(
     }
   }
 
-  // eslint-disable-next-line no-console
-  if (typeof process !== "undefined") process.stderr.write(`[beam#${_beamCalls}+cap] ${(_totalEvaluations - _beamStart).toLocaleString()} evals, fixed=${!!fixedLoadout}\n`);
   beam.sort((a, b) => b.dps - a.dps);
   return beam.slice(0, NUM_RESULTS).map(e => [...e.selected]);
 }
@@ -1463,12 +1451,10 @@ function dominates(a: Item, b: Item, style: CombatStyle, pactFlags: PactAwarenes
 
   let strictlyBetter = false;
 
-  // When pacts make prayer bonus DPS-relevant, include it in domination check
-  const prayerMatters = pactFlags.hasMeleePrayerScaling || pactFlags.hasAirPrayerScaling;
-  if (prayerMatters) {
-    if (ab.prayer < bb.prayer) return false;
-    if (ab.prayer > bb.prayer) strictlyBetter = true;
-  }
+  // Prayer bonus is NOT included in domination checks even when pacts make it DPS-relevant.
+  // Reason: prayer contributes at most +50% as mstr (e.g. prayer=5 → +2.5 mstr equivalent),
+  // which is small vs BIS mstr=14. Including it prevents natural pruning of 100+ prayer-only
+  // items, causing combinatorial explosion. Prayer is still included in scoring thresholds.
 
   switch (style) {
     case "melee": {
@@ -1571,9 +1557,10 @@ function offensiveScore(item: Item, style: string, pactFlags: PactAwareness = NO
       // For weapons both stats are large so relative ranking is preserved.
       let score = b.mstr * 5 + Math.max(b.astab, b.aslash, b.acrush);
       // meleePrayerStrBonus: +50% of prayer bonus as melee str
-      // +1 prayer = +0.5 mstr ≈ weight 2.5 (half of mstr weight 5)
+      // +1 prayer = +0.5 mstr ≈ weight 1.0 (conservative to avoid combinatorial explosion
+      // from 100+ prayer-only items; items need real offensive stats to survive pruning)
       if (pactFlags.hasMeleePrayerScaling && b.prayer > 0) {
-        score += b.prayer * 2.5;
+        score += b.prayer * 1.0;
       }
       return score;
     }
