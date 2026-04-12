@@ -181,20 +181,27 @@ export interface BossPreset {
   dslash: number;
   dcrush: number;
   dranged: number;
+  dranged_light: number;    // vs thrown, blowpipe
+  dranged_standard: number; // vs bows (twisted bow, bowfa)
+  dranged_heavy: number;    // vs crossbows, chinchompas
   dmagic: number;
   magicLevel: number;
   region?: string;
   hp: number;
   size?: number;
-  elementalWeakness?: AttackType;
+  attackSpeed?: number;     // boss attack interval in game ticks (from wiki)
+  elementalWeakness?: string;
   elementalWeaknessPercent?: number;
   isDragon?: boolean;
   isDemon?: boolean;
   isUndead?: boolean;
   isKalphite?: boolean;
+  isSlayerMonster?: boolean; // eligible for slayer helm bonus on-task
   damageModifier?: {
     type: "corp" | "tekton-magic" | "kraken-ranged" | "zulrah-cap";
   };
+  requiresSlayerTask?: boolean;
+  typicalDistance?: number;
 }
 
 /* ── Player Config ───────────────────────────────────────────────────── */
@@ -254,6 +261,7 @@ export interface PlayerConfig {
   hasOverheal?: boolean;
   soulreaperStacks?: number;
   kandarinDiary?: boolean;
+  usingSpecialAttack?: boolean;
 }
 
 /* ── Build Loadout ───────────────────────────────────────────────────── */
@@ -307,6 +315,17 @@ export interface DpsBreakdown {
   thornsDps: number;
   minHit: number;
   sustainInfo: string[];
+  specInfo?: {
+    name: string;
+    energyCost: number;
+    specDpsPerAttack: number;
+    normalDps: number;
+    specsPerCycle: number;
+    cycleTimeSec: number;
+    normalAttacksPerCycle: number;
+    specMaxHit: number;
+    specAccuracy: number;
+  };
 }
 
 export interface DpsResult {
@@ -328,8 +347,10 @@ export interface OptimizedConfig {
   activePacts?: string[];
   spellMaxHit?: number;
   spellElement?: SpellElement;
+  activePrayerCount?: number;
   regions?: string[];
   onSlayerTask?: boolean;
+  usingSpecialAttack?: boolean;
 }
 
 export interface OptimizerConfig {

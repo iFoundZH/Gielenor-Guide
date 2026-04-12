@@ -1532,8 +1532,9 @@ section("TEST 35: Devil's Element — elemental weakness bonus");
   // Create a custom target with magic weakness
   const weakTarget: BossPreset = {
     id: "test-weak", name: "Test", defenceLevel: 100, magicLevel: 100,
-    dstab: 0, dslash: 0, dcrush: 0, dranged: 0, dmagic: 0,
-    hp: 300, elementalWeakness: "magic",
+    dstab: 0, dslash: 0, dcrush: 0, dranged: 0,
+    dranged_light: 0, dranged_standard: 0, dranged_heavy: 0,
+    dmagic: 0, hp: 300, elementalWeakness: "magic",
   };
 
   // Kodai (mdmg=15) + Devil's Element (mdmg=6): total mdmg=21

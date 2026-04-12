@@ -31,14 +31,38 @@ const ID_OVERRIDES: Record<string, string> = {
   "inq-mace": "Inquisitor's mace",
   "whip": "Abyssal whip",
   "dclaws": "Dragon claws",
+  "burning-claws": "Burning claws",
   "tentacle": "Abyssal tentacle",
   "d-scim": "Dragon scimitar",
+  "ags": "Armadyl godsword",
+  "bgs": "Bandos godsword",
   "sgs": "Saradomin godsword",
   "zgs": "Zamorak godsword",
+  "dwh": "Dragon warhammer",
   "arclight": "Arclight",
   "dhl": "Dragon hunter lance",
   "keris-breaching": "Keris partisan of breaching",
   "crystal-halberd": "Crystal halberd",
+  "dds": "Dragon dagger",
+  "d-sword": "Dragon sword",
+  "d-mace": "Dragon mace",
+  "d-long": "Dragon longsword",
+  "d-halberd": "Dragon halberd",
+  "abyssal-dagger": "Abyssal dagger",
+  "elder-maul": "Elder maul",
+  "granite-hammer": "Granite hammer",
+  "anchor": "Barrelchest anchor",
+  "arkan-blade": "Arkan blade",
+  "sara-sword": "Saradomin sword",
+  "dual-macuahuitl": "Dual macuahuitl",
+  "voidwaker": "Voidwaker",
+  "brine-sabre": "Brine sabre",
+  // Obsidian weapons (TzHaar / Karamja)
+  "toktz-xil-ak": "Toktz-xil-ak",
+  "tzhaar-ket-om": "Tzhaar-ket-om",
+  "toktz-xil-ek": "Toktz-xil-ek",
+  "toktz-mej-tal": "Toktz-mej-tal",
+  "tzhaar-ket-em": "Tzhaar-ket-em",
   // Ranged weapons
   "zcb": "Zaryte crossbow",
   "acb": "Armadyl crossbow",
@@ -49,6 +73,14 @@ const ID_OVERRIDES: Record<string, string> = {
   "msb-i": "Magic shortbow (i)",
   "craws-bow": "Craw's bow",
   "webweaver-bow": "Webweaver bow",
+  "rosewood-blowpipe": "Rosewood blowpipe",
+  "dark-bow": "Dark bow",
+  "magic-longbow": "Magic longbow",
+  "heavy-ballista": "Heavy ballista",
+  "light-ballista": "Light ballista",
+  "tonalztics": "Tonalztics of ralos",
+  "seercull": "Seercull",
+  "eye-of-ayak": "Eye of ayak",
   "eclipse-atlatl": "Eclipse atlatl",
   // Wilderness melee
   "viggoras-chainmace": "Viggora's chainmace",
@@ -63,6 +95,8 @@ const ID_OVERRIDES: Record<string, string> = {
   "harm-staff": "Harmonised nightmare staff",
   "thammarons-sceptre": "Thammaron's sceptre",
   "accursed-sceptre": "Accursed sceptre",
+  "volatile-staff": "Volatile nightmare staff",
+  "eldritch-staff": "Eldritch nightmare staff",
   "ancient-staff": "Ancient staff",
   "master-wand": "Master wand",
   "toxic-sotd": "Toxic staff of the dead",
@@ -160,6 +194,29 @@ const ID_OVERRIDES: Record<string, string> = {
   "archers-i": "Archers ring (i)",
   "seers-i": "Seers ring (i)",
   "brimstone-ring": "Brimstone ring",
+  // New curated items (Varlamore + Yama content)
+  "oathplate-helm": "Oathplate helm",
+  "oathplate-chest": "Oathplate chest",
+  "oathplate-legs": "Oathplate legs",
+  "rancour": "Amulet of rancour",
+  "confliction": "Confliction gauntlets",
+  "dizanas-quiver": "Dizana's quiver",
+  "blessed-dizanas-quiver": "Blessed dizana's quiver",
+  "dragonfire-ward": "Dragonfire ward",
+  "antler-guard": "Antler guard",
+  "aranea-boots": "Aranea boots",
+  "avernic-treads": "Avernic treads",
+  // Moon armour (Moons of Peril, Varlamore)
+  "blood-moon-helm": "Blood moon helm",
+  "blood-moon-body": "Blood moon chestplate",
+  "blood-moon-legs": "Blood moon tassets",
+  "eclipse-moon-helm": "Eclipse moon helm",
+  "eclipse-moon-body": "Eclipse moon chestplate",
+  "eclipse-moon-legs": "Eclipse moon tassets",
+  // Hueycoatl armour (Varlamore)
+  "hueycoatl-body": "Hueycoatl hide body",
+  "hueycoatl-chaps": "Hueycoatl hide chaps",
+  "hueycoatl-vambs": "Hueycoatl hide vambraces",
   // Echo items (DP league)
   "echo-vs-helm": "V's helm",
   "echo-kings-barrage": "King's barrage",
@@ -212,6 +269,12 @@ const PASSIVES: Record<string, string> = {
   // Additional weapon passives
   "smoke-battlestaff": "+10% damage and +10 magic attack for standard spells",
   "soulreaper-axe": "+6% damage and accuracy per stack (max 5 stacks, costs 8 HP per hit)",
+  "ags": "Special: +100% accuracy, +37.5% damage (50% energy)",
+  "bgs": "Special: +100% accuracy, +21% damage (50% energy)",
+  "dwh": "Special: +50% damage, reduces target defence (50% energy)",
+  "voidwaker": "Special: Guaranteed hit, 50-150% max hit vs magic defence (50% energy)",
+  "dclaws": "Special: 4-hit cascade with escalating accuracy (50% energy)",
+  "arkan-blade": "Special: +50% accuracy and damage, applies burn DoT (30% energy)",
   "berserker-necklace": "+20% damage with TzHaar (obsidian) weapons",
   "onyx-bolts-e": "11% proc: +20% damage, heals 25% of hit",
   "dragonstone-bolts-e": "6% proc: bonus fire damage (floor(rangedLvl × 0.20))",
@@ -238,38 +301,50 @@ const REGIONS: Record<string, string> = {
   "bcp": "asgarnia", "tassets": "asgarnia",
   "armadyl-helm": "asgarnia", "armadyl-body": "asgarnia", "armadyl-skirt": "asgarnia",
   "virtus-mask": "asgarnia", "virtus-top": "asgarnia", "virtus-bottom": "asgarnia",
+  "ags": "asgarnia", "bgs": "asgarnia",
   "sgs": "asgarnia", "zgs": "asgarnia", "sotd": "asgarnia",
+  "sara-sword": "asgarnia", // Commander Zilyana (GWD)
   "zcb": "asgarnia", "acb": "asgarnia",
   "zaryte-vambs": "asgarnia",
   "primordial": "asgarnia", "pegasian": "asgarnia", "eternal": "asgarnia",
   "spectral": "asgarnia", "arcane": "asgarnia",
   "dragon-def": "asgarnia", "dragon-boots": "asgarnia",
   "echo-fang-hound": "asgarnia",
-  // Morytania — ToB, Barrows, Nightmare, Slayer Tower, Darkmeyer
+  // Morytania — ToB, Barrows, Nightmare, Slayer Tower, Darkmeyer, Araxxor
   "scythe": "morytania", "rapier": "morytania", "avernic": "morytania",
   "sang": "morytania", "ahrim-staff": "morytania",
   "inq-mace": "morytania", "inq-helm": "morytania", "inq-body": "morytania", "inq-legs": "morytania",
   "nightmare-staff": "morytania", "harm-staff": "morytania",
+  "volatile-staff": "morytania", "eldritch-staff": "morytania", // Nightmare
   "whip": "morytania", "blood-fury": "morytania", "salve-ei": "morytania",
+  "abyssal-dagger": "morytania", // Abyssal Sire (Slayer Tower)
+  "granite-hammer": "morytania", // Grotesque Guardians (Slayer Tower)
   "echo-lithic-sceptre": "morytania",
-  // Kourend — CoX, Hydra
+  "rancour": "morytania", // Araxxor (araxyte fang + amulet of torture)
+  "aranea-boots": "morytania", // Araxytes (Morytania Spider Cave)
+  // Kourend — CoX, Hydra, Yama
   "tbow": "kourend", "kodai": "kourend",
   "ancestral-hat": "kourend", "ancestral-top": "kourend", "ancestral-bottom": "kourend",
   "twisted-buckler": "kourend", "book-of-dead": "kourend", "brimstone-ring": "kourend",
   "tome-of-fire": "kourend", // Wintertodt drop
   "dclaws": "kourend", "dhcb": "kourend", "dhl": "kourend", "ferocious": "kourend",
+  "dwh": "kourend", // Lizardman Shamans (Shayzien)
+  "elder-maul": "kourend", // Chambers of Xeric
   "echo-natures-recurve": "kourend",
+  "oathplate-helm": "kourend", "oathplate-chest": "kourend", "oathplate-legs": "kourend", // Yama (Chasm of Fire)
   // Desert — ToA, DT2 rings
   "shadow": "desert", "fang": "desert",
   "masori-mask": "desert", "masori-body": "desert", "masori-chaps": "desert",
   "elidinis-ward": "desert",
   "keris-breaching": "desert",
   "ultor": "desert", "venator": "desert", "magus": "desert", "bellator": "desert",
+  "tonalztics": "desert", // Tombs of Amascut (Zebak)
   "echo-drygore-blowpipe": "desert",
   // Tirannwn — Gauntlet, Crystal, Zulrah
   "bowfa": "tirannwn", "saeldor": "tirannwn",
   "crystal-helm": "tirannwn", "crystal-body": "tirannwn", "crystal-legs": "tirannwn",
   "crystal-halberd": "tirannwn", "toxic-sotd": "tirannwn",
+  "dark-bow": "tirannwn", // Dark Beasts (Mourner Tunnels / Iorwerth Dungeon)
   "blowpipe": "tirannwn", "serp-helm": "tirannwn",
   "echo-crystal-blessing": "tirannwn",
   // Fremennik — DKS, Vorkath, Duke Sucellus
@@ -278,20 +353,37 @@ const REGIONS: Record<string, string> = {
   "avas-assembler": "fremennik", "dragon-javelin": "fremennik",
   "echo-vs-helm": "fremennik",
   "dh-wand": "fremennik",
+  "dragonfire-ward": "fremennik", // Vorkath (skeletal visage)
+  "seercull": "fremennik", // DKS (Dagannoth Prime)
+  "brine-sabre": "fremennik", // Brine Rat Cavern
   // Wilderness — Rev weapons, Mage Arena II
   "craws-bow": "wilderness", "webweaver-bow": "wilderness",
   "viggoras-chainmace": "wilderness", "ursine-chainmace": "wilderness",
   "thammarons-sceptre": "wilderness", "accursed-sceptre": "wilderness",
   "imbued-god-cape": "wilderness",
+  "voidwaker": "wilderness", // Vet'ion / Revenants
   "echo-kings-barrage": "wilderness",
-  // Varlamore
+  // Varlamore — Fortis Colosseum, Moons of Peril, Doom of Mokhaiotl, Hueycoatl
   "eclipse-atlatl": "varlamore",
+  "burning-claws": "varlamore", // DP league echo content
+  "arkan-blade": "varlamore", // Hueycoatl
+  "dual-macuahuitl": "varlamore", // Doom of Mokhaiotl
+  "rosewood-blowpipe": "varlamore", // Varlamore content
   "echo-tecpatl": "varlamore",
   "tome-of-earth": "varlamore", // Hueycoatl drop
+  "dizanas-quiver": "varlamore", "blessed-dizanas-quiver": "varlamore", // Fortis Colosseum (Sol Heredit)
+  "confliction": "varlamore", // Doom of Mokhaiotl (mokhaiotl cloth + tormented bracelet)
+  "avernic-treads": "varlamore", // Doom of Mokhaiotl
+  "antler-guard": "varlamore", // Custodian stalkers (Stalker Den, Auburnvale)
+  "eye-of-ayak": "varlamore", // Moons of Peril
+  "blood-moon-helm": "varlamore", "blood-moon-body": "varlamore", "blood-moon-legs": "varlamore", // Moons of Peril
+  "eclipse-moon-helm": "varlamore", "eclipse-moon-body": "varlamore", "eclipse-moon-legs": "varlamore",
+  "hueycoatl-body": "varlamore", "hueycoatl-chaps": "varlamore", "hueycoatl-vambs": "varlamore",
   // Kandarin — Kraken, Zenyte, BA, Thermy, Echo
   "trident-swamp": "kandarin",
   "torture": "kandarin", "anguish": "kandarin", "tormented": "kandarin",
   "tentacle": "kandarin", "fighter-torso": "kandarin", "occult": "kandarin",
+  "heavy-ballista": "kandarin", "light-ballista": "kandarin", // Demonic Gorillas (Crash Site Cavern)
   "echo-shadowflame": "kandarin",
   "echo-devils-element": "kandarin",
   "smoke-battlestaff": "kandarin", // Thermonuclear smoke devil drop (Kandarin in DP league)
@@ -299,6 +391,9 @@ const REGIONS: Record<string, string> = {
   // Karamja — TzHaar, Fight Caves, Inferno
   "infernal-cape": "karamja", "fire-cape": "karamja",
   "berserker-necklace": "karamja", // Enchanted onyx necklace (TzHaar/Karamja)
+  "toktz-xil-ak": "karamja", "tzhaar-ket-om": "karamja",
+  "toktz-xil-ek": "karamja", "toktz-mej-tal": "karamja",
+  "tzhaar-ket-em": "karamja",
   // Misthalin — MTA, RFD
   "master-wand": "misthalin",
   "barrows-gloves": "misthalin",
@@ -475,6 +570,16 @@ const EXCLUDED_PATTERNS = [
   "vesta's blighted",
   // Other league cosmetics (not obtainable in DP)
   "twisted ancestral", "twisted slayer", "(perfected)",
+  // Gauntlet-internal (not usable as regular equipment)
+  "(basic)", "(attuned)",
+  // Emir's Arena exclusive (cannot be used outside the minigame)
+  "calamity ", "elite calamity ", "superior calamity ",
+  "maoma's", "koriff's", "saika's",
+  "(wrapped)", // Wrapped gloves are Emir's Arena exclusive
+  // Barbarian Assault exclusive (not usable outside the minigame)
+  "barbed arrow", "blunt arrow", "bullet arrow", "field arrow",
+  // Castle Wars exclusive
+  "castle wars",
   // Unobtainable in leagues
   "training bow", "training sword", "training shield", "training arrows",
   "damaged book (",

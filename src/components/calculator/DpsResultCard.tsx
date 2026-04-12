@@ -15,20 +15,32 @@ export function DpsResultCard({ result }: Props) {
     );
   }
 
+  const specInfo = result.breakdown.specInfo;
+
   return (
     <div className="bg-osrs-darker rounded-xl border border-osrs-gold/30 p-4 border-glow-gold">
       <div className="text-center mb-3">
         <div data-testid="dps-value" className="text-3xl font-bold text-osrs-gold text-glow-gold" style={{ fontFamily: "var(--font-runescape)" }}>
           {result.dps.toFixed(2)}
         </div>
-        <div className="text-xs text-osrs-text-dim">DPS (damage per second)</div>
+        {specInfo ? (
+          <div className="text-xs text-osrs-text-dim">
+            Blended DPS ({specInfo.specsPerCycle}x {specInfo.name} + {specInfo.normalAttacksPerCycle} normal / {formatTime(specInfo.cycleTimeSec)})
+          </div>
+        ) : (
+          <div className="text-xs text-osrs-text-dim">DPS (damage per second)</div>
+        )}
       </div>
 
       <div className="grid grid-cols-2 gap-2">
         <StatBlock label="Max Hit" value={result.maxHit.toString()} />
         <StatBlock label="Accuracy" value={`${(result.accuracy * 100).toFixed(1)}%`} />
         <StatBlock label="Speed" value={`${result.speed}t (${(result.speed * 0.6).toFixed(1)}s)`} />
-        <StatBlock label="Echo DPS" value={result.echoDps > 0 ? `+${result.echoDps.toFixed(2)}` : "—"} />
+        {specInfo ? (
+          <StatBlock label="Spec DPS" value={`${specInfo.specDpsPerAttack.toFixed(2)}`} />
+        ) : (
+          <StatBlock label="Echo DPS" value={result.echoDps > 0 ? `+${result.echoDps.toFixed(2)}` : "—"} />
+        )}
       </div>
 
       <div className="mt-2 text-center">
@@ -43,6 +55,12 @@ export function DpsResultCard({ result }: Props) {
       </div>
     </div>
   );
+}
+
+function formatTime(seconds: number): string {
+  const m = Math.floor(seconds / 60);
+  const s = Math.round(seconds % 60);
+  return m > 0 ? `${m}:${s.toString().padStart(2, "0")}` : `${s}s`;
 }
 
 function StatBlock({ label, value }: { label: string; value: string }) {

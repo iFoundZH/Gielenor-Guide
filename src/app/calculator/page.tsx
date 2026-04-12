@@ -69,19 +69,41 @@ function reducer(state: CalcState, action: Action): CalcState {
       return { ...state, player: action.player };
     }
     case "SET_TARGET": {
-      const bossRegion = action.target.region;
+      const boss = action.target;
+      const playerUpdates: Partial<PlayerConfig> = {};
+
+      // Auto-add boss region if it's choosable and not already selected
       const choosable = ["asgarnia", "fremennik", "kandarin", "morytania", "desert", "tirannwn", "kourend", "wilderness"];
-      const needsRegion = bossRegion && choosable.includes(bossRegion) && !state.player.regions.includes(bossRegion);
-      if (!needsRegion) return { ...state, target: action.target };
-      // Auto-add boss region; if already at 3 choosable, drop the last non-boss choosable
-      const currentChoosable = state.player.regions.filter(r => choosable.includes(r));
-      let regions = [...state.player.regions];
-      if (currentChoosable.length >= 3) {
-        const toDrop = currentChoosable[currentChoosable.length - 1];
-        regions = regions.filter(r => r !== toDrop);
+      const bossRegion = boss.region;
+      if (bossRegion && choosable.includes(bossRegion) && !state.player.regions.includes(bossRegion)) {
+        const currentChoosable = state.player.regions.filter(r => choosable.includes(r));
+        let regions = [...state.player.regions];
+        if (currentChoosable.length >= 3) {
+          const toDrop = currentChoosable[currentChoosable.length - 1];
+          regions = regions.filter(r => r !== toDrop);
+        }
+        regions.push(bossRegion);
+        playerUpdates.regions = regions;
       }
-      regions.push(bossRegion);
-      return { ...state, target: action.target, player: { ...state.player, regions } };
+
+      // Force slayer task on for bosses that require it
+      if (boss.requiresSlayerTask) {
+        playerUpdates.onSlayerTask = true;
+      }
+
+      // Auto-set typical fight distance
+      if (boss.typicalDistance !== undefined) {
+        playerUpdates.targetDistance = boss.typicalDistance;
+      } else {
+        playerUpdates.targetDistance = 1;
+      }
+
+      const hasPlayerChanges = Object.keys(playerUpdates).length > 0;
+      return {
+        ...state,
+        target: boss,
+        player: hasPlayerChanges ? { ...state.player, ...playerUpdates } : state.player,
+      };
     }
     case "SET_LOADOUT":
       return { ...state, loadout: action.loadout };
@@ -90,6 +112,10 @@ function reducer(state: CalcState, action: Action): CalcState {
       // If equipping a 2H weapon, clear shield
       if (action.slot === "weapon" && action.item?.isTwoHanded) {
         loadout.shield = null;
+      }
+      // Clear spec toggle when weapon changes
+      if (action.slot === "weapon") {
+        return { ...state, loadout, player: { ...state.player, usingSpecialAttack: false } };
       }
       return { ...state, loadout };
     }
@@ -121,14 +147,15 @@ function resolveAutoDefaults(style: CombatStyle): {
   }
 }
 
-function resolveAutoForDisplay(player: PlayerConfig): PlayerConfig {
+function resolveAutoForDisplay(player: PlayerConfig, target: BossPreset): PlayerConfig {
   const defaults = resolveAutoDefaults(player.combatStyle);
   return {
     ...player,
     potion: player.potion === "auto" ? defaults.potion : player.potion,
     prayerType: player.prayerType === "auto" ? defaults.prayerType : player.prayerType,
     attackStyle: player.attackStyle === "auto" ? defaults.attackStyle : player.attackStyle,
-    onSlayerTask: player.onSlayerTask === "auto" ? false : player.onSlayerTask === true,
+    voidSet: player.voidSet === "auto" ? "none" : player.voidSet,
+    onSlayerTask: target.requiresSlayerTask ? true : player.onSlayerTask === "auto" ? false : player.onSlayerTask === true,
   };
 }
 
@@ -147,12 +174,14 @@ export default function CalculatorPage() {
   const [pickerSlot, setPickerSlot] = useState<EquipmentSlot | null>(null);
   const [optimizerResults, setOptimizerResults] = useState<OptimizerResult[]>([]);
   const [isOptimizing, setIsOptimizing] = useState(false);
+  const [selectedBuildIndex, setSelectedBuildIndex] = useState<number | null>(null);
+  const [pactsFromOptimizer, setPactsFromOptimizer] = useState(false);
 
   // Compute DPS reactively (resolve auto values for live display)
   const dpsResult: DpsResult | null = useMemo(() => {
     if (!state.loadout.weapon) return null;
     return calculateDps({
-      player: resolveAutoForDisplay(state.player),
+      player: resolveAutoForDisplay(state.player, state.target),
       loadout: state.loadout,
       target: state.target,
     });
@@ -165,11 +194,16 @@ export default function CalculatorPage() {
     if (opt.prayerType) updates.prayerType = opt.prayerType;
     if (opt.attackStyle) updates.attackStyle = opt.attackStyle;
     if (opt.voidSet) updates.voidSet = opt.voidSet;
-    if (opt.activePacts) updates.activePacts = opt.activePacts;
+    if (opt.activePacts) {
+      updates.activePacts = opt.activePacts;
+      setPactsFromOptimizer(true);
+    }
     if (opt.spellMaxHit !== undefined) updates.spellMaxHit = opt.spellMaxHit;
     if (opt.spellElement) updates.spellElement = opt.spellElement;
+    if (opt.activePrayerCount !== undefined) updates.activePrayerCount = opt.activePrayerCount;
     if (opt.regions) updates.regions = opt.regions;
     if (opt.onSlayerTask !== undefined) updates.onSlayerTask = opt.onSlayerTask;
+    if (opt.usingSpecialAttack !== undefined) updates.usingSpecialAttack = opt.usingSpecialAttack;
     if (Object.keys(updates).length > 0) {
       dispatch({ type: "SET_PLAYER", player: { ...state.player, ...updates } });
     }
@@ -186,8 +220,14 @@ export default function CalculatorPage() {
         }
       }
 
+      // Clear optimizer-set pacts so re-optimization always finds fresh pacts.
+      // Only user-manually-set pacts are preserved (pactsFromOptimizer === false).
+      const playerForOptimizer = pactsFromOptimizer
+        ? { ...state.player, activePacts: [] as string[] }
+        : state.player;
+
       const results = optimizeBuild({
-        player: state.player,
+        player: playerForOptimizer,
         target: state.target,
         lockedSlots: lockedLoadout,
         topN: 10,
@@ -195,14 +235,9 @@ export default function CalculatorPage() {
 
       setOptimizerResults(results);
       setIsOptimizing(false);
-
-      // Auto-load the best result (loadout + optimized config)
-      if (results.length > 0) {
-        dispatch({ type: "SET_LOADOUT", loadout: results[0].loadout });
-        applyOptimizedConfig(results[0].optimizedConfig);
-      }
+      setSelectedBuildIndex(null);
     }, 10);
-  }, [state.player, state.target, state.lockedSlots, state.loadout, applyOptimizedConfig]);
+  }, [state.player, state.target, state.lockedSlots, state.loadout, pactsFromOptimizer]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
@@ -217,7 +252,10 @@ export default function CalculatorPage() {
       <div className="bg-osrs-panel border border-osrs-border rounded-xl p-4 mb-6">
         <PactSkillTree
           selected={state.player.activePacts}
-          onChange={p => dispatch({ type: "SET_PLAYER", player: { ...state.player, activePacts: p } })}
+          onChange={p => {
+                dispatch({ type: "SET_PLAYER", player: { ...state.player, activePacts: p } });
+                setPactsFromOptimizer(false);
+              }}
         />
       </div>
 
@@ -228,6 +266,8 @@ export default function CalculatorPage() {
             <PlayerConfigPanel
               config={state.player}
               onChange={p => dispatch({ type: "SET_PLAYER", player: p })}
+              forceSlayerTask={state.target.requiresSlayerTask}
+              weapon={state.loadout.weapon}
             />
           </div>
 
@@ -253,7 +293,9 @@ export default function CalculatorPage() {
             <TopBuildsPanel
               results={optimizerResults}
               isRunning={isOptimizing}
-              onSelect={(loadout, optimizedConfig) => {
+              selectedIndex={selectedBuildIndex}
+              onSelect={(index, loadout, optimizedConfig) => {
+                setSelectedBuildIndex(index);
                 dispatch({ type: "SET_LOADOUT", loadout });
                 applyOptimizedConfig(optimizedConfig);
               }}
@@ -276,7 +318,7 @@ export default function CalculatorPage() {
           </div>
 
           <div className="bg-osrs-panel border border-osrs-border rounded-xl p-4">
-            <DpsBreakdown breakdown={dpsResult?.breakdown ?? null} />
+            <DpsBreakdown breakdown={dpsResult?.breakdown ?? null} totalDps={dpsResult?.dps} />
           </div>
         </div>
       </div>

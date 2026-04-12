@@ -1,7 +1,9 @@
 "use client";
 
-import type { PlayerConfig, CombatStyle, PotionType, PrayerType, AttackStyleBonus, SpellElement } from "@/types/dps";
+import type { PlayerConfig, CombatStyle, PotionType, PrayerType, AttackStyleBonus, SpellElement, Item } from "@/types/dps";
 import { aggregatePactEffects } from "@/lib/pact-effects";
+import { hasSpecAttack, getSpecAttack } from "@/data/spec-attacks";
+import { ALL_SPELLS } from "@/data/spells";
 
 const POTIONS: { value: PotionType; label: string }[] = [
   { value: "auto", label: "Auto (best)" },
@@ -11,6 +13,8 @@ const POTIONS: { value: PotionType; label: string }[] = [
   { value: "super-strength", label: "Super Strength" },
   { value: "ranging", label: "Ranging Potion" },
   { value: "magic", label: "Magic Potion" },
+  { value: "overload", label: "Overload (CoX)" },
+  { value: "smelling-salts", label: "Smelling Salts (ToA)" },
 ];
 
 const PRAYERS: { value: PrayerType; label: string; style: CombatStyle | "all" }[] = [
@@ -25,19 +29,11 @@ const PRAYERS: { value: PrayerType; label: string; style: CombatStyle | "all" }[
   { value: "mystic-might", label: "Mystic Might", style: "magic" },
 ];
 
-const SPELLS: { value: number; label: string; element: SpellElement }[] = [
-  { value: 24, label: "Fire Surge (24)", element: "fire" },
-  { value: 30, label: "Ice Barrage (30)", element: "ice" },
-  { value: 28, label: "Blood Barrage (28)", element: "blood" },
-  { value: 22, label: "Ice Burst (22)", element: "ice" },
-  { value: 20, label: "Fire Wave (20)", element: "fire" },
-  { value: 16, label: "Fire Blast (16)", element: "fire" },
-  { value: 26, label: "Smoke Barrage (26)", element: "smoke" },
-  { value: 24, label: "Shadow Barrage (24)", element: "shadow" },
-  { value: 21, label: "Air Surge (21)", element: "air" },
-  { value: 22, label: "Earth Surge (22)", element: "earth" },
-  { value: 24, label: "Water Surge (24)", element: "water" },
-];
+const SPELLS = ALL_SPELLS.map(s => ({
+  value: s.spellMaxHit,
+  label: `${s.name} (${s.spellMaxHit})`,
+  element: s.spellElement as SpellElement,
+}));
 
 const ATTACK_STYLES: { value: AttackStyleBonus; label: string }[] = [
   { value: "auto", label: "Auto (best)" },
@@ -53,6 +49,8 @@ const ATTACK_STYLES: { value: AttackStyleBonus; label: string }[] = [
 interface Props {
   config: PlayerConfig;
   onChange: (config: PlayerConfig) => void;
+  forceSlayerTask?: boolean;
+  weapon?: Item | null;
 }
 
 const SPELL_ELEMENTS: { value: SpellElement; label: string }[] = [
@@ -67,7 +65,7 @@ const SPELL_ELEMENTS: { value: SpellElement; label: string }[] = [
   { value: "shadow", label: "Shadow" },
 ];
 
-export function PlayerConfigPanel({ config, onChange }: Props) {
+export function PlayerConfigPanel({ config, onChange, forceSlayerTask, weapon }: Props) {
   const update = (partial: Partial<PlayerConfig>) => onChange({ ...config, ...partial });
 
   const filteredPrayers = PRAYERS.filter(
@@ -173,14 +171,16 @@ export function PlayerConfigPanel({ config, onChange }: Props) {
       {/* Toggles */}
       <div className="space-y-2">
         <SelectField
-          label="Slayer Task"
-          value={config.onSlayerTask === "auto" ? "auto" : config.onSlayerTask ? "yes" : "no"}
-          options={[
-            { value: "auto", label: "Auto (best)" },
-            { value: "no", label: "Off" },
-            { value: "yes", label: "On" },
-          ]}
-          onChange={v => update({ onSlayerTask: v === "auto" ? "auto" : v === "yes" })}
+          label={forceSlayerTask ? "Slayer Task (required)" : "Slayer Task"}
+          value={forceSlayerTask ? "yes" : config.onSlayerTask === "auto" ? "auto" : config.onSlayerTask ? "yes" : "no"}
+          options={forceSlayerTask
+            ? [{ value: "yes", label: "On (boss requires task)" }]
+            : [
+              { value: "auto", label: "Auto (best)" },
+              { value: "no", label: "Off" },
+              { value: "yes", label: "On" },
+            ]}
+          onChange={v => { if (!forceSlayerTask) update({ onSlayerTask: v === "auto" ? "auto" : v === "yes" }); }}
         />
         <SelectField
           label="Void"
@@ -264,6 +264,25 @@ export function PlayerConfigPanel({ config, onChange }: Props) {
           max={5}
         />
       )}
+
+      {/* Special Attack toggle */}
+      {weapon && hasSpecAttack(weapon.id) && (() => {
+        const spec = getSpecAttack(weapon.id)!;
+        return (
+          <div className="space-y-1">
+            <Toggle
+              label={`Special Attack (${spec.energyCost}%)`}
+              checked={config.usingSpecialAttack ?? false}
+              onChange={v => update({ usingSpecialAttack: v })}
+            />
+            {config.usingSpecialAttack && (
+              <div className="text-[10px] text-osrs-text-dim pl-6">
+                {spec.name} — blended DPS with specs on cooldown
+              </div>
+            )}
+          </div>
+        );
+      })()}
 
       {/* Kandarin Hard Diary (ranged crossbow users) */}
       {config.combatStyle === "ranged" && (

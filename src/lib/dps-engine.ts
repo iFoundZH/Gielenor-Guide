@@ -1,6 +1,7 @@
 import type {
   DpsContext,
   DpsResult,
+  DpsBreakdown,
   MultiplierStep,
   BuildLoadout,
   EquipmentBonuses,
@@ -9,8 +10,10 @@ import type {
   Item,
   AttackType,
   SpellElement,
+  WeaponCategory,
 } from "@/types/dps";
 import { aggregatePactEffects, type AggregatedPactEffects } from "@/lib/pact-effects";
+import { getSpecAttack, type SpecAttack } from "@/data/spec-attacks";
 
 // ═══════════════════════════════════════════════════════════════════════
 // PUBLIC API
@@ -29,6 +32,7 @@ export function calculateDps(ctx: DpsContext): DpsResult {
   const pe = ctx.pactEffects;
 
   const weapon = ctx.loadout.weapon;
+  const weaponCat = weapon?.weaponCategory;
   const speed = getAttackSpeed(ctx, pe);
   const interval = speed * 0.6;
 
@@ -48,9 +52,11 @@ export function calculateDps(ctx: DpsContext): DpsResult {
   }
 
   // Fang max hit reduction: maxHit - trunc(maxHit * 3/20) per wiki formula
+  // Save pre-reduction shrink for min hit calculation below
+  let fangShrink = 0;
   if (weapon?.id === "fang") {
-    const shrink = Math.trunc(finalMax * 3 / 20);
-    finalMax = finalMax - shrink;
+    fangShrink = Math.trunc(finalMax * 3 / 20);
+    finalMax = finalMax - fangShrink;
   }
 
   // Apply flat max hit modifiers (powered staff speed pact -8 for 1H)
@@ -58,7 +64,7 @@ export function calculateDps(ctx: DpsContext): DpsResult {
   if (finalMax < 0) finalMax = 0;
 
   const atkRoll = calculateAttackRoll(ctx, pe, totalBonuses);
-  const defRoll = calculateDefenceRoll(ctx.target, getAttackType(ctx));
+  const defRoll = calculateDefenceRoll(ctx.target, getAttackType(ctx), ctx.loadout.weapon?.weaponCategory);
   const baseAcc = standardAccuracy(atkRoll, defRoll);
 
   // Store rolls for Fang exact formula
@@ -92,9 +98,9 @@ export function calculateDps(ctx: DpsContext): DpsResult {
     baseDps = (finalMax * finalAcc) / interval;
     minHit = finalMax;
   } else if (weapon?.id === "fang") {
-    const fangMin = Math.trunc(finalMax * 3 / 20);
-    baseDps = ((finalMax + fangMin) / 2 * finalAcc) / interval;
-    minHit = fangMin;
+    // Min hit = shrink from pre-reduction max (not from the already-reduced finalMax)
+    baseDps = ((finalMax + fangShrink) / 2 * finalAcc) / interval;
+    minHit = fangShrink;
   } else {
     baseDps = ((finalMax / 2) * finalAcc) / interval;
   }
@@ -138,7 +144,6 @@ export function calculateDps(ctx: DpsContext): DpsResult {
 
   // Unique blindbag chance/damage scaling
   if ((pe.uniqueBlindBagChance || pe.uniqueBlindBagDamage > 0) && ctx.player.combatStyle === "melee") {
-    const weaponCat = weapon?.weaponCategory;
     if (weaponCat === "1h-heavy" || weaponCat === "2h-melee") {
       // Assume full inventory of heavy weapons (20); capped at 5 per pact
       const uniqueCount = Math.min(5, ctx.player.uniqueHeavyWeapons ?? 20);
@@ -199,7 +204,8 @@ export function calculateDps(ctx: DpsContext): DpsResult {
   }
 
   // Fire HP consume for damage: burn 6% of max HP to add 2x that as damage
-  if (pe.fireHpConsumeForDamage && ctx.player.combatStyle === "magic") {
+  // Element pacts only apply to standard spells (not powered staves)
+  if (pe.fireHpConsumeForDamage && ctx.player.combatStyle === "magic" && weaponCat !== "powered-staff") {
     const element = resolveSpellElement(ctx, pe);
     if (element === "fire") {
       const hp = ctx.player.currentHitpoints ?? ctx.player.hitpoints;
@@ -209,7 +215,7 @@ export function calculateDps(ctx: DpsContext): DpsResult {
   }
 
   // Fire spell burn bounce: add burn DoT estimate
-  if (pe.fireSpellBurnBounce && ctx.player.combatStyle === "magic") {
+  if (pe.fireSpellBurnBounce && ctx.player.combatStyle === "magic" && weaponCat !== "powered-staff") {
     const element = resolveSpellElement(ctx, pe);
     if (element === "fire") {
       // Estimate: burn deals ~3 damage per attack on average (bounce + DoT)
@@ -218,7 +224,7 @@ export function calculateDps(ctx: DpsContext): DpsResult {
   }
 
   // Air spell max hit prayer bonus: +X% chance to max hit per prayer bonus
-  if (pe.airSpellMaxHitPrayerBonus > 0 && ctx.player.combatStyle === "magic") {
+  if (pe.airSpellMaxHitPrayerBonus > 0 && ctx.player.combatStyle === "magic" && weaponCat !== "powered-staff") {
     const element = resolveSpellElement(ctx, pe);
     if (element === "air") {
       const prayerBonus = totalBonuses.prayer;
@@ -245,8 +251,8 @@ export function calculateDps(ctx: DpsContext): DpsResult {
   // Echo cascade DPS (ranged echo system)
   const echoDps = calculateEchoDps(ctx, pe, baseDps + bonusDps, finalAcc);
 
-  // Earth spell defence scaling: flat damage per 12 defence levels
-  if (pe.earthScaleDefenceStat > 0 && ctx.player.combatStyle === "magic") {
+  // Earth spell defence scaling: flat damage per 12 defence levels — standard spells only
+  if (pe.earthScaleDefenceStat > 0 && ctx.player.combatStyle === "magic" && weaponCat !== "powered-staff") {
     const defLevel = ctx.player.defence + pe.defenceBoost;
     const flatDmg = Math.floor(defLevel / pe.earthScaleDefenceStat);
     if (flatDmg > 0) {
@@ -254,8 +260,8 @@ export function calculateDps(ctx: DpsContext): DpsResult {
     }
   }
 
-  // Earth reduce defence: model average defence reduction over fight
-  if (pe.earthReduceDefence && ctx.player.combatStyle === "magic") {
+  // Earth reduce defence: model average defence reduction over fight — standard spells only
+  if (pe.earthReduceDefence && ctx.player.combatStyle === "magic" && weaponCat !== "powered-staff") {
     const element = resolveSpellElement(ctx, pe);
     if (element === "earth") {
       // Each hit reduces def & magic def by 2, model avg fight as ~50% through
@@ -285,6 +291,21 @@ export function calculateDps(ctx: DpsContext): DpsResult {
   // Boss-specific damage modifiers
   totalDps = applyBossModifier(ctx, totalDps, finalMax);
 
+  // ── Special Attack Blended DPS ──────────────────────────────────────
+  let specInfo: DpsBreakdown["specInfo"] = undefined;
+  if (ctx.player.usingSpecialAttack && weapon) {
+    const spec = getSpecAttack(weapon.id);
+    if (spec) {
+      const blended = calculateBlendedSpecDps(
+        ctx, pe, spec, weapon, atkRoll, defRoll, finalMax, finalAcc, speed, totalDps,
+      );
+      if (blended) {
+        totalDps = blended.blendedDps;
+        specInfo = blended.specInfo;
+      }
+    }
+  }
+
   return {
     dps: totalDps,
     maxHit: finalMax,
@@ -308,6 +329,7 @@ export function calculateDps(ctx: DpsContext): DpsResult {
       thornsDps,
       minHit,
       sustainInfo,
+      specInfo,
     },
   };
 }
@@ -323,6 +345,24 @@ function resolveSpellElement(ctx: DpsContext, pe: AggregatedPactEffects): SpellE
   if (base === "blood" && pe.bloodCountsAsFire) return "fire";
   if (base === "shadow" && pe.shadowCountsAsEarth) return "earth";
   return base;
+}
+
+/**
+ * Returns the elemental weakness severity (0-100) if the current spell matches
+ * the target's elemental weakness. Only standard elements (air/water/fire/earth)
+ * can match; ancient elements must be converted via pacts first.
+ *
+ * Source: weirdgloop/osrs-dps-calc PlayerVsNPCCalc.ts — spellement bonus.
+ */
+function getElementalWeaknessMatch(ctx: DpsContext, pe: AggregatedPactEffects): number {
+  if (ctx.player.combatStyle !== "magic") return 0;
+  if (ctx.loadout.weapon?.weaponCategory === "powered-staff") return 0;
+  const element = resolveSpellElement(ctx, pe);
+  if (element === "none") return 0;
+  const weakness = ctx.target.elementalWeakness;
+  if (!weakness || weakness === "none") return 0;
+  if (element === weakness) return ctx.target.elementalWeaknessPercent ?? 0;
+  return 0;
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -505,12 +545,12 @@ function getEquipmentStrength(ctx: DpsContext, pe: AggregatedPactEffects, bonuse
     case "melee": str = bonuses.mstr; break;
     case "ranged": str = bonuses.rstr; break;
     case "magic": {
-      // Add prayer magic damage bonus (Augury +4%, Mystic Might +2%, Mystic Lore +1%)
-      const totalMdmg = bonuses.mdmg + getPrayerMagicDamageBonus(ctx.player);
+      // Shadow triples equipment mdmg only; prayer bonus added after triple+cap
+      const prayerMdmg = getPrayerMagicDamageBonus(ctx.player);
       if (ctx.loadout.weapon?.id === "shadow") {
-        str = Math.min(100, totalMdmg * 3);
+        str = Math.min(100, bonuses.mdmg * 3) + prayerMdmg;
       } else {
-        str = totalMdmg;
+        str = bonuses.mdmg + prayerMdmg;
       }
       break;
     }
@@ -759,8 +799,8 @@ export function getMultiplierChain(ctx: DpsContext, pe: AggregatedPactEffects, _
     }
   }
 
-  // 17. Air spell pact: +X% damage per active prayer
-  if (pe.airSpellDamagePerPrayer > 0 && style === "magic") {
+  // 17. Air spell pact: +X% damage per active prayer (standard spells only, not powered staves)
+  if (pe.airSpellDamagePerPrayer > 0 && style === "magic" && weaponCat !== "powered-staff") {
     const element = resolveSpellElement(ctx, pe);
     if (element === "air" && ctx.player.prayerType !== "none") {
       const prayerCount = ctx.player.activePrayerCount ?? 1;
@@ -787,9 +827,18 @@ export function getMultiplierChain(ctx: DpsContext, pe: AggregatedPactEffects, _
     }
   }
 
+  // 19b. Elemental weakness: +severity% max hit when spell element matches weakness
+  // Source: weirdgloop/osrs-dps-calc PlayerVsNPCCalc.ts (spellement bonus)
+  {
+    const severity = getElementalWeaknessMatch(ctx, pe);
+    if (severity > 0) {
+      chain.push({ name: `Elemental Weakness +${severity}%`, factor: 1 + severity / 100 });
+    }
+  }
+
   // 20. Berserker Necklace + TzHaar (obsidian) weapons: +20% damage
   if (ctx.loadout.neck?.id === "berserker-necklace" && style === "melee") {
-    const obsidianWeapons = ["toktz-xil-ak", "tzhaar-ket-om", "toktz-xil-ek", "toktz-mej-tal"];
+    const obsidianWeapons = ["toktz-xil-ak", "tzhaar-ket-om", "tzhaar-ket-em", "toktz-xil-ek", "toktz-mej-tal"];
     if (weapon && obsidianWeapons.includes(weapon.id)) {
       chain.push({ name: "Berserker Necklace", factor: 1.20 });
     }
@@ -803,8 +852,8 @@ export function getMultiplierChain(ctx: DpsContext, pe: AggregatedPactEffects, _
     }
   }
 
-  // 22. Water spell pact: +20% at full HP (scales with HP%)
-  if (pe.waterSpellDamageHighHp && style === "magic") {
+  // 22. Water spell pact: +20% at full HP (scales with HP%) — standard spells only
+  if (pe.waterSpellDamageHighHp && style === "magic" && weaponCat !== "powered-staff") {
     const element = resolveSpellElement(ctx, pe);
     if (element === "water") {
       const maxHp = ctx.player.hitpoints;
@@ -842,12 +891,12 @@ export function calculateAttackRoll(ctx: DpsContext, pe: AggregatedPactEffects, 
   base += getAccuracyStyleBonus(ctx.player) + 8;
 
   // Step 4: Void accuracy
-  // Magic: regular void = 1.45 (29/20), elite void = 1.125 (9/8) per wiki
+  // Magic: both regular and elite void = 1.45 (29/20) per wiki DPS calc source
   // Melee/Ranged: both void variants = 1.10
   if (ctx.player.voidSet !== "none") {
     let voidAccMult: number;
     if (style === "magic") {
-      voidAccMult = ctx.player.voidSet === "void" ? 1.45 : 1.125;
+      voidAccMult = 1.45;
     } else {
       voidAccMult = 1.10;
     }
@@ -980,6 +1029,15 @@ export function calculateAttackRoll(ctx: DpsContext, pe: AggregatedPactEffects, 
     }
   }
 
+  // Elemental weakness: +severity% attack roll when spell element matches weakness
+  // Source: weirdgloop/osrs-dps-calc PlayerVsNPCCalc.ts (spellement bonus)
+  {
+    const severity = getElementalWeaknessMatch(ctx, pe);
+    if (severity > 0) {
+      roll += Math.floor(roll * severity / 100);
+    }
+  }
+
   return roll;
 }
 
@@ -1015,7 +1073,11 @@ function getAccuracyStyleBonus(player: PlayerConfig): number {
   }
 }
 
-export function calculateDefenceRoll(target: BossPreset, attackType: AttackType): number {
+export function calculateDefenceRoll(
+  target: BossPreset,
+  attackType: AttackType,
+  weaponCategory?: WeaponCategory,
+): number {
   const defLevel = attackType === "magic" ? target.magicLevel : target.defenceLevel;
 
   let defBonus: number;
@@ -1023,7 +1085,18 @@ export function calculateDefenceRoll(target: BossPreset, attackType: AttackType)
     case "stab": defBonus = target.dstab; break;
     case "slash": defBonus = target.dslash; break;
     case "crush": defBonus = target.dcrush; break;
-    case "ranged": defBonus = target.dranged; break;
+    case "ranged":
+      // Use ranged defence split based on weapon category
+      if (weaponCategory === "thrown" || weaponCategory === "blowpipe") {
+        defBonus = target.dranged_light;
+      } else if (weaponCategory === "bow") {
+        defBonus = target.dranged_standard;
+      } else if (weaponCategory === "crossbow") {
+        defBonus = target.dranged_heavy;
+      } else {
+        defBonus = target.dranged;
+      }
+      break;
     case "magic": defBonus = target.dmagic; break;
   }
 
@@ -1035,7 +1108,7 @@ export function calculateAccuracy(ctx: DpsContext): number {
   const totalBonuses = sumEquipmentBonuses(ctx.loadout);
   applyOffhandStatBoost(ctx, ctx.pactEffects, totalBonuses);
   const atkRoll = calculateAttackRoll(ctx, ctx.pactEffects, totalBonuses);
-  const defRoll = calculateDefenceRoll(ctx.target, getAttackType(ctx));
+  const defRoll = calculateDefenceRoll(ctx.target, getAttackType(ctx), ctx.loadout.weapon?.weaponCategory);
   const baseAcc = standardAccuracy(atkRoll, defRoll);
   return applyDoubleRoll(ctx, ctx.pactEffects, baseAcc);
 }
@@ -1208,8 +1281,9 @@ function calculateThornsDps(ctx: DpsContext, pe: AggregatedPactEffects, bonuses:
   const hitMult = pe.thornsDoubleHit ? 1.5 : 1;
   thornsDmg = Math.floor(thornsDmg * hitMult);
 
-  // Assume boss attacks every 4 ticks (2.4s) on average
-  const bossInterval = 4 * 0.6;
+  // Boss attack interval from wiki data (default 4 ticks if not available)
+  const bossSpeed = ctx.target.attackSpeed ?? 4;
+  const bossInterval = Math.max(1, bossSpeed) * 0.6;
   return thornsDmg / bossInterval;
 }
 
@@ -1367,20 +1441,17 @@ function applyBossModifier(ctx: DpsContext, dps: number, _maxHit: number): numbe
 
   switch (mod.type) {
     case "corp":
-      // Corp: non-spear/halberd weapons deal half damage
-      if (weaponCat !== "halberd" && weapon?.attackType !== "stab") {
-        // Check if it's a spear-like weapon (stab-based melee)
-        // In practice, only spears and halberds deal full damage
-        return dps * 0.5;
-      }
-      // Halberds deal full damage
-      return dps;
+      // Corp: only spears, hastas, and halberds deal full damage; everything else halved
+      if (weaponCat === "halberd") return dps;
+      if (weapon && isSpearOrHasta(weapon)) return dps;
+      return dps * 0.5;
     case "tekton-magic":
       // Tekton: magic deals 80% reduced damage
       if (style === "magic") return dps * 0.20;
       return dps;
     case "kraken-ranged":
-      // Kraken: ranged deals ~86% reduced damage
+      // Kraken: only magic deals full damage; ranged deals ~14%; melee immune
+      if (style === "melee") return 0;
       if (style === "ranged") return dps * 0.14;
       return dps;
     case "zulrah-cap":
@@ -1397,6 +1468,11 @@ function applyBossModifier(ctx: DpsContext, dps: number, _maxHit: number): numbe
 // HELPERS
 // ═══════════════════════════════════════════════════════════════════════
 
+function isSpearOrHasta(weapon: Item): boolean {
+  const name = weapon.name.toLowerCase();
+  return name.includes("spear") || name.includes("hasta");
+}
+
 function getAttackType(ctx: DpsContext): AttackType {
   return ctx.loadout.weapon?.attackType ?? (ctx.player.combatStyle === "ranged" ? "ranged" : ctx.player.combatStyle === "magic" ? "magic" : "slash");
 }
@@ -1411,4 +1487,318 @@ function getFlatMaxHitMod(ctx: DpsContext, pe: AggregatedPactEffects): number {
     }
   }
   return mod;
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// SPECIAL ATTACK — BLENDED DPS
+// Source: weirdgloop/osrs-dps-calc PlayerVsNPCCalc.ts
+// ═══════════════════════════════════════════════════════════════════════
+
+interface BlendedResult {
+  blendedDps: number;
+  specInfo: NonNullable<DpsBreakdown["specInfo"]>;
+}
+
+function calculateBlendedSpecDps(
+  ctx: DpsContext,
+  pe: AggregatedPactEffects,
+  spec: SpecAttack,
+  weapon: Item,
+  baseAtkRoll: number,
+  baseDefRoll: number,
+  normalMax: number,
+  normalAcc: number,
+  speed: number,
+  normalDps: number,
+): BlendedResult | null {
+  // Compute spec max hit and accuracy
+  const specAtkRoll = Math.floor(baseAtkRoll * (spec.accMultiplier ?? 1));
+  let specMax = Math.floor(normalMax * (spec.dmgMultiplier ?? 1));
+  specMax += spec.flatDmgBonus ?? 0;
+
+  // Fang spec: 1.5x on attack roll, then fang double-roll formula still applies
+  // (accMultiplier already applied above; fang double-roll handled via specAcc below)
+
+  // Custom max hit formulas (volatile/eldritch NM staff)
+  if (spec.customMaxHit) {
+    const visibleMagic = ctx.player.magic + getPotionAttackBoost(ctx.player.magic, ctx.player.potion, "magic");
+    specMax = spec.customMaxHit(visibleMagic);
+  }
+
+  // Max hit bonus fraction (voidwaker: max becomes 150% of base max)
+  if (spec.maxHitBonusFraction) {
+    specMax = Math.floor(normalMax * (1 + spec.maxHitBonusFraction));
+  }
+
+  // Compute spec accuracy
+  let specAcc: number;
+  if (spec.guaranteedHit) {
+    specAcc = 1.0;
+  } else if (spec.useMagicDefence) {
+    // Roll against magic defence instead of melee
+    const magicDefRoll = calculateDefenceRoll(ctx.target, "magic");
+    specAcc = standardAccuracy(specAtkRoll, magicDefRoll);
+  } else if (weapon.id === "fang") {
+    // Fang spec still uses fang exact formula after applying spec acc multiplier
+    specAcc = fangExactAccuracy(specAtkRoll, baseDefRoll);
+  } else {
+    specAcc = standardAccuracy(specAtkRoll, baseDefRoll);
+  }
+
+  // Compute average damage per spec attack
+  const specAvgDmg = calculateSpecAvgDmg(spec, specMax, specAcc, normalMax, ctx);
+
+  // Spec speed (some specs have speed overrides)
+  const specSpeed = spec.speedOverride ?? speed;
+
+  // ── Duty cycle: how many specs per energy cycle ──────────────────────
+  const specForFreeChance = pe.specForFree / 100;
+  const effectiveCost = spec.energyCost * (1 - specForFreeChance);
+  const specsPerCycle = effectiveCost > 0 ? Math.floor(100 / effectiveCost) : 1;
+
+  // Time to regenerate full spec bar: 100% / 0.2% per tick = 500 ticks
+  const cycleTimeTicks = 500;
+
+  // Spec attacks consume time: each spec takes one attack interval
+  let specPhaseTicks = specsPerCycle * specSpeed;
+
+  // Pact: melee hits restore spec energy — reduces effective cycle time
+  if (pe.hitRestoreSpecEnergy > 0 && ctx.player.combatStyle === "melee") {
+    // Each normal attack restores R% spec energy
+    // This means we accumulate extra spec energy during normal phase
+    // Extra specs gained = floor(normalAttacks * R / energyCost)
+    // For simplicity: reduce remaining ticks by the energy gained per normal hit
+    const normalPhaseTicks = cycleTimeTicks - specPhaseTicks;
+    const normalAttacks = Math.floor(normalPhaseTicks / speed);
+    const extraEnergy = normalAttacks * pe.hitRestoreSpecEnergy;
+    const extraSpecs = Math.floor(extraEnergy / spec.energyCost);
+    if (extraSpecs > 0) {
+      specPhaseTicks += extraSpecs * specSpeed;
+    }
+  }
+
+  // Distance spec energy restoration
+  if (pe.restoreSaEnergyFromDistance && (ctx.player.targetDistance ?? 1) >= 2) {
+    // Restore 2% per attack from 2+ tile distance
+    const normalPhaseTicks = cycleTimeTicks - specPhaseTicks;
+    const normalAttacks = Math.floor(normalPhaseTicks / speed);
+    const extraEnergy = normalAttacks * 2;
+    const extraSpecs = Math.floor(extraEnergy / spec.energyCost);
+    if (extraSpecs > 0) {
+      specPhaseTicks += extraSpecs * specSpeed;
+    }
+  }
+
+  // Clamp spec phase to not exceed cycle
+  specPhaseTicks = Math.min(specPhaseTicks, cycleTimeTicks);
+
+  const normalPhaseTicks = cycleTimeTicks - specPhaseTicks;
+  const normalAttackCount = Math.floor(normalPhaseTicks / speed);
+  const totalSpecCount = Math.floor(specPhaseTicks / specSpeed);
+
+  // Average damage per normal attack
+  const normalAvgDmg = normalDps * speed * 0.6;
+
+  // Total damage in cycle
+  const totalSpecDmg = totalSpecCount * specAvgDmg;
+  const totalNormalDmg = normalAttackCount * normalAvgDmg;
+  const cycleTimeSec = cycleTimeTicks * 0.6;
+  const blendedDps = (totalSpecDmg + totalNormalDmg) / cycleTimeSec;
+
+  // Only use blended if it's better than normal
+  if (blendedDps <= normalDps) return null;
+
+  // Spec-only DPS (as if every attack was spec)
+  const specDpsPerAttack = specAvgDmg / (specSpeed * 0.6);
+
+  return {
+    blendedDps,
+    specInfo: {
+      name: spec.name,
+      energyCost: spec.energyCost,
+      specDpsPerAttack,
+      normalDps,
+      specsPerCycle: totalSpecCount,
+      cycleTimeSec,
+      normalAttacksPerCycle: normalAttackCount,
+      specMaxHit: specMax,
+      specAccuracy: specAcc,
+    },
+  };
+}
+
+/**
+ * Calculate average damage per spec attack for a given spec type.
+ */
+function calculateSpecAvgDmg(
+  spec: SpecAttack,
+  specMax: number,
+  specAcc: number,
+  normalMax: number,
+  ctx: DpsContext,
+): number {
+  const hits = spec.hits ?? 1;
+
+  // ── Cascade types ──────────────────────────────────────────────────
+  if (spec.cascadeType === "dragon-claws") {
+    return clawsAvgDamage(specAcc, normalMax);
+  }
+  if (spec.cascadeType === "burning-claws") {
+    return burningClawsAvgDamage(specAcc, normalMax);
+  }
+
+  // ── Guaranteed hit with min/max range ──────────────────────────────
+  if (spec.guaranteedHit && spec.minHitFraction !== undefined) {
+    const minHit = Math.floor(normalMax * spec.minHitFraction);
+    // maxHitBonusFraction already applied to specMax above
+    return (minHit + specMax) / 2;
+  }
+
+  // ── Guaranteed hit (no range) ──────────────────────────────────────
+  if (spec.guaranteedHit) {
+    return specMax / 2;
+  }
+
+  // ── Multi-hit with per-hit max fraction ────────────────────────────
+  if (spec.perHitMaxFraction) {
+    const perHitMax = Math.floor(specMax * spec.perHitMaxFraction);
+    return hits * (perHitMax / 2) * specAcc;
+  }
+
+  // ── Dark bow: 2 arrows with min/cap ────────────────────────────────
+  if (spec.darkBowMinHit !== undefined && spec.darkBowCap !== undefined) {
+    // Dragon arrows: min 8, cap 48. Other arrows: min 5, cap 48.
+    const ammoId = ctx.loadout.ammo?.id;
+    const min = ammoId === "dragon-arrows" ? 8 : 5;
+    const cap = spec.darkBowCap;
+    const cappedMax = Math.min(specMax, cap);
+    const effectiveMin = Math.max(min, 0);
+    const avgPerArrow = specAcc * (effectiveMin + cappedMax) / 2 + (1 - specAcc) * effectiveMin;
+    return hits * avgPerArrow;
+  }
+
+  // ── Target-size multi-hit (halberds) ───────────────────────────────
+  if (spec.targetSizeMultiHit) {
+    const targetSize = ctx.target.size ?? 1;
+    const firstHitDmg = (specMax / 2) * specAcc;
+    if (targetSize > 1 && spec.secondHitAccFraction) {
+      const secondAcc = specAcc * spec.secondHitAccFraction;
+      const secondHitDmg = (specMax / 2) * secondAcc;
+      return firstHitDmg + secondHitDmg;
+    }
+    return firstHitDmg;
+  }
+
+  // ── Abyssal dagger: 2nd hit guaranteed if 1st hits ─────────────────
+  if (spec.secondHitGuaranteedOnAccurate && hits === 2) {
+    // Hit 1: normal accuracy at reduced max. Hit 2: guaranteed if hit 1 lands.
+    const perHitMax = specMax;
+    const hit1 = (perHitMax / 2) * specAcc;
+    const hit2 = (perHitMax / 2) * specAcc; // only fires when hit 1 hits → guaranteed damage
+    return hit1 + hit2;
+  }
+
+  // ── Sara sword: bonus magic hit ────────────────────────────────────
+  if (spec.magicBonusHit) {
+    const [magicMin, magicMax] = spec.magicBonusHit;
+    const meleeDmg = (specMax / 2) * specAcc;
+    const magicDmg = ((magicMin + magicMax) / 2) * specAcc;
+    return meleeDmg + magicDmg;
+  }
+
+  // ── Arkan blade burn DoT ───────────────────────────────────────────
+  if (spec.burnDpt) {
+    const hitDmg = (specMax / 2) * specAcc;
+    // Burn: 10 damage per tick for a few ticks on successful hit
+    // Estimate ~5 ticks of burn per successful spec
+    const burnDmg = specAcc * spec.burnDpt * 5;
+    return hitDmg + burnDmg;
+  }
+
+  // ── Granite hammer: flat bonus on miss ─────────────────────────────
+  if (spec.flatDmgBonus && spec.flatDmgBonus > 0) {
+    const hitDmg = (specMax / 2) * specAcc;
+    const missDmg = spec.flatDmgBonus * (1 - specAcc);
+    return hits * hitDmg + missDmg;
+  }
+
+  // ── Standard multi-hit ─────────────────────────────────────────────
+  if (hits > 1) {
+    return hits * (specMax / 2) * specAcc;
+  }
+
+  // ── Standard single-hit ────────────────────────────────────────────
+  return (specMax / 2) * specAcc;
+}
+
+/**
+ * Dragon Claws expected value — exact cascade formula.
+ * Source: weirdgloop/osrs-dps-calc PlayerVsNPCCalc.ts
+ *
+ * 4 cascading accuracy rolls:
+ * - All hit: total = sum of 4 hits where hit1 = rand[max/2, max], others derived
+ * - Miss roll 0, hit roll 1: 3 hits
+ * - Miss rolls 0-1, hit roll 2: 2 hits
+ * - Miss rolls 0-2, hit roll 3: 1 hit
+ * - All miss: 1 damage (75%) or 0 (25%)
+ */
+function clawsAvgDamage(acc: number, max: number): number {
+  // Simplified expected value using the weirdgloop approach:
+  // Each cascade level has a range of total damage
+  // P(exactly roll i succeeds) = (1-acc)^i * acc
+  let avg = 0;
+
+  // Roll 0 hits (all 4 hit): total range [max, 2*max-1]
+  // hits: max/2..max, max/4..(max/2-1), max/8..(max/4-1), max/8..(max/4-1)
+  // Avg total ≈ (3*max-1)/2 (simplified)
+  const p0 = acc;
+  const avg0 = max > 0 ? (3 * max - 1) / 2 : 0;
+  avg += p0 * avg0;
+
+  // Roll 1 hits (1st miss, 2nd-4th hit): total range [3*max/4, 3*max/2-1]
+  const p1 = (1 - acc) * acc;
+  const avg1 = max > 0 ? (7 * max / 4 - 1) / 2 : 0;
+  avg += p1 * avg1;
+
+  // Roll 2 hits (2 miss, 3rd-4th hit): total range [max/2, max-1]
+  const p2 = (1 - acc) * (1 - acc) * acc;
+  const avg2 = max > 0 ? (3 * max / 2 - 1) / 2 : 0;
+  avg += p2 * avg2;
+
+  // Roll 3 hits (3 miss, 4th hit): total range [max/4, max/2-1]
+  const p3 = (1 - acc) * (1 - acc) * (1 - acc) * acc;
+  const avg3 = max > 0 ? (5 * max / 4 - 1) / 2 : 0;
+  avg += p3 * avg3;
+
+  // All miss: 75% chance of 1 damage, 25% chance of 0
+  const pMiss = Math.pow(1 - acc, 4);
+  avg += pMiss * 0.75;
+
+  return avg;
+}
+
+/**
+ * Burning Claws expected value — 3-hit cascade.
+ * Similar to dragon claws but with 3 hits and different distributions.
+ */
+function burningClawsAvgDamage(acc: number, max: number): number {
+  let avg = 0;
+
+  // Roll 0 hits (all 3 hit): total ≈ 1.5 * max
+  const p0 = acc;
+  avg += p0 * (max > 0 ? 1.5 * max : 0);
+
+  // Roll 1 hits: total ≈ max
+  const p1 = (1 - acc) * acc;
+  avg += p1 * max;
+
+  // Roll 2 hits: total ≈ max/2
+  const p2 = (1 - acc) * (1 - acc) * acc;
+  avg += p2 * (max / 2);
+
+  // All miss: small residual
+  const pMiss = Math.pow(1 - acc, 3);
+  avg += pMiss * 0.5;
+
+  return avg;
 }

@@ -7,6 +7,7 @@
 import { describe, it, expect } from "vitest";
 import { ITEMS, getItem, getItemsBySlot, getItemsByRegion, getItemsForStyle, getAvailableItems } from "@/data/items";
 import { BOSS_PRESETS, getBoss, getBossesByRegion } from "@/data/boss-presets";
+import { SPEC_ATTACKS, getSpecAttack, hasSpecAttack } from "@/data/spec-attacks";
 import type { EquipmentSlot } from "@/types/dps";
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -346,6 +347,9 @@ describe("boss presets data integrity", () => {
       expect(typeof boss.dslash).toBe("number");
       expect(typeof boss.dcrush).toBe("number");
       expect(typeof boss.dranged).toBe("number");
+      expect(typeof boss.dranged_light).toBe("number");
+      expect(typeof boss.dranged_standard).toBe("number");
+      expect(typeof boss.dranged_heavy).toBe("number");
       expect(typeof boss.dmagic).toBe("number");
     }
   });
@@ -406,23 +410,28 @@ describe("wiki-verified boss stats", () => {
     expect(boss.region).toBe("desert");
   });
 
-  it("Verzik P3: isUndead=true, region=morytania", () => {
+  it("Verzik P3: region=morytania", () => {
     const boss = getBoss("verzik-p3")!;
-    expect(boss.isUndead).toBe(true);
     expect(boss.region).toBe("morytania");
   });
 
-  it("Zulrah: hp=500, dmagic=-45", () => {
+  it("Zulrah (Serpentine): hp=500, dmagic=-45, region=tirannwn", () => {
     const boss = getBoss("zulrah")!;
     expect(boss.hp).toBe(500);
     expect(boss.dmagic).toBe(-45);
-    expect(boss.region).toBe("kandarin");
+    expect(boss.region).toBe("tirannwn");
   });
 
-  it("Wardens P3: dmagic=-60 (weak to magic)", () => {
+  it("Wardens P3 (Enraged): dmagic=20, region=desert", () => {
     const boss = getBoss("wardens-p3")!;
-    expect(boss.dmagic).toBe(-60);
+    expect(boss.dmagic).toBe(20);
     expect(boss.region).toBe("desert");
+  });
+
+  it("Duke Sucellus: isDemon=true, region=fremennik", () => {
+    const boss = getBoss("duke")!;
+    expect(boss.isDemon).toBe(true);
+    expect(boss.region).toBe("fremennik");
   });
 
   it("Great Olm: isDragon=true, region=kourend", () => {
@@ -466,6 +475,9 @@ describe("wiki-verified boss stats", () => {
     expect(boss.dslash).toBe(0);
     expect(boss.dcrush).toBe(0);
     expect(boss.dranged).toBe(0);
+    expect(boss.dranged_light).toBe(0);
+    expect(boss.dranged_standard).toBe(0);
+    expect(boss.dranged_heavy).toBe(0);
     expect(boss.dmagic).toBe(0);
     expect(boss.hp).toBe(100);
   });
@@ -512,6 +524,34 @@ describe("item region assignments", () => {
   it("Barrows gloves are in Misthalin (from RFD)", () => {
     expect(getItem("barrows-gloves")!.region).toBe("misthalin");
   });
+
+  it("Oathplate is in Kourend (from Yama, Chasm of Fire)", () => {
+    expect(getItem("oathplate-helm")!.region).toBe("kourend");
+    expect(getItem("oathplate-chest")!.region).toBe("kourend");
+    expect(getItem("oathplate-legs")!.region).toBe("kourend");
+  });
+
+  it("Amulet of rancour is in Morytania (from Araxxor)", () => {
+    expect(getItem("rancour")!.region).toBe("morytania");
+  });
+
+  it("Dizana's quiver is in Varlamore (from Fortis Colosseum)", () => {
+    expect(getItem("dizanas-quiver")!.region).toBe("varlamore");
+  });
+
+  it("Confliction gauntlets are in Varlamore (Doom of Mokhaiotl)", () => {
+    expect(getItem("confliction")!.region).toBe("varlamore");
+  });
+
+  it("Dragonfire ward is in Fremennik (from Vorkath)", () => {
+    expect(getItem("dragonfire-ward")!.region).toBe("fremennik");
+  });
+
+  it("Moon armour is in Varlamore (Moons of Peril)", () => {
+    expect(getItem("blood-moon-helm")!.region).toBe("varlamore");
+    expect(getItem("blood-moon-body")!.region).toBe("varlamore");
+    expect(getItem("eclipse-moon-helm")!.region).toBe("varlamore");
+  });
 });
 
 // ════════════════════════════════════���══════════════════════════════════
@@ -526,15 +566,21 @@ describe("all bosses have size", () => {
     }
   });
 
-  it("boss sizes match known wiki values", () => {
+  it("boss sizes match wiki values", () => {
     expect(getBoss("graardor")!.size).toBe(4);
     expect(getBoss("kreearra")!.size).toBe(5);
     expect(getBoss("vorkath")!.size).toBe(7);
     expect(getBoss("duke")!.size).toBe(7);
     expect(getBoss("zuk")!.size).toBe(7);
-    expect(getBoss("whisperer")!.size).toBe(1);
+    expect(getBoss("whisperer")!.size).toBe(3);
     expect(getBoss("vardorvis")!.size).toBe(2);
     expect(getBoss("custom")!.size).toBe(1);
+    expect(getBoss("araxxor")!.size).toBe(7);
+    expect(getBoss("cerberus")!.size).toBe(5);
+    expect(getBoss("hydra")!.size).toBe(6);
+    expect(getBoss("zulrah")!.size).toBe(5);
+    expect(getBoss("kbd")!.size).toBe(5);
+    expect(getBoss("jad")!.size).toBe(5);
   });
 });
 
@@ -580,6 +626,35 @@ describe("echo items isTwoHanded correct", () => {
   });
 });
 
+// ═══════════════════════════════════════════════════════════════════════
+// ITEM EXCLUSION VALIDATION
+// ═══════════════════════════════════════════════════════════════════════
+
+describe("minigame/internal items are excluded", () => {
+  it("no Gauntlet-internal items (basic/attuned/perfected)", () => {
+    const gauntlet = ITEMS.filter(i =>
+      i.name.includes("(basic)") || i.name.includes("(attuned)") || i.name.includes("(perfected)")
+    );
+    expect(gauntlet).toEqual([]);
+  });
+
+  it("no Emir's Arena exclusive items (Calamity, Maoma, Koriff, Saika, wrapped)", () => {
+    const emirs = ITEMS.filter(i => {
+      const lower = i.name.toLowerCase();
+      return lower.includes("calamity") || lower.includes("maoma") ||
+        lower.includes("koriff") || lower.includes("saika") ||
+        lower.includes("(wrapped)");
+    });
+    expect(emirs).toEqual([]);
+  });
+
+  it("crystal armour (attuned) does not appear in melee-useful items", () => {
+    const meleeItems = getItemsForStyle("melee");
+    const crystalAttuned = meleeItems.filter(i => i.name.toLowerCase().includes("crystal") && i.name.toLowerCase().includes("attuned"));
+    expect(crystalAttuned).toEqual([]);
+  });
+});
+
 describe("specific boss data", () => {
   it("Demonic Gorillas: region=kandarin, isDemon=true", () => {
     const boss = getBoss("demonic-gorillas")!;
@@ -589,17 +664,157 @@ describe("specific boss data", () => {
     expect(boss.size).toBe(2);
   });
 
-  it("Giant Mole: defenceLevel=50, all defence bonuses 0", () => {
+  it("Giant Mole: wiki-synced stats", () => {
     const boss = getBoss("giant-mole")!;
     expect(boss).toBeDefined();
-    expect(boss.defenceLevel).toBe(50);
-    expect(boss.dstab).toBe(0);
-    expect(boss.dslash).toBe(0);
-    expect(boss.dcrush).toBe(0);
-    expect(boss.dranged).toBe(0);
-    expect(boss.dmagic).toBe(0);
+    expect(boss.defenceLevel).toBe(200);
+    expect(boss.dstab).toBe(60);
+    expect(boss.dslash).toBe(80);
+    expect(boss.dcrush).toBe(100);
+    expect(boss.dranged).toBe(60);
+    expect(boss.dmagic).toBe(80);
     expect(boss.hp).toBe(200);
     expect(boss.region).toBe("asgarnia");
     expect(boss.size).toBe(3);
+  });
+
+  it("Araxxor: region=morytania, size=7", () => {
+    const boss = getBoss("araxxor")!;
+    expect(boss).toBeDefined();
+    expect(boss.region).toBe("morytania");
+    expect(boss.size).toBe(7);
+  });
+
+  it("Sol Heredit: wiki-synced stats", () => {
+    const boss = getBoss("sol-heredit")!;
+    expect(boss.defenceLevel).toBe(200);
+    expect(boss.dranged).toBe(825);
+    expect(boss.dmagic).toBe(750);
+    expect(boss.hp).toBe(1500);
+  });
+
+  it("Thermy: wiki-synced stats (corrected from old hardcoded data)", () => {
+    const boss = getBoss("thermy")!;
+    expect(boss.defenceLevel).toBe(360);
+    expect(boss.dranged).toBe(900);
+    expect(boss.dmagic).toBe(800);
+    expect(boss.size).toBe(4);
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+// RANGED DEFENCE SPLIT
+// ═══════════════════════════════════════════════════════════════════════
+
+describe("ranged defence split", () => {
+  it("bosses with uniform ranged defence have equal split values", () => {
+    const graardor = getBoss("graardor")!;
+    expect(graardor.dranged_light).toBe(90);
+    expect(graardor.dranged_standard).toBe(90);
+    expect(graardor.dranged_heavy).toBe(90);
+  });
+
+  it("Zilyana has lower heavy ranged defence", () => {
+    const zilyana = getBoss("zilyana")!;
+    expect(zilyana.dranged_light).toBe(100);
+    expect(zilyana.dranged_standard).toBe(100);
+    expect(zilyana.dranged_heavy).toBe(75);
+  });
+
+  it("Corp has lower heavy ranged defence", () => {
+    const corp = getBoss("corp")!;
+    expect(corp.dranged_light).toBe(230);
+    expect(corp.dranged_standard).toBe(230);
+    expect(corp.dranged_heavy).toBe(100);
+  });
+
+  it("KBD has lower heavy ranged defence", () => {
+    const kbd = getBoss("kbd")!;
+    expect(kbd.dranged_light).toBe(70);
+    expect(kbd.dranged_standard).toBe(70);
+    expect(kbd.dranged_heavy).toBe(40);
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+// SPEC ATTACKS DATA INTEGRITY
+// ═══════════════════════════════════════════════════════════════════════
+
+describe("spec attacks data integrity", () => {
+  const specEntries = Object.entries(SPEC_ATTACKS);
+
+  it("has spec attacks defined", () => {
+    expect(specEntries.length).toBeGreaterThan(30);
+  });
+
+  it("every spec weapon ID exists in items", () => {
+    const missing: string[] = [];
+    for (const [id] of specEntries) {
+      if (!getItem(id)) missing.push(id);
+    }
+    expect(missing).toEqual([]);
+  });
+
+  it("every spec weapon is a weapon slot item", () => {
+    for (const [id] of specEntries) {
+      const item = getItem(id);
+      if (item) {
+        expect(item.slot).toBe("weapon");
+      }
+    }
+  });
+
+  it("energyCost is valid (5-100, multiple of 5)", () => {
+    for (const [id, spec] of specEntries) {
+      expect(spec.energyCost, `${id} energyCost`).toBeGreaterThanOrEqual(5);
+      expect(spec.energyCost, `${id} energyCost`).toBeLessThanOrEqual(100);
+      expect(spec.energyCost % 5, `${id} energyCost not multiple of 5`).toBe(0);
+    }
+  });
+
+  it("accMultiplier > 0 when set", () => {
+    for (const [id, spec] of specEntries) {
+      if (spec.accMultiplier !== undefined) {
+        expect(spec.accMultiplier, `${id} accMultiplier`).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  it("dmgMultiplier > 0 when set", () => {
+    for (const [id, spec] of specEntries) {
+      if (spec.dmgMultiplier !== undefined) {
+        expect(spec.dmgMultiplier, `${id} dmgMultiplier`).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  it("hits >= 1 when set", () => {
+    for (const [id, spec] of specEntries) {
+      if (spec.hits !== undefined) {
+        expect(spec.hits, `${id} hits`).toBeGreaterThanOrEqual(1);
+      }
+    }
+  });
+
+  it("getSpecAttack returns correct data for AGS", () => {
+    const ags = getSpecAttack("ags");
+    expect(ags).toBeDefined();
+    expect(ags!.name).toBe("Armadyl Godsword");
+    expect(ags!.energyCost).toBe(50);
+    expect(ags!.accMultiplier).toBe(2.0);
+    expect(ags!.dmgMultiplier).toBe(1.375);
+  });
+
+  it("hasSpecAttack returns false for non-spec weapons", () => {
+    expect(hasSpecAttack("rapier")).toBe(false);
+    expect(hasSpecAttack("scythe")).toBe(false);
+    expect(hasSpecAttack("tbow")).toBe(false);
+  });
+
+  it("hasSpecAttack returns true for spec weapons", () => {
+    expect(hasSpecAttack("ags")).toBe(true);
+    expect(hasSpecAttack("dds")).toBe(true);
+    expect(hasSpecAttack("blowpipe")).toBe(true);
+    expect(hasSpecAttack("zcb")).toBe(true);
   });
 });

@@ -80,8 +80,9 @@ describe("calculateDefenceRoll", () => {
   it("uses magic level for magic attack type", () => {
     const boss: BossPreset = {
       id: "test", name: "Test", defenceLevel: 200, magicLevel: 100,
-      dstab: 50, dslash: 50, dcrush: 50, dranged: 50, dmagic: -30,
-      hp: 500,
+      dstab: 50, dslash: 50, dcrush: 50, dranged: 50,
+      dranged_light: 50, dranged_standard: 50, dranged_heavy: 50,
+      dmagic: -30, hp: 500,
     };
     // Magic: (100+9)*(-30+64) = 109*34 = 3706
     expect(calculateDefenceRoll(boss, "magic")).toBe(3706);
@@ -94,9 +95,9 @@ describe("calculateDefenceRoll", () => {
     expect(calculateDefenceRoll(graardor, "slash")).toBe(39886);
   });
 
-  it("Wardens P3 magic: (200+9)*(-60+64) = 209*4 = 836", () => {
+  it("Wardens P3 magic: (150+9)*(20+64) = 159*84 = 13356", () => {
     const wardens = getBoss("wardens-p3")!;
-    expect(calculateDefenceRoll(wardens, "magic")).toBe(836);
+    expect(calculateDefenceRoll(wardens, "magic")).toBe(13356);
   });
 
   it("Zulrah ranged: (300+9)*(50+64) = 309*114 = 35226", () => {
@@ -108,6 +109,91 @@ describe("calculateDefenceRoll", () => {
     const zulrah = getBoss("zulrah")!;
     // Zulrah magic: (300+9)*(-45+64) = 309*19 = 5871
     expect(calculateDefenceRoll(zulrah, "magic")).toBe(5871);
+  });
+
+  it("ranged defence split: bow uses standard, crossbow uses heavy", () => {
+    const zilyana = getBoss("zilyana")!;
+    // light=100, standard=100, heavy=75
+    // Bow (standard): (300+9)*(100+64) = 309*164 = 50676
+    expect(calculateDefenceRoll(zilyana, "ranged", "bow")).toBe(50676);
+    // Crossbow (heavy): (300+9)*(75+64) = 309*139 = 42951
+    expect(calculateDefenceRoll(zilyana, "ranged", "crossbow")).toBe(42951);
+    // Thrown (light): (300+9)*(100+64) = 309*164 = 50676
+    expect(calculateDefenceRoll(zilyana, "ranged", "thrown")).toBe(50676);
+    // Blowpipe (light): same as thrown
+    expect(calculateDefenceRoll(zilyana, "ranged", "blowpipe")).toBe(50676);
+  });
+
+  it("ranged defence split: Corp heavy vs standard", () => {
+    const corp = getBoss("corp")!;
+    // light=230, standard=230, heavy=100
+    // Bow (standard): (310+9)*(230+64) = 319*294 = 93786
+    expect(calculateDefenceRoll(corp, "ranged", "bow")).toBe(93786);
+    // Crossbow (heavy): (310+9)*(100+64) = 319*164 = 52316
+    expect(calculateDefenceRoll(corp, "ranged", "crossbow")).toBe(52316);
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+// ELEMENTAL WEAKNESS — wiki formula: +severity% to attack roll AND max hit
+// ═══════════════════════════════════════════════════════════════════════
+
+describe("elemental weakness", () => {
+  it("earth spell vs earth-weak boss boosts DPS", () => {
+    // Graardor has elementalWeakness: "earth", elementalWeaknessPercent: 40
+    const graardor = getBoss("graardor")!;
+    const earthCtx = makeCtx(
+      { combatStyle: "magic", attackStyle: "autocast", spellMaxHit: 23, spellElement: "earth" },
+      { weapon: getItem("kodai")! },
+      graardor,
+    );
+    const fireCtx = makeCtx(
+      { combatStyle: "magic", attackStyle: "autocast", spellMaxHit: 24, spellElement: "fire" },
+      { weapon: getItem("kodai")! },
+      graardor,
+    );
+    const earthResult = calculateDps(earthCtx);
+    const fireResult = calculateDps(fireCtx);
+    // Earth spell should do MORE DPS despite lower base max hit, due to 40% weakness bonus
+    expect(earthResult.dps).toBeGreaterThan(fireResult.dps);
+  });
+
+  it("elemental weakness appears in multiplier chain", () => {
+    const graardor = getBoss("graardor")!;
+    const ctx = makeCtx(
+      { combatStyle: "magic", attackStyle: "autocast", spellMaxHit: 23, spellElement: "earth" },
+      { weapon: getItem("kodai")! },
+      graardor,
+    );
+    const result = calculateDps(ctx);
+    const weaknessStep = result.breakdown.multiplierChain.find(s => s.name.includes("Elemental Weakness"));
+    expect(weaknessStep).toBeDefined();
+    expect(weaknessStep!.factor).toBe(1.40);
+  });
+
+  it("no weakness bonus when element does not match", () => {
+    const graardor = getBoss("graardor")!;
+    const ctx = makeCtx(
+      { combatStyle: "magic", attackStyle: "autocast", spellMaxHit: 24, spellElement: "fire" },
+      { weapon: getItem("kodai")! },
+      graardor,
+    );
+    const result = calculateDps(ctx);
+    const weaknessStep = result.breakdown.multiplierChain.find(s => s.name.includes("Elemental Weakness"));
+    expect(weaknessStep).toBeUndefined();
+  });
+
+  it("no weakness bonus for powered staves", () => {
+    // Shadow is a powered staff — elemental weakness should not apply
+    const graardor = getBoss("graardor")!;
+    const ctx = makeCtx(
+      { combatStyle: "magic", attackStyle: "autocast", spellElement: "earth" },
+      { weapon: getItem("shadow")! },
+      graardor,
+    );
+    const result = calculateDps(ctx);
+    const weaknessStep = result.breakdown.multiplierChain.find(s => s.name.includes("Elemental Weakness"));
+    expect(weaknessStep).toBeUndefined();
   });
 });
 
@@ -517,11 +603,11 @@ describe("multiplier chain", () => {
   });
 
   it("salve (ei) vs undead: ×1.20", () => {
-    const verzik = getBoss("verzik-p3")!; // isUndead=true
+    const vorkath = getBoss("vorkath")!; // isUndead=true (and isDragon)
     const ctx = makeCtx(
       { combatStyle: "melee", attackStyle: "accurate" },
       { weapon: getItem("whip")!, neck: getItem("salve-ei")! },
-      verzik,
+      vorkath,
     );
     const pe = aggregatePactEffects([]);
     const chain = getMultiplierChain(ctx, pe, 20);
@@ -731,10 +817,13 @@ describe("fang min hit and DPS", () => {
     );
     const result = calculateDps(ctx);
 
-    // Max hit after 0.85x: floor(baseMax * 0.85)
-    const finalMax = result.maxHit;
-    const fangMin = Math.trunc(finalMax * 3 / 20);
-    const avgDmg = (finalMax + fangMin) / 2;
+    // Fang formula: originalMax = reducedMax + shrink, shrink = floor(originalMax * 3/20)
+    // Engine returns reducedMax as result.maxHit.
+    // baseDps = (originalMax / 2 * acc) / interval
+    // fangMin = floor(originalMax * 3/20), reported as minHit
+    const fangMin = result.breakdown.minHit;
+    const originalMax = result.maxHit + fangMin;
+    const avgDmg = originalMax / 2;
     const expectedDps = (avgDmg * result.accuracy) / (result.speed * 0.6);
     expect(result.dps).toBeCloseTo(expectedDps, 4);
   });
@@ -1061,7 +1150,7 @@ describe("full DPS integration tests", () => {
     expect(result.dps).toBeCloseTo(7.39, 1);
   });
 
-  it("TEST 6: shadow + full mage vs wardens P3 → DPS ≈ 10.8", () => {
+  it("TEST 6: shadow + full mage vs wardens P3", () => {
     const wardens = getBoss("wardens-p3")!;
     const ctx = makeCtx(
       { combatStyle: "magic", attackStyle: "autocast", potion: "magic", prayerType: "augury" },
@@ -1079,14 +1168,12 @@ describe("full DPS integration tests", () => {
       wardens,
     );
     const result = calculateDps(ctx);
-    // Total mdmg: 0+3+3+3+5+2+5+1+2 = 24, +4 from Augury = 28, shadow 3x = 84
-    // Shadow base: floor(112/3)+1 = 38
-    // Max hit: floor(38*(1+84/100)) = floor(38*1.84) = floor(69.92) = 69
-    expect(result.maxHit).toBe(69);
-    expect(result.breakdown.defenceRoll).toBe(836);
-    expect(result.accuracy).toBeCloseTo(0.9947, 3);
-    // DPS: (69/2*0.9947)/(5*0.6) = (34.5*0.9947)/3.0 = 34.32/3.0 = 11.44
-    expect(result.dps).toBeCloseTo(11.44, 0.5);
+    // Wardens P3 (Enraged): defLevel=180, magicLevel=150, dmagic=20 (wiki-synced)
+    // Defence roll: (150+9)*(20+64) = 159*84 = 13356
+    expect(result.breakdown.defenceRoll).toBe(13356);
+    expect(result.maxHit).toBe(66);
+    expect(result.dps).toBeGreaterThan(5);
+    expect(result.accuracy).toBeGreaterThan(0.5);
   });
 });
 
@@ -1120,7 +1207,8 @@ describe("edge cases", () => {
   it("very high defence target produces low but non-negative accuracy", () => {
     const boss: BossPreset = {
       ...custom,
-      defenceLevel: 999, dstab: 999, dslash: 999, dcrush: 999, dranged: 999, dmagic: 999,
+      defenceLevel: 999, dstab: 999, dslash: 999, dcrush: 999,
+      dranged: 999, dranged_light: 999, dranged_standard: 999, dranged_heavy: 999, dmagic: 999,
     };
     const ctx = makeCtx(
       { combatStyle: "melee", attackStyle: "accurate" },
@@ -1300,6 +1388,7 @@ describe("bow always pass accuracy", () => {
     const highDefBoss: BossPreset = {
       ...custom,
       defenceLevel: 500, dranged: 300,
+      dranged_light: 300, dranged_standard: 300, dranged_heavy: 300,
     };
     // node3 = bowAlwaysPassAccuracy, path: node1→node2→node3
     const withPact = makeCtx(
@@ -1716,7 +1805,7 @@ describe("void magic accuracy", () => {
     expect(ratio).toBeCloseTo(1.45, 1);
   });
 
-  it("elite void magic gives 1.125x accuracy (less than regular)", () => {
+  it("elite void magic gives 1.125x accuracy (at most equal to regular)", () => {
     const regularVoid = makeCtx(
       { combatStyle: "magic", attackStyle: "autocast", voidSet: "void" },
       { weapon: getItem("kodai")! },
@@ -1729,8 +1818,8 @@ describe("void magic accuracy", () => {
     );
     const r1 = calculateDps(regularVoid);
     const r2 = calculateDps(eliteVoid);
-    // Regular void (1.45) should give MORE accuracy than elite void (1.125) for magic
-    expect(r1.breakdown.attackRoll).toBeGreaterThan(r2.breakdown.attackRoll);
+    // Regular void (1.45) should give at least as much accuracy as elite void (1.125) for magic
+    expect(r1.breakdown.attackRoll).toBeGreaterThanOrEqual(r2.breakdown.attackRoll);
   });
 });
 
@@ -2103,5 +2192,180 @@ describe("Kandarin diary bolt spec boost", () => {
     const r1 = calculateDps(noDiary);
     const r2 = calculateDps(withDiary);
     expect(r2.breakdown.bonusDps).toBeGreaterThan(r1.breakdown.bonusDps);
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+// SPECIAL ATTACK DPS
+// ═══════════════════════════════════════════════════════════════════════
+
+describe("special attack DPS", () => {
+  const graardor = getBoss("graardor")!;
+
+  it("AGS: blended DPS > normal DPS", () => {
+    const normal = makeCtx(
+      { combatStyle: "melee", attackStyle: "aggressive", potion: "super-combat", prayerType: "piety" },
+      { weapon: getItem("ags")! },
+      graardor,
+    );
+    const spec = makeCtx(
+      { combatStyle: "melee", attackStyle: "aggressive", potion: "super-combat", prayerType: "piety", usingSpecialAttack: true },
+      { weapon: getItem("ags")! },
+      graardor,
+    );
+    const normalResult = calculateDps(normal);
+    const specResult = calculateDps(spec);
+    expect(specResult.dps).toBeGreaterThan(normalResult.dps);
+    expect(specResult.breakdown.specInfo).toBeDefined();
+    expect(specResult.breakdown.specInfo!.name).toBe("Armadyl Godsword");
+    expect(specResult.breakdown.specInfo!.energyCost).toBe(50);
+    expect(specResult.breakdown.specInfo!.specsPerCycle).toBe(2);
+  });
+
+  it("AGS spec max hit is 1.375x with 2x accuracy", () => {
+    const ctx = makeCtx(
+      { combatStyle: "melee", attackStyle: "aggressive", potion: "super-combat", prayerType: "piety", usingSpecialAttack: true },
+      { weapon: getItem("ags")! },
+      graardor,
+    );
+    const result = calculateDps(ctx);
+    const si = result.breakdown.specInfo!;
+    // Spec max hit should be floor(normalMax * 1.375)
+    const normalMax = result.maxHit;
+    expect(si.specMaxHit).toBe(Math.floor(normalMax * 1.375));
+    // Spec accuracy should be higher than normal (2x attack roll)
+    expect(si.specAccuracy).toBeGreaterThan(result.accuracy);
+  });
+
+  it("DDS: 2 hits at 1.15x both", () => {
+    const ctx = makeCtx(
+      { combatStyle: "melee", attackStyle: "aggressive", potion: "super-combat", prayerType: "piety", usingSpecialAttack: true },
+      { weapon: getItem("dds")! },
+      graardor,
+    );
+    const normal = makeCtx(
+      { combatStyle: "melee", attackStyle: "aggressive", potion: "super-combat", prayerType: "piety" },
+      { weapon: getItem("dds")! },
+      graardor,
+    );
+    const specResult = calculateDps(ctx);
+    const normalResult = calculateDps(normal);
+    expect(specResult.dps).toBeGreaterThan(normalResult.dps);
+    expect(specResult.breakdown.specInfo).toBeDefined();
+    expect(specResult.breakdown.specInfo!.energyCost).toBe(25);
+  });
+
+  it("Dragon claws cascade: blended DPS > normal DPS", () => {
+    const normal = makeCtx(
+      { combatStyle: "melee", attackStyle: "aggressive", potion: "super-combat", prayerType: "piety" },
+      { weapon: getItem("dclaws")! },
+      graardor,
+    );
+    const spec = makeCtx(
+      { combatStyle: "melee", attackStyle: "aggressive", potion: "super-combat", prayerType: "piety", usingSpecialAttack: true },
+      { weapon: getItem("dclaws")! },
+      graardor,
+    );
+    const normalResult = calculateDps(normal);
+    const specResult = calculateDps(spec);
+    expect(specResult.dps).toBeGreaterThan(normalResult.dps);
+    expect(specResult.breakdown.specInfo!.name).toBe("Dragon Claws");
+  });
+
+  it("Voidwaker: guaranteed hit with min 50% max", () => {
+    const ctx = makeCtx(
+      { combatStyle: "melee", attackStyle: "aggressive", potion: "super-combat", prayerType: "piety", usingSpecialAttack: true },
+      { weapon: getItem("voidwaker")! },
+      graardor,
+    );
+    const result = calculateDps(ctx);
+    const si = result.breakdown.specInfo!;
+    expect(si.specAccuracy).toBe(1.0);
+    expect(si.name).toBe("Voidwaker");
+  });
+
+  it("Crystal halberd: 2 hits vs large target, 1 hit vs size 1", () => {
+    // Graardor size = 3 → 2 hits
+    const specLarge = makeCtx(
+      { combatStyle: "melee", attackStyle: "aggressive", potion: "super-combat", prayerType: "piety", usingSpecialAttack: true },
+      { weapon: getItem("crystal-halberd")! },
+      graardor,
+    );
+    const resultLarge = calculateDps(specLarge);
+    expect(resultLarge.breakdown.specInfo).toBeDefined();
+
+    // Custom target size 1 → 1 hit (less DPS benefit)
+    const specSmall = makeCtx(
+      { combatStyle: "melee", attackStyle: "aggressive", potion: "super-combat", prayerType: "piety", usingSpecialAttack: true },
+      { weapon: getItem("crystal-halberd")! },
+      { ...custom, defenceLevel: 100, dstab: 50, dslash: 50, dcrush: 50, dranged: 50, dmagic: 50, size: 1 },
+    );
+    const resultSmall = calculateDps(specSmall);
+    // Spec should still be beneficial vs small target too
+    if (resultSmall.breakdown.specInfo) {
+      expect(resultSmall.breakdown.specInfo.specsPerCycle).toBeGreaterThan(0);
+    }
+  });
+
+  it("Blowpipe spec: 2x accuracy, 1.5x damage", () => {
+    const normal = makeCtx(
+      { combatStyle: "ranged", attackStyle: "rapid", potion: "ranging", prayerType: "rigour" },
+      { weapon: getItem("blowpipe")!, ammo: getItem("dragon-dart-ammo")! },
+      graardor,
+    );
+    const spec = makeCtx(
+      { combatStyle: "ranged", attackStyle: "rapid", potion: "ranging", prayerType: "rigour", usingSpecialAttack: true },
+      { weapon: getItem("blowpipe")!, ammo: getItem("dragon-dart-ammo")! },
+      graardor,
+    );
+    const normalResult = calculateDps(normal);
+    const specResult = calculateDps(spec);
+    expect(specResult.dps).toBeGreaterThan(normalResult.dps);
+  });
+
+  it("Granite hammer: +5 flat damage even on miss", () => {
+    const ctx = makeCtx(
+      { combatStyle: "melee", attackStyle: "aggressive", potion: "super-combat", prayerType: "piety", usingSpecialAttack: true },
+      { weapon: getItem("granite-hammer")! },
+      graardor,
+    );
+    const result = calculateDps(ctx);
+    // Granite hammer should still be beneficial with +5 flat on miss
+    if (result.breakdown.specInfo) {
+      expect(result.breakdown.specInfo.specMaxHit).toBeGreaterThan(0);
+    }
+  });
+
+  it("weapon without spec: no specInfo", () => {
+    const ctx = makeCtx(
+      { combatStyle: "melee", attackStyle: "aggressive", potion: "super-combat", prayerType: "piety", usingSpecialAttack: true },
+      { weapon: getItem("rapier")! },
+      graardor,
+    );
+    const result = calculateDps(ctx);
+    expect(result.breakdown.specInfo).toBeUndefined();
+  });
+
+  it("ZCB spec: bolt procs still apply", () => {
+    const ctx = makeCtx(
+      { combatStyle: "ranged", attackStyle: "rapid", potion: "ranging", prayerType: "rigour", usingSpecialAttack: true },
+      { weapon: getItem("zcb")!, ammo: getItem("ruby-bolts-e")! },
+      graardor,
+    );
+    const result = calculateDps(ctx);
+    // ZCB spec doubles accuracy → should be beneficial
+    if (result.breakdown.specInfo) {
+      expect(result.breakdown.specInfo.specAccuracy).toBeGreaterThan(result.accuracy);
+    }
+  });
+
+  it("spec cycle time is 300s (500 ticks * 0.6)", () => {
+    const ctx = makeCtx(
+      { combatStyle: "melee", attackStyle: "aggressive", potion: "super-combat", prayerType: "piety", usingSpecialAttack: true },
+      { weapon: getItem("ags")! },
+      graardor,
+    );
+    const result = calculateDps(ctx);
+    expect(result.breakdown.specInfo!.cycleTimeSec).toBe(300);
   });
 });

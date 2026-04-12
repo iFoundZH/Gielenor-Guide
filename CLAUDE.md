@@ -14,9 +14,10 @@ npm run build            # Production build (static export to /out/)
 npm run lint             # ESLint (flat config: TS, React hooks, Next.js rules)
 npm run test             # Run all Playwright E2E tests (36 tests, 5 spec files)
 npm run test:ui          # Interactive Playwright test runner
-npm run test:unit        # Run Vitest unit tests (303 tests, 6 test files)
+npm run test:unit        # Run Vitest unit tests (363 tests, 6 test files)
 npm run test:unit:watch  # Vitest in watch mode
 npm run sync:items       # Sync equipment data from wiki (requires Python 3)
+npm run sync:bosses      # Sync boss data from wiki monsters.json (requires Python 3)
 ```
 
 ## Testing
@@ -31,11 +32,11 @@ In `e2e/` directory — 36 tests across 5 spec files, Chromium only.
 
 ### Vitest unit tests
 
-In `src/lib/__tests__/` and `src/data/__tests__/` — 303 tests across 6 files.
+In `src/lib/__tests__/` and `src/data/__tests__/` — 359 tests across 6 files.
 
-- `dps-engine.test.ts` (115 tests) — core DPS formula coverage
+- `dps-engine.test.ts` (126 tests) — core DPS formula coverage + special attack DPS
 - `pact-effects.test.ts` (56 tests) — pact skill tree aggregation
-- `data-integrity.test.ts` (70 tests) — validates all items, bosses, pacts
+- `data-integrity.test.ts` (80 tests) — validates all items, bosses, pacts, spec attacks
 - `gear-optimizer.test.ts` (52 tests) — optimizer correctness
 - `build-storage.test.ts` (8 tests) — save/load/encode/decode
 - `wiki-compare.test.ts` (2 tests) — wiki data comparison
@@ -64,9 +65,9 @@ Pre-commit hook runs `npm run test:unit` automatically via husky.
 - `src/components/layout/` — Header, Footer
 - `src/components/ui/` — Badge, Card, ProgressBar, Tabs (reusable OSRS-themed components)
 - `src/components/calculator/` — Calculator-specific: PlayerConfigPanel, BossSelector, RegionSelector, PactSkillTree, GearGrid, ItemPicker, DpsResultCard, DpsBreakdown, TopBuildsPanel
-- `src/data/` — Static data: `items.ts` (dynamic from wiki DB + 14 manual), `pacts.ts` (132 skill tree nodes), `boss-presets.ts` (41 bosses), `equipment-db.json` (wiki-synced raw equipment data)
+- `src/data/` — Static data: `items.ts` (dynamic from wiki DB + 14 manual), `pacts.ts` (132 skill tree nodes), `boss-presets.ts` (41 bosses from boss-db.json), `spec-attacks.ts` (40+ weapon special attacks), `equipment-db.json` (wiki-synced equipment), `boss-db.json` (wiki-synced boss stats)
 - `src/lib/` — Core logic: `dps-engine.ts`, `gear-optimizer.ts`, `build-storage.ts`, `pact-effects.ts` (skill tree aggregation), `wiki-compare.ts` (wiki data comparison)
-- `scripts/` — `sync-items.py` (wiki equipment sync), `dps-validation.ts` (formula validation vs wiki reference)
+- `scripts/` — `sync-items.py` (wiki equipment sync), `sync-bosses.py` (wiki boss sync), `dps-validation.ts` (formula validation vs wiki reference)
 - `src/types/dps.ts` — All TypeScript type definitions
 
 ### Data flow
@@ -79,7 +80,8 @@ Pre-commit hook runs `npm run test:unit` automatically via husky.
 
 ### Key systems
 
-- **DPS Engine** (`src/lib/dps-engine.ts`): Exact OSRS combat formulas — effective level, max hit, accuracy, attack/defence rolls, multiplier chain, echo cascade, weapon passives. Exported: `calculateDps`, `calculateMaxHit`, `calculateAccuracy`, `calculateAttackRoll`, `calculateDefenceRoll`, `getMultiplierChain`.
+- **DPS Engine** (`src/lib/dps-engine.ts`): Exact OSRS combat formulas — effective level, max hit, accuracy, attack/defence rolls, multiplier chain, echo cascade, weapon passives, special attack blended DPS. Exported: `calculateDps`, `calculateMaxHit`, `calculateAccuracy`, `calculateAttackRoll`, `calculateDefenceRoll`, `getMultiplierChain`.
+- **Spec Attacks** (`src/data/spec-attacks.ts`): Declarative data for 40+ weapon special attacks — energy cost, acc/dmg multipliers, cascade types (dragon claws), guaranteed hits. `getSpecAttack(id)`, `hasSpecAttack(id)`.
 - **Gear Optimizer** (`src/lib/gear-optimizer.ts`): Brute-force search with dominated-item pruning, weapon-first enumeration, locked slot support, top-N heap. `optimizeGear(config) → OptimizerResult[]`.
 - **Build Storage** (`src/lib/build-storage.ts`): `getBuilds`/`saveBuild`/`deleteBuild` for localStorage. `encodeBuild`/`decodeBuild` for URL sharing via base64.
 - **Pact Effects** (`src/lib/pact-effects.ts`): Aggregation layer that sums all active skill tree node effects into a single `PactEffects` object consumed by the DPS engine. Called once per DPS calculation.
@@ -94,10 +96,11 @@ Pre-commit hook runs `npm run test:unit` automatically via husky.
 2. Equipment Strength = sum gear str + pact additive (G6, G7)
 3. Base Max Hit (melee/ranged vs magic/powered-staff formulas)
 4. Multiplier chain: Void → Slayer Helm → Style Pacts → K8 → Shadow 3x → Halberd → TBow → Shadowflame → Arclight → Devil's Element
-5. Attack Roll, Defence Roll (magic uses magicLevel)
+5. Attack Roll, Defence Roll (magic uses magicLevel; ranged uses light/standard/heavy split by weapon category)
 6. Accuracy (standard OSRS formula, with double-roll for Fang/N7/Drygore)
 7. DPS = (maxHit/2 × accuracy) / (ticks × 0.6)
 8. Bonus hits (D2 light, D3 heavy), echo cascade (K3), weapon passives
+9. Special attack blended DPS: spec on cooldown + normal attacks during regen (500-tick cycle)
 
 ## Styling
 

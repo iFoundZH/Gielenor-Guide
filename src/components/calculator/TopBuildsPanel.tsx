@@ -5,7 +5,8 @@ import type { OptimizerResult, OptimizedConfig, BuildLoadout } from "@/types/dps
 interface Props {
   results: OptimizerResult[];
   isRunning: boolean;
-  onSelect: (loadout: BuildLoadout, optimizedConfig?: OptimizedConfig) => void;
+  selectedIndex: number | null;
+  onSelect: (index: number, loadout: BuildLoadout, optimizedConfig?: OptimizedConfig) => void;
   onOptimize: () => void;
 }
 
@@ -66,7 +67,7 @@ function formatRegions(opt?: OptimizedConfig): string | null {
   return chosen.map(r => REGION_LABELS[r] ?? r).join(" + ");
 }
 
-export function TopBuildsPanel({ results, isRunning, onSelect, onOptimize }: Props) {
+export function TopBuildsPanel({ results, isRunning, selectedIndex, onSelect, onOptimize }: Props) {
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
@@ -88,7 +89,7 @@ export function TopBuildsPanel({ results, isRunning, onSelect, onOptimize }: Pro
 
       {results.length === 0 && !isRunning && (
         <div className="text-xs text-osrs-text-dim text-center py-8">
-          Click Optimize for DP League to find the best gear
+          Click Optimize to find the best gear — click any result to try it
         </div>
       )}
 
@@ -99,11 +100,16 @@ export function TopBuildsPanel({ results, isRunning, onSelect, onOptimize }: Pro
           const configLabel = formatOptimizedConfig(r.optimizedConfig);
           const regionLabel = formatRegions(r.optimizedConfig);
 
+          const isSelected = selectedIndex === i;
           return (
             <button
               key={i}
-              onClick={() => onSelect(r.loadout, r.optimizedConfig)}
-              className="w-full text-left bg-osrs-darker rounded-lg border border-osrs-border hover:border-osrs-gold/40 p-3 transition-all group"
+              onClick={() => onSelect(i, r.loadout, r.optimizedConfig)}
+              className={`w-full text-left bg-osrs-darker rounded-lg border p-3 transition-all group ${
+                isSelected
+                  ? "border-osrs-gold/60 ring-1 ring-osrs-gold/30"
+                  : "border-osrs-border hover:border-osrs-gold/40"
+              }`}
             >
               <div className="flex items-center justify-between mb-1">
                 <span className="text-sm font-bold text-osrs-gold group-hover:text-glow-gold">

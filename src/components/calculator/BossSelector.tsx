@@ -50,6 +50,9 @@ export function BossSelector({ selected, onSelect }: Props) {
       </div>
       <div className="text-[10px] text-osrs-text-dim">
         Def: {selected.defenceLevel} | HP: {selected.hp} | Magic Lvl: {selected.magicLevel}
+        {selected.elementalWeakness && selected.elementalWeakness !== "none" && (
+          <span className="ml-1 capitalize"> | Weak: {selected.elementalWeakness} ({selected.elementalWeaknessPercent}%)</span>
+        )}
       </div>
     </div>
   );

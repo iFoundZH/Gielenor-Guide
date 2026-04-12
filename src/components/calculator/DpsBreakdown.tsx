@@ -5,9 +5,10 @@ import type { DpsBreakdown as DpsBreakdownType } from "@/types/dps";
 
 interface Props {
   breakdown: DpsBreakdownType | null;
+  totalDps?: number;
 }
 
-export function DpsBreakdown({ breakdown }: Props) {
+export function DpsBreakdown({ breakdown, totalDps }: Props) {
   const [expanded, setExpanded] = useState(false);
 
   if (!breakdown) return null;
@@ -58,10 +59,24 @@ export function DpsBreakdown({ breakdown }: Props) {
           {breakdown.bonusDps > 0 && <Row label="Bonus DPS" value={`+${breakdown.bonusDps.toFixed(3)}`} />}
           {breakdown.thornsDps > 0 && <Row label="Thorns DPS" value={`+${breakdown.thornsDps.toFixed(3)}`} />}
           <Row
-            label="Total DPS"
+            label={breakdown.specInfo ? "Normal DPS" : "Total DPS"}
             value={(breakdown.baseDps + breakdown.echoDps + breakdown.bonusDps + breakdown.thornsDps).toFixed(3)}
-            highlight
+            highlight={!breakdown.specInfo}
           />
+
+          {breakdown.specInfo && (
+            <div className="border-t border-osrs-border pt-2">
+              <div className="text-osrs-text-dim mb-1">Special Attack ({breakdown.specInfo.name}):</div>
+              <Row label="Energy Cost" value={`${breakdown.specInfo.energyCost}%`} />
+              <Row label="Spec Max Hit" value={breakdown.specInfo.specMaxHit.toString()} />
+              <Row label="Spec Accuracy" value={`${(breakdown.specInfo.specAccuracy * 100).toFixed(1)}%`} />
+              <Row label="Spec-Only DPS" value={breakdown.specInfo.specDpsPerAttack.toFixed(3)} />
+              <Row label="Specs / Cycle" value={breakdown.specInfo.specsPerCycle.toString()} />
+              <Row label="Normal Atks / Cycle" value={breakdown.specInfo.normalAttacksPerCycle.toString()} />
+              <Row label="Cycle Time" value={`${breakdown.specInfo.cycleTimeSec.toFixed(0)}s`} />
+              <Row label="Blended DPS" value={(totalDps ?? 0).toFixed(3)} highlight />
+            </div>
+          )}
 
           {breakdown.sustainInfo.length > 0 && (
             <div className="border-t border-osrs-border pt-2">
