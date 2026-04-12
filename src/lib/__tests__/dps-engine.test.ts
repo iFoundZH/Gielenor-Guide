@@ -1669,7 +1669,7 @@ describe("boss size field", () => {
     const bossList = [
       "graardor", "zilyana", "kreearra", "kril", "nex",
       "duke", "leviathan", "whisperer", "vardorvis",
-      "olm-melee", "olm-head", "verzik-p3", "wardens-p3",
+      "tekton", "olm-melee", "olm-head", "verzik-p3", "wardens-p3",
       "cerberus", "hydra", "thermy", "kraken",
       "abyssal-sire", "grotesque-guardians",
       "vorkath", "zulrah", "corp", "hunllef", "kbd", "kq",
@@ -1688,5 +1688,420 @@ describe("boss size field", () => {
 
   it("custom target has size 1", () => {
     expect(custom.size).toBe(1);
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+// VOID MAGIC ACCURACY — regular void = 1.45, elite void = 1.125
+// ═══════════════════════════════════════════════════════════════════════
+
+describe("void magic accuracy", () => {
+  it("regular void magic gives 1.45x accuracy", () => {
+    const noVoid = makeCtx(
+      { combatStyle: "magic", attackStyle: "autocast", voidSet: "none" },
+      { weapon: getItem("kodai")! },
+      custom,
+    );
+    const withVoid = makeCtx(
+      { combatStyle: "magic", attackStyle: "autocast", voidSet: "void" },
+      { weapon: getItem("kodai")! },
+      custom,
+    );
+    const r1 = calculateDps(noVoid);
+    const r2 = calculateDps(withVoid);
+    // Void magic should give significant accuracy boost (1.45x)
+    expect(r2.breakdown.attackRoll).toBeGreaterThan(r1.breakdown.attackRoll);
+    // Verify it's roughly 1.45x (void applies after style+8)
+    const ratio = r2.breakdown.attackRoll / r1.breakdown.attackRoll;
+    expect(ratio).toBeCloseTo(1.45, 1);
+  });
+
+  it("elite void magic gives 1.125x accuracy (less than regular)", () => {
+    const regularVoid = makeCtx(
+      { combatStyle: "magic", attackStyle: "autocast", voidSet: "void" },
+      { weapon: getItem("kodai")! },
+      custom,
+    );
+    const eliteVoid = makeCtx(
+      { combatStyle: "magic", attackStyle: "autocast", voidSet: "elite-void" },
+      { weapon: getItem("kodai")! },
+      custom,
+    );
+    const r1 = calculateDps(regularVoid);
+    const r2 = calculateDps(eliteVoid);
+    // Regular void (1.45) should give MORE accuracy than elite void (1.125) for magic
+    expect(r1.breakdown.attackRoll).toBeGreaterThan(r2.breakdown.attackRoll);
+  });
+});
+
+// ══════════════════════════════════════��════════════════════════════════
+// V'S HELM — always active (no slayer task required)
+// ═══════════════════════════════════════════════════════════════════════
+
+describe("V's Helm always active", () => {
+  it("V's Helm provides damage bonus without onSlayerTask", () => {
+    const withHelm = makeCtx(
+      { combatStyle: "melee", attackStyle: "accurate", onSlayerTask: false },
+      { weapon: getItem("whip")!, head: getItem("echo-vs-helm")! },
+      custom,
+    );
+    const noHelm = makeCtx(
+      { combatStyle: "melee", attackStyle: "accurate", onSlayerTask: false },
+      { weapon: getItem("whip")! },
+      custom,
+    );
+    const r1 = calculateDps(noHelm);
+    const r2 = calculateDps(withHelm);
+    // V's Helm should boost damage even without slayer task
+    expect(r2.dps).toBeGreaterThan(r1.dps);
+    // Melee: should have 7/6 multiplier
+    const chain = r2.breakdown.multiplierChain;
+    const helmStep = chain.find(s => s.name.includes("V's helm"));
+    expect(helmStep).toBeDefined();
+    expect(helmStep!.factor).toBeCloseTo(7 / 6, 5);
+  });
+
+  it("regular Slayer Helm still requires onSlayerTask", () => {
+    const noTask = makeCtx(
+      { combatStyle: "melee", attackStyle: "accurate", onSlayerTask: false },
+      { weapon: getItem("whip")!, head: getItem("slayer-helm-i")! },
+      custom,
+    );
+    const result = calculateDps(noTask);
+    const chain = result.breakdown.multiplierChain;
+    expect(chain.find(s => s.name.includes("Slayer"))).toBeUndefined();
+  });
+});
+
+// ══════════════════════════════════════���════════════════════════════════
+// SHADOWFLAME + DEVIL'S ELEMENT (both equippable — 1H staff + shield)
+// ═══════════════════════════════════════════════════════════════════════
+
+describe("Shadowflame + Devil's Element combo", () => {
+  it("Shadowflame is one-handed (can equip shield)", () => {
+    const sf = getItem("echo-shadowflame")!;
+    expect(sf.isTwoHanded).toBeFalsy();
+  });
+
+  it("Devil's Element bonus applies with Shadowflame equipped", () => {
+    const ctx = makeCtx(
+      { combatStyle: "magic", attackStyle: "autocast", spellMaxHit: 30, spellElement: "ice" },
+      { weapon: getItem("echo-shadowflame")!, shield: getItem("echo-devils-element")! },
+      custom,
+    );
+    const result = calculateDps(ctx);
+    const chain = result.breakdown.multiplierChain;
+    // Both should be in chain
+    expect(chain.find(s => s.name === "Shadowflame 40%")).toBeDefined();
+    expect(chain.find(s => s.name === "Devil's Element")).toBeDefined();
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+// LITHIC SCEPTRE — one-handed powered staff + shield
+// ═══════════════════════════════════════════════════════════════════════
+
+describe("Lithic Sceptre one-handed", () => {
+  it("Lithic Sceptre is one-handed (can equip shield)", () => {
+    const ls = getItem("echo-lithic-sceptre")!;
+    expect(ls.isTwoHanded).toBeFalsy();
+  });
+
+  it("Lithic Sceptre + shield produces valid DPS", () => {
+    const ctx = makeCtx(
+      { combatStyle: "magic", attackStyle: "autocast" },
+      { weapon: getItem("echo-lithic-sceptre")!, shield: getItem("echo-devils-element")! },
+      custom,
+    );
+    const result = calculateDps(ctx);
+    expect(result.dps).toBeGreaterThan(0);
+    expect(result.maxHit).toBeGreaterThan(0);
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+// ZCB BOLT SPEC DAMAGE BONUS
+// ═══════════════════════════════════════════════════════════════════════
+
+describe("ZCB bolt spec damage bonus", () => {
+  it("ZCB ruby bolts deal more bonus DPS than ACB ruby bolts", () => {
+    const graardor = getBoss("graardor")!;
+    const zcbCtx = makeCtx(
+      { combatStyle: "ranged", attackStyle: "rapid" },
+      { weapon: getItem("zcb")!, ammo: getItem("ruby-bolts-e")! },
+      graardor,
+    );
+    const acbCtx = makeCtx(
+      { combatStyle: "ranged", attackStyle: "rapid" },
+      { weapon: getItem("acb")!, ammo: getItem("ruby-bolts-e")! },
+      graardor,
+    );
+    const zcbResult = calculateDps(zcbCtx);
+    const acbResult = calculateDps(acbCtx);
+    // ZCB gets +10% bolt spec damage
+    expect(zcbResult.breakdown.bonusDps).toBeGreaterThan(acbResult.breakdown.bonusDps);
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+// BRIMSTONE RING
+// ═══════════════════════════════════════════════════════════════════════
+
+describe("Brimstone Ring", () => {
+  it("Brimstone Ring passive boosts magic accuracy compared to same gear without ring", () => {
+    const boss: BossPreset = { ...custom, defenceLevel: 300, dmagic: 200, magicLevel: 300 };
+    // Compare same ring slot: brimstone vs no ring
+    const noRing = makeCtx(
+      { combatStyle: "magic", attackStyle: "autocast" },
+      { weapon: getItem("kodai")! },
+      boss,
+    );
+    const withBrim = makeCtx(
+      { combatStyle: "magic", attackStyle: "autocast" },
+      { weapon: getItem("kodai")!, ring: getItem("brimstone-ring")! },
+      boss,
+    );
+    const r1 = calculateDps(noRing);
+    const r2 = calculateDps(withBrim);
+    // Brimstone should improve effective accuracy vs no ring
+    expect(r2.accuracy).toBeGreaterThan(r1.accuracy);
+  });
+
+  it("Brimstone Ring does not affect melee accuracy (no passive for melee)", () => {
+    // Same setup, compare brimstone DPS with another ring of similar stats
+    // The passive should not trigger for melee — only stat difference matters
+    const ctx = makeCtx(
+      { combatStyle: "melee", attackStyle: "accurate" },
+      { weapon: getItem("whip")!, ring: getItem("brimstone-ring")! },
+      custom,
+    );
+    const result = calculateDps(ctx);
+    // Verify brimstone passive isn't altering accuracy for melee
+    // baseAccuracy should equal finalAccuracy (no double roll, no brimstone passive)
+    expect(result.breakdown.baseAccuracy).toBeCloseTo(result.accuracy, 5);
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+// SMOKE BATTLESTAFF
+// ═══════════════════════════════════════════════════════════════════════
+
+describe("Smoke Battlestaff", () => {
+  it("adds +10 magic attack and +10% damage for standard spells", () => {
+    const sf = getItem("smoke-battlestaff");
+    if (!sf) return; // May not be in wiki DB yet
+    const ctx = makeCtx(
+      { combatStyle: "magic", attackStyle: "autocast", spellMaxHit: 24, spellElement: "fire" },
+      { weapon: sf },
+      custom,
+    );
+    const result = calculateDps(ctx);
+    const chain = result.breakdown.multiplierChain;
+    expect(chain.find(s => s.name === "Smoke Battlestaff")?.factor).toBe(1.10);
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+// TOME OF FIRE
+// ═══════════════════════════════════════════════════════════════════════
+
+describe("Tome of Fire", () => {
+  it("gives +50% damage for fire spells", () => {
+    const tome = getItem("tome-of-fire");
+    if (!tome) return; // May not be in wiki DB yet
+    const ctx = makeCtx(
+      { combatStyle: "magic", attackStyle: "autocast", spellMaxHit: 24, spellElement: "fire" },
+      { weapon: getItem("kodai")!, shield: tome },
+      custom,
+    );
+    const result = calculateDps(ctx);
+    const chain = result.breakdown.multiplierChain;
+    expect(chain.find(s => s.name === "Tome of Fire")?.factor).toBe(1.50);
+  });
+
+  it("does not apply for non-fire spells", () => {
+    const tome = getItem("tome-of-fire");
+    if (!tome) return;
+    const ctx = makeCtx(
+      { combatStyle: "magic", attackStyle: "autocast", spellMaxHit: 30, spellElement: "ice" },
+      { weapon: getItem("kodai")!, shield: tome },
+      custom,
+    );
+    const result = calculateDps(ctx);
+    const chain = result.breakdown.multiplierChain;
+    expect(chain.find(s => s.name === "Tome of Fire")).toBeUndefined();
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+// SOULREAPER AXE STACKS
+// ═══════════════════════════════════════════════════════════════════════
+
+describe("Soulreaper Axe stacks", () => {
+  it("5 stacks give +30% damage and accuracy", () => {
+    const sra = getItem("soulreaper-axe");
+    if (!sra) return;
+    const ctx = makeCtx(
+      { combatStyle: "melee", attackStyle: "accurate", soulreaperStacks: 5 },
+      { weapon: sra },
+      custom,
+    );
+    const result = calculateDps(ctx);
+    const chain = result.breakdown.multiplierChain;
+    const step = chain.find(s => s.name.includes("Soulreaper"));
+    expect(step).toBeDefined();
+    expect(step!.factor).toBeCloseTo(1.30, 5);
+  });
+
+  it("0 stacks give no bonus", () => {
+    const sra = getItem("soulreaper-axe");
+    if (!sra) return;
+    const ctx = makeCtx(
+      { combatStyle: "melee", attackStyle: "accurate", soulreaperStacks: 0 },
+      { weapon: sra },
+      custom,
+    );
+    const result = calculateDps(ctx);
+    const chain = result.breakdown.multiplierChain;
+    expect(chain.find(s => s.name.includes("Soulreaper"))).toBeUndefined();
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+// CORP HALF DAMAGE
+// ═══════════════════════════════════════════════════════════════════════
+
+describe("Corp damage modifier", () => {
+  it("non-spear weapon deals half damage to Corp", () => {
+    const corp = getBoss("corp")!;
+    const whipCtx = makeCtx(
+      { combatStyle: "melee", attackStyle: "accurate" },
+      { weapon: getItem("whip")! },
+      corp,
+    );
+    const noModBoss: BossPreset = { ...corp, damageModifier: undefined };
+    const whipNoModCtx = makeCtx(
+      { combatStyle: "melee", attackStyle: "accurate" },
+      { weapon: getItem("whip")! },
+      noModBoss,
+    );
+    const r1 = calculateDps(whipCtx);
+    const r2 = calculateDps(whipNoModCtx);
+    // Corp modifier should halve DPS for non-spear
+    expect(r1.dps).toBeCloseTo(r2.dps * 0.5, 1);
+  });
+
+  it("halberd deals full damage to Corp", () => {
+    const corp = getBoss("corp")!;
+    const halCtx = makeCtx(
+      { combatStyle: "melee", attackStyle: "accurate" },
+      { weapon: getItem("crystal-halberd")! },
+      corp,
+    );
+    const noModBoss: BossPreset = { ...corp, damageModifier: undefined };
+    const halNoModCtx = makeCtx(
+      { combatStyle: "melee", attackStyle: "accurate" },
+      { weapon: getItem("crystal-halberd")! },
+      noModBoss,
+    );
+    const r1 = calculateDps(halCtx);
+    const r2 = calculateDps(halNoModCtx);
+    // Halberd should deal full damage
+    expect(r1.dps).toBeCloseTo(r2.dps, 1);
+  });
+});
+
+// ═════════════════════════════════════════════════��═════════════════════
+// TEKTON MAGIC REDUCTION
+// ═══════════════════════════════════════════════════════════════════════
+
+describe("Tekton magic reduction", () => {
+  it("magic deals 80% reduced damage to Tekton", () => {
+    const tekton = getBoss("tekton")!;
+    const magicCtx = makeCtx(
+      { combatStyle: "magic", attackStyle: "autocast", spellMaxHit: 24, spellElement: "fire" },
+      { weapon: getItem("kodai")! },
+      tekton,
+    );
+    const noModBoss: BossPreset = { ...tekton, damageModifier: undefined };
+    const noModCtx = makeCtx(
+      { combatStyle: "magic", attackStyle: "autocast", spellMaxHit: 24, spellElement: "fire" },
+      { weapon: getItem("kodai")! },
+      noModBoss,
+    );
+    const r1 = calculateDps(magicCtx);
+    const r2 = calculateDps(noModCtx);
+    // Magic DPS should be ~20% of normal
+    expect(r1.dps).toBeCloseTo(r2.dps * 0.20, 1);
+  });
+
+  it("melee deals full damage to Tekton", () => {
+    const tekton = getBoss("tekton")!;
+    const meleeCtx = makeCtx(
+      { combatStyle: "melee", attackStyle: "accurate" },
+      { weapon: getItem("whip")! },
+      tekton,
+    );
+    const noModBoss: BossPreset = { ...tekton, damageModifier: undefined };
+    const noModCtx = makeCtx(
+      { combatStyle: "melee", attackStyle: "accurate" },
+      { weapon: getItem("whip")! },
+      noModBoss,
+    );
+    const r1 = calculateDps(meleeCtx);
+    const r2 = calculateDps(noModCtx);
+    expect(r1.dps).toBeCloseTo(r2.dps, 1);
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+// POWERED STAFF FORMULAS (Thammaron/Accursed)
+// ═══════════════════════════════════════════════════════════════════════
+
+describe("powered staff formulas", () => {
+  it("Thammaron's sceptre: floor(magic/3) - 8", () => {
+    // visible magic = 99 → floor(99/3) - 8 = 33 - 8 = 25
+    const ctx = makeCtx(
+      { combatStyle: "magic", attackStyle: "autocast", magic: 99 },
+      { weapon: getItem("thammarons-sceptre")! },
+      custom,
+    );
+    const result = calculateDps(ctx);
+    // Base max = 25 * (1 + 0/100) = 25 (no mdmg)
+    expect(result.maxHit).toBe(25);
+  });
+
+  it("Accursed sceptre: floor(magic/3) - 6", () => {
+    // visible magic = 99 → floor(99/3) - 6 = 33 - 6 = 27
+    const ctx = makeCtx(
+      { combatStyle: "magic", attackStyle: "autocast", magic: 99 },
+      { weapon: getItem("accursed-sceptre")! },
+      custom,
+    );
+    const result = calculateDps(ctx);
+    expect(result.maxHit).toBe(27);
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+// KANDARIN DIARY BOLT SPEC BOOST
+// ═══════════════════════════════════════════════════════════════════════
+
+describe("Kandarin diary bolt spec boost", () => {
+  it("Kandarin diary increases ruby bolt DPS", () => {
+    const graardor = getBoss("graardor")!;
+    const noDiary = makeCtx(
+      { combatStyle: "ranged", attackStyle: "rapid", kandarinDiary: false },
+      { weapon: getItem("zcb")!, ammo: getItem("ruby-bolts-e")! },
+      graardor,
+    );
+    const withDiary = makeCtx(
+      { combatStyle: "ranged", attackStyle: "rapid", kandarinDiary: true },
+      { weapon: getItem("zcb")!, ammo: getItem("ruby-bolts-e")! },
+      graardor,
+    );
+    const r1 = calculateDps(noDiary);
+    const r2 = calculateDps(withDiary);
+    expect(r2.breakdown.bonusDps).toBeGreaterThan(r1.breakdown.bonusDps);
   });
 });

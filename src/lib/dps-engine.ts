@@ -68,6 +68,13 @@ export function calculateDps(ctx: DpsContext): DpsResult {
   // Double accuracy roll (crossbow pact, Fang, Drygore)
   let finalAcc = applyDoubleRoll(ctx, pe, baseAcc);
 
+  // Brimstone Ring: 25% chance to ignore 10% of target's magic defence
+  if (ctx.loadout.ring?.id === "brimstone-ring" && ctx.player.combatStyle === "magic") {
+    const reducedDefRoll = Math.floor(defRoll * 0.9);
+    const reducedAcc = standardAccuracy(atkRoll, reducedDefRoll);
+    finalAcc = 0.75 * finalAcc + 0.25 * reducedAcc;
+  }
+
   // Max accuracy roll from range pact: proc chance of min(1, 0.05 * distance)
   if (pe.maxAccuracyRollFromRange) {
     const dist = ctx.player.targetDistance ?? 1;
@@ -133,7 +140,8 @@ export function calculateDps(ctx: DpsContext): DpsResult {
   if ((pe.uniqueBlindBagChance || pe.uniqueBlindBagDamage > 0) && ctx.player.combatStyle === "melee") {
     const weaponCat = weapon?.weaponCategory;
     if (weaponCat === "1h-heavy" || weaponCat === "2h-melee") {
-      const uniqueCount = ctx.player.uniqueHeavyWeapons ?? 0;
+      // Assume full inventory of heavy weapons (20); capped at 5 per pact
+      const uniqueCount = Math.min(5, ctx.player.uniqueHeavyWeapons ?? 20);
       if (uniqueCount > 0) {
         if (pe.uniqueBlindBagChance) {
           const extraChance = 0.02 * uniqueCount;
@@ -272,7 +280,10 @@ export function calculateDps(ctx: DpsContext): DpsResult {
   // Sustain info
   const sustainInfo = buildSustainInfo(ctx, pe, totalBonuses);
 
-  const totalDps = baseDps + bonusDps + echoDps + thornsDps;
+  let totalDps = baseDps + bonusDps + echoDps + thornsDps;
+
+  // Boss-specific damage modifiers
+  totalDps = applyBossModifier(ctx, totalDps, finalMax);
 
   return {
     dps: totalDps,
@@ -575,6 +586,10 @@ function getPoweredStaffBaseDamage(weaponId: string, visibleMagic: number): numb
       return Math.max(10, Math.floor(visibleMagic / 3) - 10);
     case "trident-swamp":
       return Math.floor(visibleMagic / 3) - 2;
+    case "thammarons-sceptre":
+      return Math.floor(visibleMagic / 3) - 8;
+    case "accursed-sceptre":
+      return Math.floor(visibleMagic / 3) - 6;
     default:
       return Math.floor(visibleMagic / 3) - 5;
   }
@@ -612,10 +627,13 @@ export function getMultiplierChain(ctx: DpsContext, pe: AggregatedPactEffects, _
   const weapon = ctx.loadout.weapon;
   const weaponCat = weapon?.weaponCategory;
 
-  // 1. Slayer helm / Salve amulet (mutually exclusive)
+  // 1. Slayer helm / V's Helm / Salve amulet (mutually exclusive)
+  // V's Helm provides its bonus ALWAYS (no slayer task required)
+  // Regular Slayer Helm (i) requires onSlayerTask
   const head = ctx.loadout.head;
   const hasSalve = ctx.loadout.neck?.id === "salve-ei" && ctx.target.isUndead;
-  const hasSlayerHelm = ctx.player.onSlayerTask === true && (head?.id === "slayer-helm-i" || head?.id === "echo-vs-helm");
+  const hasVsHelm = head?.id === "echo-vs-helm";
+  const hasSlayerHelm = hasVsHelm || (ctx.player.onSlayerTask === true && head?.id === "slayer-helm-i");
 
   if (hasSalve && hasSlayerHelm) {
     chain.push({ name: "Salve (ei) vs Undead", factor: 1.20 });
@@ -751,7 +769,41 @@ export function getMultiplierChain(ctx: DpsContext, pe: AggregatedPactEffects, _
     }
   }
 
-  // 18. Water spell pact: +20% at full HP (scales with HP%)
+  // 18. Smoke Battlestaff: +10% damage for standard spells
+  if (weapon?.id === "smoke-battlestaff" && style === "magic" && weaponCat === "staff") {
+    chain.push({ name: "Smoke Battlestaff", factor: 1.10 });
+  }
+
+  // 19. Tome of Fire/Water/Earth: element-matching spell damage bonus
+  if (style === "magic" && weaponCat !== "powered-staff") {
+    const shield = ctx.loadout.shield;
+    const element = ctx.player.spellElement ?? "none";
+    if (shield?.id === "tome-of-fire" && element === "fire") {
+      chain.push({ name: "Tome of Fire", factor: 1.50 });
+    } else if (shield?.id === "tome-of-water" && element === "water") {
+      chain.push({ name: "Tome of Water", factor: 1.20 });
+    } else if (shield?.id === "tome-of-earth" && element === "earth") {
+      chain.push({ name: "Tome of Earth", factor: 1.10 });
+    }
+  }
+
+  // 20. Berserker Necklace + TzHaar (obsidian) weapons: +20% damage
+  if (ctx.loadout.neck?.id === "berserker-necklace" && style === "melee") {
+    const obsidianWeapons = ["toktz-xil-ak", "tzhaar-ket-om", "toktz-xil-ek", "toktz-mej-tal"];
+    if (weapon && obsidianWeapons.includes(weapon.id)) {
+      chain.push({ name: "Berserker Necklace", factor: 1.20 });
+    }
+  }
+
+  // 21. Soulreaper Axe stacks: +6% damage per stack (0-5)
+  if (weapon?.id === "soulreaper-axe" && style === "melee") {
+    const stacks = ctx.player.soulreaperStacks ?? 0;
+    if (stacks > 0) {
+      chain.push({ name: `Soulreaper (${stacks} stacks)`, factor: 1 + 0.06 * stacks });
+    }
+  }
+
+  // 22. Water spell pact: +20% at full HP (scales with HP%)
   if (pe.waterSpellDamageHighHp && style === "magic") {
     const element = resolveSpellElement(ctx, pe);
     if (element === "water") {
@@ -789,11 +841,13 @@ export function calculateAttackRoll(ctx: DpsContext, pe: AggregatedPactEffects, 
   // Step 3: Style + 8
   base += getAccuracyStyleBonus(ctx.player) + 8;
 
-  // Step 4: Void accuracy (magic 1.45 only for elite void; regular void gives no magic acc bonus)
+  // Step 4: Void accuracy
+  // Magic: regular void = 1.45 (29/20), elite void = 1.125 (9/8) per wiki
+  // Melee/Ranged: both void variants = 1.10
   if (ctx.player.voidSet !== "none") {
     let voidAccMult: number;
     if (style === "magic") {
-      voidAccMult = ctx.player.voidSet === "elite-void" ? 1.45 : 1.0;
+      voidAccMult = ctx.player.voidSet === "void" ? 1.45 : 1.125;
     } else {
       voidAccMult = 1.10;
     }
@@ -818,6 +872,11 @@ export function calculateAttackRoll(ctx: DpsContext, pe: AggregatedPactEffects, 
     equipAtk = bonuses.amagic * 3;
   }
 
+  // Smoke Battlestaff: +10 magic attack for standard spells
+  if (weapon?.id === "smoke-battlestaff" && style === "magic" && weapon.weaponCategory === "staff") {
+    equipAtk += 10;
+  }
+
   // Thrown weapon flat accuracy pact
   if (pe.thrownFlatAccuracy > 0 && weapon?.weaponCategory === "thrown") {
     equipAtk += pe.thrownFlatAccuracy;
@@ -825,11 +884,13 @@ export function calculateAttackRoll(ctx: DpsContext, pe: AggregatedPactEffects, 
 
   let roll = base * (equipAtk + 64);
 
-  // Slayer helm / Salve amulet accuracy (mutually exclusive)
+  // Slayer helm / V's Helm / Salve amulet accuracy (mutually exclusive)
+  // V's Helm provides its bonus ALWAYS (no slayer task required)
   {
     const head = ctx.loadout.head;
     const hasSalve = ctx.loadout.neck?.id === "salve-ei" && ctx.target.isUndead;
-    const hasSlayerHelm = ctx.player.onSlayerTask === true && (head?.id === "slayer-helm-i" || head?.id === "echo-vs-helm");
+    const hasVsHelm = head?.id === "echo-vs-helm";
+    const hasSlayerHelm = hasVsHelm || (ctx.player.onSlayerTask === true && head?.id === "slayer-helm-i");
 
     if (hasSalve && hasSlayerHelm) {
       roll = Math.floor(roll * 1.20);
@@ -896,6 +957,14 @@ export function calculateAttackRoll(ctx: DpsContext, pe: AggregatedPactEffects, 
     if (ctx.loadout.legs?.id === "crystal-legs") crystalAcc += 0.10;
     if (crystalAcc > 0) {
       roll = Math.floor(roll * (1 + crystalAcc));
+    }
+  }
+
+  // Soulreaper Axe stacks: +6% accuracy per stack
+  if (weapon?.id === "soulreaper-axe" && style === "melee") {
+    const stacks = ctx.player.soulreaperStacks ?? 0;
+    if (stacks > 0) {
+      roll = Math.floor(roll * (1 + 0.06 * stacks));
     }
   }
 
@@ -1203,6 +1272,9 @@ function buildSustainInfo(ctx: DpsContext, pe: AggregatedPactEffects, _bonuses: 
   if (pe.maxHitStyleSwap) {
     info.push("Max hit from 3+ tiles: next different-style hit +25%");
   }
+  if (pe.meleeRangeMultiplier > 0 && style === "melee") {
+    info.push(`2H melee attack range doubled (${pe.meleeRangeMultiplier}x)`);
+  }
 
   // Defensive bonuses display
   if (pe.defenceBoost > 0) {
@@ -1239,23 +1311,86 @@ function calculateBoltSpecDps(ctx: DpsContext, pe: AggregatedPactEffects, maxHit
   // King's Barrage: double bolt proc rate
   const procMultiplier = ctx.loadout.weapon?.id === "echo-kings-barrage" ? 2 : 1;
 
+  // Kandarin Hard Diary: +10% relative proc rate increase
+  const diaryMultiplier = ctx.player.kandarinDiary ? 1.1 : 1;
+
+  // ZCB: +10% bolt spec damage
+  const zcbDmgMult = ctx.loadout.weapon?.id === "zcb" ? 1.10 : 1;
+
   if (ammo.id === "ruby-bolts-e") {
     const procDmg = Math.min(100, Math.floor(ctx.target.hp * 0.20));
     const normalAvg = maxHit / 2;
-    const procRate = 0.06 * procMultiplier;
-    const boltBonus = procRate * accuracy * (procDmg - normalAvg);
+    const procRate = 0.06 * procMultiplier * diaryMultiplier;
+    // ZCB boosts the proc damage, not the normal hit
+    const boltBonus = procRate * accuracy * (procDmg * zcbDmgMult - normalAvg);
     return Math.max(0, boltBonus) / interval;
   }
 
   if (ammo.id === "diamond-bolts-e") {
-    const procRate = 0.10 * procMultiplier;
+    const procRate = 0.10 * procMultiplier * diaryMultiplier;
     const boostedAcc = procRate + (1 - procRate) * accuracy;
     const normalDps = (maxHit / 2 * accuracy) / interval;
     const boostedDps = (maxHit / 2 * boostedAcc) / interval;
     return boostedDps - normalDps;
   }
 
+  if (ammo.id === "onyx-bolts-e") {
+    // 11% proc rate, +20% extra damage on proc, does NOT bypass accuracy
+    const procRate = 0.11 * procMultiplier * diaryMultiplier;
+    const normalAvg = maxHit / 2;
+    const procDmg = maxHit * 1.20 * zcbDmgMult;
+    const boltBonus = procRate * accuracy * (procDmg / 2 - normalAvg);
+    return Math.max(0, boltBonus) / interval;
+  }
+
+  if (ammo.id === "dragonstone-bolts-e") {
+    // 6% proc rate, extra damage = floor(rangedLevel * 0.20), does NOT bypass accuracy
+    const procRate = 0.06 * procMultiplier * diaryMultiplier;
+    const extraDmg = Math.floor(ctx.player.ranged * 0.20) * zcbDmgMult;
+    return procRate * accuracy * extraDmg / interval;
+  }
+
   return 0;
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// BOSS DAMAGE MODIFIERS
+// ═══════════════════════════════════════════════════════════════════════
+
+function applyBossModifier(ctx: DpsContext, dps: number, _maxHit: number): number {
+  const mod = ctx.target.damageModifier;
+  if (!mod) return dps;
+
+  const style = ctx.player.combatStyle;
+  const weapon = ctx.loadout.weapon;
+  const weaponCat = weapon?.weaponCategory;
+
+  switch (mod.type) {
+    case "corp":
+      // Corp: non-spear/halberd weapons deal half damage
+      if (weaponCat !== "halberd" && weapon?.attackType !== "stab") {
+        // Check if it's a spear-like weapon (stab-based melee)
+        // In practice, only spears and halberds deal full damage
+        return dps * 0.5;
+      }
+      // Halberds deal full damage
+      return dps;
+    case "tekton-magic":
+      // Tekton: magic deals 80% reduced damage
+      if (style === "magic") return dps * 0.20;
+      return dps;
+    case "kraken-ranged":
+      // Kraken: ranged deals ~86% reduced damage
+      if (style === "ranged") return dps * 0.14;
+      return dps;
+    case "zulrah-cap":
+      // Zulrah: max hit capped at 50
+      if (_maxHit > 50) {
+        // Scale DPS proportionally to the cap
+        return dps * (50 / _maxHit);
+      }
+      return dps;
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════════════

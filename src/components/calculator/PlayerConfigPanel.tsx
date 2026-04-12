@@ -11,8 +11,6 @@ const POTIONS: { value: PotionType; label: string }[] = [
   { value: "super-strength", label: "Super Strength" },
   { value: "ranging", label: "Ranging Potion" },
   { value: "magic", label: "Magic Potion" },
-  { value: "overload", label: "Overload" },
-  { value: "smelling-salts", label: "Smelling Salts" },
 ];
 
 const PRAYERS: { value: PrayerType; label: string; style: CombatStyle | "all" }[] = [
@@ -237,13 +235,14 @@ export function PlayerConfigPanel({ config, onChange }: Props) {
         />
       )}
 
+
       {pe && (pe.uniqueBlindBagChance || pe.uniqueBlindBagDamage > 0) && config.combatStyle === "melee" && (
         <StatInput
           label="Heavy Weapons (inv)"
-          value={config.uniqueHeavyWeapons ?? 0}
+          value={config.uniqueHeavyWeapons ?? 20}
           onChange={v => update({ uniqueHeavyWeapons: v })}
           min={0}
-          max={5}
+          max={26}
         />
       )}
 
@@ -252,6 +251,26 @@ export function PlayerConfigPanel({ config, onChange }: Props) {
           label="Has Overheal"
           checked={config.hasOverheal ?? false}
           onChange={v => update({ hasOverheal: v })}
+        />
+      )}
+
+      {/* Soulreaper Axe stacks (melee) */}
+      {config.combatStyle === "melee" && (
+        <StatInput
+          label="Soulreaper Stacks"
+          value={config.soulreaperStacks ?? 0}
+          onChange={v => update({ soulreaperStacks: v })}
+          min={0}
+          max={5}
+        />
+      )}
+
+      {/* Kandarin Hard Diary (ranged crossbow users) */}
+      {config.combatStyle === "ranged" && (
+        <Toggle
+          label="Kandarin Hard Diary"
+          checked={config.kandarinDiary ?? false}
+          onChange={v => update({ kandarinDiary: v })}
         />
       )}
     </div>

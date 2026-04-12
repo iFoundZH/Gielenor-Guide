@@ -542,10 +542,8 @@ describe("echo items isTwoHanded correct", () => {
   it("2H echo items are marked isTwoHanded", () => {
     const twoHandedEchos = [
       "echo-tecpatl",
-      "echo-shadowflame",
       "echo-natures-recurve",
       "echo-kings-barrage",
-      "echo-lithic-sceptre",
       "echo-drygore-blowpipe",
     ];
     for (const id of twoHandedEchos) {
@@ -558,6 +556,8 @@ describe("echo items isTwoHanded correct", () => {
   it("1H echo items are NOT marked isTwoHanded", () => {
     const oneHandedEchos = [
       "echo-fang-hound",
+      "echo-shadowflame",
+      "echo-lithic-sceptre",
     ];
     for (const id of oneHandedEchos) {
       const item = getItem(id);

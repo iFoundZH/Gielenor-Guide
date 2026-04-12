@@ -49,6 +49,11 @@ export const BOSS_PRESETS: BossPreset[] = [
   // RAIDS
   // ══════════════════════════════════════════════════════════════════════
 
+  { id: "tekton", name: "Tekton", defenceLevel: 205, magicLevel: 205,
+    dstab: 155, dslash: 165, dcrush: 105, dranged: 0, dmagic: 0,
+    hp: 300, size: 4, region: "kourend",
+    damageModifier: { type: "tekton-magic" } },
+
   { id: "olm-melee", name: "Great Olm (Melee Hand)", defenceLevel: 175, magicLevel: 150,
     dstab: 50, dslash: 50, dcrush: 50, dranged: 50, dmagic: 50,
     hp: 800, size: 5, region: "kourend", isDragon: true },
@@ -83,7 +88,8 @@ export const BOSS_PRESETS: BossPreset[] = [
 
   { id: "kraken", name: "Kraken", defenceLevel: 1, magicLevel: 1,
     dstab: 0, dslash: 0, dcrush: 0, dranged: 300, dmagic: 130,
-    hp: 255, size: 3, region: "kandarin" },
+    hp: 255, size: 3, region: "kandarin",
+    damageModifier: { type: "kraken-ranged" } },
 
   { id: "abyssal-sire", name: "Abyssal Sire", defenceLevel: 250, magicLevel: 200,
     dstab: 20, dslash: 20, dcrush: 20, dranged: 40, dmagic: 40,
@@ -103,11 +109,13 @@ export const BOSS_PRESETS: BossPreset[] = [
 
   { id: "zulrah", name: "Zulrah", defenceLevel: 300, magicLevel: 300,
     dstab: 0, dslash: 0, dcrush: 0, dranged: 50, dmagic: -45,
-    hp: 500, size: 3, region: "kandarin" },
+    hp: 500, size: 3, region: "kandarin",
+    damageModifier: { type: "zulrah-cap" } },
 
   { id: "corp", name: "Corporeal Beast", defenceLevel: 310, magicLevel: 350,
     dstab: 25, dslash: 200, dcrush: 100, dranged: 230, dmagic: 150,
-    hp: 2000, size: 5, region: "asgarnia" },
+    hp: 2000, size: 5, region: "asgarnia",
+    damageModifier: { type: "corp" } },
 
   { id: "hunllef", name: "Corrupted Hunllef", defenceLevel: 240, magicLevel: 240,
     dstab: 20, dslash: 20, dcrush: 20, dranged: 20, dmagic: 20,

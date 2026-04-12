@@ -222,7 +222,7 @@ export function optimizeBuild(config: OptimizerConfig): OptimizerResult[] {
     const regionPlayer = { ...player, regions: regionSet };
 
     // Phase 1: Enumerate all config combos for "auto" fields
-    const combos = enumerateConfigCombos(regionPlayer);
+    const combos = enumerateConfigCombos(regionPlayer, target);
 
     // Phase 2: Quick rank — test top 5 weapons with greedy fill for each combo
     const ranked = quickRankCombos(combos, regionPlayer, target, lockedSlots, style);
@@ -383,14 +383,33 @@ export function optimizeBuild(config: OptimizerConfig): OptimizerResult[] {
     .slice(0, topN);
 }
 
-function getValidPotions(style: CombatStyle): Exclude<PotionType, "auto">[] {
+function getValidPotions(style: CombatStyle, boss?: BossPreset): Exclude<PotionType, "auto">[] {
+  const bossId = boss?.id ?? "";
+  const isCox = bossId.startsWith("olm");
+  const isToa = bossId.startsWith("wardens");
+
   switch (style) {
     case "melee":
-      return ["super-combat", "overload", "smelling-salts", "none"];
+      return [
+        "super-combat",
+        ...(isCox ? ["overload" as const] : []),
+        ...(isToa ? ["smelling-salts" as const] : []),
+        "none",
+      ];
     case "ranged":
-      return ["ranging", "overload", "smelling-salts", "none"];
+      return [
+        "ranging",
+        ...(isCox ? ["overload" as const] : []),
+        ...(isToa ? ["smelling-salts" as const] : []),
+        "none",
+      ];
     case "magic":
-      return ["magic", "overload", "smelling-salts", "none"];
+      return [
+        "magic",
+        ...(isCox ? ["overload" as const] : []),
+        ...(isToa ? ["smelling-salts" as const] : []),
+        "none",
+      ];
   }
 }
 
@@ -416,9 +435,9 @@ function getValidAttackStyles(style: CombatStyle): Exclude<AttackStyleBonus, "au
   }
 }
 
-function enumerateConfigCombos(player: PlayerConfig): ConfigCombo[] {
+function enumerateConfigCombos(player: PlayerConfig, boss?: BossPreset): ConfigCombo[] {
   const style = player.combatStyle;
-  const potions = player.potion === "auto" ? getValidPotions(style) : [player.potion];
+  const potions = player.potion === "auto" ? getValidPotions(style, boss) : [player.potion];
   const prayers = player.prayerType === "auto" ? getValidPrayers(style) : [player.prayerType];
   const styles = player.attackStyle === "auto" ? getValidAttackStyles(style) : [player.attackStyle];
   // Void is not auto-searched — void armour replaces BIS gear in head/body/legs/hands
@@ -484,7 +503,9 @@ function combinations<T>(arr: T[], k: number): T[][] {
 }
 
 /**
- * Rank all C(8,3)=56 possible region combos by quick DPS estimate.
+ * Rank region combos by quick DPS estimate.
+ * If the boss lives in a choosable region, that region is forced into every combo
+ * (C(7,2)=21 combos). Otherwise all C(8,3)=56 combos are evaluated.
  * Returns the top 5 full region arrays (starting + chosen), best first.
  */
 function rankRegionCombos(
@@ -493,7 +514,15 @@ function rankRegionCombos(
   locked: Partial<BuildLoadout>,
   style: CombatStyle,
 ): string[][] {
-  const allCombos = combinations(CHOOSABLE_REGIONS, 3);
+  const bossRegion = target.region;
+  const forcedRegion = bossRegion && CHOOSABLE_REGIONS.includes(bossRegion) ? bossRegion : null;
+  const remainingPool = forcedRegion
+    ? CHOOSABLE_REGIONS.filter(r => r !== forcedRegion)
+    : CHOOSABLE_REGIONS;
+  const slotsToFill = forcedRegion ? 2 : 3;
+  const allCombos = combinations(remainingPool, slotsToFill).map(combo =>
+    forcedRegion ? [forcedRegion, ...combo] : combo,
+  );
 
   // Use BIS config assumptions for speed
   const bestPotion = getValidPotions(style)[0];
@@ -592,6 +621,12 @@ const MELEE_EFFECTS = new Set([
   "talent_melee_strength_prayer_bonus",
   "talent_percentage_melee_maxhit_distance",
   "talent_2h_melee_echos",
+  "talent_distance_melee_minhit",
+  "talent_melee_range_conditional_boost",
+  "talent_overheal_consumption_boost",
+  "talent_unique_blindbag_chance",
+  "talent_unique_blindbag_damage",
+  "talent_melee_range_multiplier",
 ]);
 
 const RANGED_EFFECTS = new Set([
@@ -635,6 +670,7 @@ const MAGIC_EFFECTS = new Set([
   "talent_regen_stave_charges_air",
   "talent_regen_stave_charges_earth",
   "talent_regen_magic_level_boost",
+  "talent_firerune_regen_damage_boost",
 ]);
 
 /** Check whether a pact node could provide DPS benefit for the given style. */

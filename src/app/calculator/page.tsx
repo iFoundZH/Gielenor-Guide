@@ -68,8 +68,21 @@ function reducer(state: CalcState, action: Action): CalcState {
       }
       return { ...state, player: action.player };
     }
-    case "SET_TARGET":
-      return { ...state, target: action.target };
+    case "SET_TARGET": {
+      const bossRegion = action.target.region;
+      const choosable = ["asgarnia", "fremennik", "kandarin", "morytania", "desert", "tirannwn", "kourend", "wilderness"];
+      const needsRegion = bossRegion && choosable.includes(bossRegion) && !state.player.regions.includes(bossRegion);
+      if (!needsRegion) return { ...state, target: action.target };
+      // Auto-add boss region; if already at 3 choosable, drop the last non-boss choosable
+      const currentChoosable = state.player.regions.filter(r => choosable.includes(r));
+      let regions = [...state.player.regions];
+      if (currentChoosable.length >= 3) {
+        const toDrop = currentChoosable[currentChoosable.length - 1];
+        regions = regions.filter(r => r !== toDrop);
+      }
+      regions.push(bossRegion);
+      return { ...state, target: action.target, player: { ...state.player, regions } };
+    }
     case "SET_LOADOUT":
       return { ...state, loadout: action.loadout };
     case "SET_SLOT": {
@@ -229,6 +242,7 @@ export default function CalculatorPage() {
             <RegionSelector
               selected={state.player.regions}
               onChange={r => dispatch({ type: "SET_PLAYER", player: { ...state.player, regions: r } })}
+              requiredRegion={state.target.region}
             />
           </div>
         </div>

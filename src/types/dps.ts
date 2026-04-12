@@ -192,6 +192,9 @@ export interface BossPreset {
   isDemon?: boolean;
   isUndead?: boolean;
   isKalphite?: boolean;
+  damageModifier?: {
+    type: "corp" | "tekton-magic" | "kraken-ranged" | "zulrah-cap";
+  };
 }
 
 /* ── Player Config ───────────────────────────────────────────────────── */
@@ -249,6 +252,8 @@ export interface PlayerConfig {
   spellElement?: SpellElement;
   uniqueHeavyWeapons?: number;
   hasOverheal?: boolean;
+  soulreaperStacks?: number;
+  kandarinDiary?: boolean;
 }
 
 /* ── Build Loadout ───────────────────────────────────────────────────── */

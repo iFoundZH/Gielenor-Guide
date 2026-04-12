@@ -129,6 +129,18 @@ const ID_OVERRIDES: Record<string, string> = {
   "amethyst-darts": "Amethyst dart",
   "dragon-darts": "Dragon dart",
   "dragon-javelin": "Dragon javelin",
+  // Additional weapons
+  "smoke-battlestaff": "Smoke battlestaff",
+  "soulreaper-axe": "Soulreaper axe",
+  // Additional ammo
+  "onyx-bolts-e": "Onyx bolts (e)",
+  "dragonstone-bolts-e": "Dragonstone bolts (e)",
+  // Additional neck
+  "berserker-necklace": "Berserker necklace",
+  // Additional shield
+  "tome-of-fire": "Tome of fire",
+  "tome-of-water": "Tome of water",
+  "tome-of-earth": "Tome of earth",
   // Hands
   "ferocious": "Ferocious gloves",
   "zaryte-vambs": "Zaryte vambraces",
@@ -147,6 +159,7 @@ const ID_OVERRIDES: Record<string, string> = {
   "berserker-i": "Berserker ring (i)",
   "archers-i": "Archers ring (i)",
   "seers-i": "Seers ring (i)",
+  "brimstone-ring": "Brimstone ring",
   // Echo items (DP league)
   "echo-vs-helm": "V's helm",
   "echo-kings-barrage": "King's barrage",
@@ -195,14 +208,24 @@ const PASSIVES: Record<string, string> = {
   "ursine-chainmace": "+50% accuracy and damage in wilderness",
   "thammarons-sceptre": "+100% magic accuracy, +25% magic damage in wilderness",
   "accursed-sceptre": "+100% magic accuracy, +25% magic damage in wilderness",
+  "brimstone-ring": "25% chance to ignore 10% of target's magic defence",
+  // Additional weapon passives
+  "smoke-battlestaff": "+10% damage and +10 magic attack for standard spells",
+  "soulreaper-axe": "+6% damage and accuracy per stack (max 5 stacks, costs 8 HP per hit)",
+  "berserker-necklace": "+20% damage with TzHaar (obsidian) weapons",
+  "onyx-bolts-e": "11% proc: +20% damage, heals 25% of hit",
+  "dragonstone-bolts-e": "6% proc: bonus fire damage (floor(rangedLvl × 0.20))",
+  "tome-of-fire": "+50% damage for fire spells (consumes burnt pages)",
+  "tome-of-water": "+20% damage for water spells",
+  "tome-of-earth": "+10% damage for earth spells",
   // Echo items
   "echo-vs-helm": "Acts as Slayer Helmet (i) for all styles. 5% damage redirected to 0",
   "echo-kings-barrage": "Fires 2 bolts per attack (each at halved max hit). Freezes target",
   "echo-tecpatl": "Hits twice per attack. 10% bonus damage to demons",
   "echo-fang-hound": "5% chance to proc Flames of Cerberus (bonus fire hit)",
-  "echo-shadowflame": "40% bonus damage on spells. Provides infinite runes for all spellbooks",
+  "echo-shadowflame": "Fires secondary spell at 40% damage. Infinite runes, all spellbooks",
   "echo-natures-recurve": "50% chance to heal 10% of damage dealt",
-  "echo-devils-element": "+30% damage on elemental weakness spells",
+  "echo-devils-element": "+30% damage to ALL magic spells (excludes powered staves)",
   "echo-crystal-blessing": "Crystal armour set bonuses apply to melee and magic as well as ranged",
   "echo-lithic-sceptre": "Powered staff. Shatter stacks: each hit adds a stack, increasing damage",
   "echo-drygore-blowpipe": "Double accuracy roll. 25% chance to apply burn (3-tick fire DoT)",
@@ -232,7 +255,8 @@ const REGIONS: Record<string, string> = {
   // Kourend — CoX, Hydra
   "tbow": "kourend", "kodai": "kourend",
   "ancestral-hat": "kourend", "ancestral-top": "kourend", "ancestral-bottom": "kourend",
-  "twisted-buckler": "kourend", "book-of-dead": "kourend",
+  "twisted-buckler": "kourend", "book-of-dead": "kourend", "brimstone-ring": "kourend",
+  "tome-of-fire": "kourend", // Wintertodt drop
   "dclaws": "kourend", "dhcb": "kourend", "dhl": "kourend", "ferocious": "kourend",
   "echo-natures-recurve": "kourend",
   // Desert — ToA, DT2 rings
@@ -263,14 +287,18 @@ const REGIONS: Record<string, string> = {
   // Varlamore
   "eclipse-atlatl": "varlamore",
   "echo-tecpatl": "varlamore",
+  "tome-of-earth": "varlamore", // Hueycoatl drop
   // Kandarin — Kraken, Zenyte, BA, Thermy, Echo
   "trident-swamp": "kandarin",
   "torture": "kandarin", "anguish": "kandarin", "tormented": "kandarin",
   "tentacle": "kandarin", "fighter-torso": "kandarin", "occult": "kandarin",
   "echo-shadowflame": "kandarin",
   "echo-devils-element": "kandarin",
+  "smoke-battlestaff": "kandarin", // Thermonuclear smoke devil drop (Kandarin in DP league)
+  "tome-of-water": "kandarin", // Tempoross (Fishing Guild, Kandarin)
   // Karamja — TzHaar, Fight Caves, Inferno
   "infernal-cape": "karamja", "fire-cape": "karamja",
+  "berserker-necklace": "karamja", // Enchanted onyx necklace (TzHaar/Karamja)
   // Misthalin — MTA, RFD
   "master-wand": "misthalin",
   "barrows-gloves": "misthalin",
@@ -296,6 +324,7 @@ const WEAPON_CAT_OVERRIDES: Record<string, WeaponCategory> = {
   "echo-kings-barrage": "crossbow",
   "echo-lithic-sceptre": "powered-staff",
   "echo-drygore-blowpipe": "blowpipe",
+  "soulreaper-axe": "2h-melee",
 };
 
 // ── Manual items not in wiki data ──
@@ -317,30 +346,30 @@ const MANUAL_ITEMS: Item[] = [
 
   // ── Echo items (DP league — not in wiki equipment DB) ──
   { id: "echo-vs-helm", name: "V's helm", slot: "head",
-    bonuses: { ...Z, amagic: 8, aranged: 12, mstr: 8, rstr: 2, mdmg: 3 },
+    bonuses: { ...Z, amagic: 8, aranged: 12, mstr: 8, rstr: 2, mdmg: 3, dstab: 40, dslash: 40, dcrush: 40, dranged: 40, dmagic: 10 },
     region: "fremennik",
     passive: PASSIVES["echo-vs-helm"] },
   { id: "echo-kings-barrage", name: "King's barrage", slot: "weapon",
-    bonuses: { ...Z, aranged: 130, rstr: 14 },
+    bonuses: { ...Z, aranged: 130, rstr: 14, dstab: 20, dslash: 20, dcrush: 20, dmagic: 25, dranged: 60 },
     isTwoHanded: true, weaponCategory: "crossbow", attackSpeed: 6,
     combatStyle: "ranged", attackType: "ranged",
     region: "wilderness",
     passive: PASSIVES["echo-kings-barrage"] },
   { id: "echo-tecpatl", name: "Infernal tecpatl", slot: "weapon",
-    bonuses: { ...Z, astab: 72, aslash: 72, acrush: 72, mstr: 70 },
+    bonuses: { ...Z, astab: 72, aslash: 72, acrush: 72, mstr: 70, prayer: -1 },
     isTwoHanded: true, weaponCategory: "2h-melee", attackSpeed: 4,
     combatStyle: "melee", attackType: "slash",
     region: "varlamore",
     passive: PASSIVES["echo-tecpatl"] },
   { id: "echo-fang-hound", name: "Fang of the hound", slot: "weapon",
-    bonuses: { ...Z, astab: 60, aslash: 60, mstr: 20 },
+    bonuses: { ...Z, astab: 60, aslash: 60, acrush: 10, amagic: 3, mstr: 20 },
     weaponCategory: "1h-light", attackSpeed: 3,
     combatStyle: "melee", attackType: "stab",
     region: "asgarnia",
     passive: PASSIVES["echo-fang-hound"] },
   { id: "echo-shadowflame", name: "Shadowflame quadrant", slot: "weapon",
-    bonuses: { ...Z, acrush: 60, amagic: 25, mstr: 50, mdmg: 15 },
-    isTwoHanded: true, weaponCategory: "staff", attackSpeed: 5,
+    bonuses: { ...Z, acrush: 60, amagic: 25, mstr: 50, mdmg: 15, dcrush: 5, dmagic: 17 },
+    weaponCategory: "staff", attackSpeed: 5,
     combatStyle: "magic", attackType: "magic",
     region: "kandarin",
     passive: PASSIVES["echo-shadowflame"] },
@@ -359,8 +388,8 @@ const MANUAL_ITEMS: Item[] = [
     region: "tirannwn",
     passive: PASSIVES["echo-crystal-blessing"] },
   { id: "echo-lithic-sceptre", name: "Lithic sceptre", slot: "weapon",
-    bonuses: { ...Z, amagic: 25 },
-    isTwoHanded: true, weaponCategory: "powered-staff", attackSpeed: 4,
+    bonuses: { ...Z, amagic: 25, dstab: 10, dslash: 10, dcrush: 10, dmagic: 20 },
+    weaponCategory: "powered-staff", attackSpeed: 4,
     combatStyle: "magic", attackType: "magic",
     region: "morytania",
     passive: PASSIVES["echo-lithic-sceptre"] },

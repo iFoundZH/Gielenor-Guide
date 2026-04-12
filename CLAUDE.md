@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Gielinor Guide is a **DPS Calculator** for the OSRS Demonic Pacts League (live Apr 15–Jun 10 2026). Implements exact OSRS combat formulas, a pact skill tree (~85 nodes sourced from wiki DB), a smart gear optimizer, boss presets, and 10 echo items with wiki-verified stats. Purely client-side with no backend; builds are saved in localStorage.
+Gielinor Guide is a **DPS Calculator** for the OSRS Demonic Pacts League (live Apr 15–Jun 10 2026). Implements exact OSRS combat formulas, a pact skill tree (132 nodes sourced from wiki DB), a smart gear optimizer, boss presets, and 10 echo items with wiki-verified stats. Purely client-side with no backend; builds are saved in localStorage.
 
 ## Commands
 
@@ -14,7 +14,7 @@ npm run build            # Production build (static export to /out/)
 npm run lint             # ESLint (flat config: TS, React hooks, Next.js rules)
 npm run test             # Run all Playwright E2E tests (36 tests, 5 spec files)
 npm run test:ui          # Interactive Playwright test runner
-npm run test:unit        # Run Vitest unit tests (201 tests, 5 test files)
+npm run test:unit        # Run Vitest unit tests (303 tests, 6 test files)
 npm run test:unit:watch  # Vitest in watch mode
 npm run sync:items       # Sync equipment data from wiki (requires Python 3)
 ```
@@ -31,13 +31,14 @@ In `e2e/` directory — 36 tests across 5 spec files, Chromium only.
 
 ### Vitest unit tests
 
-In `src/lib/__tests__/` and `src/data/__tests__/` — 201 tests across 5 files.
+In `src/lib/__tests__/` and `src/data/__tests__/` — 303 tests across 6 files.
 
-- `dps-engine.test.ts` (80 tests) — core DPS formula coverage
-- `pact-effects.test.ts` (41 tests) — pact skill tree aggregation
-- `data-integrity.test.ts` (58 tests) — validates all items, bosses, pacts
-- `gear-optimizer.test.ts` (14 tests) — optimizer correctness
+- `dps-engine.test.ts` (115 tests) — core DPS formula coverage
+- `pact-effects.test.ts` (56 tests) — pact skill tree aggregation
+- `data-integrity.test.ts` (70 tests) — validates all items, bosses, pacts
+- `gear-optimizer.test.ts` (52 tests) — optimizer correctness
 - `build-storage.test.ts` (8 tests) — save/load/encode/decode
+- `wiki-compare.test.ts` (2 tests) — wiki data comparison
 
 Pre-commit hook runs `npm run test:unit` automatically via husky.
 
@@ -63,7 +64,7 @@ Pre-commit hook runs `npm run test:unit` automatically via husky.
 - `src/components/layout/` — Header, Footer
 - `src/components/ui/` — Badge, Card, ProgressBar, Tabs (reusable OSRS-themed components)
 - `src/components/calculator/` — Calculator-specific: PlayerConfigPanel, BossSelector, RegionSelector, PactSkillTree, GearGrid, ItemPicker, DpsResultCard, DpsBreakdown, TopBuildsPanel
-- `src/data/` — Static data: `items.ts` (~120 items), `pacts.ts` (~85 skill tree nodes), `boss-presets.ts` (~30 bosses), `equipment-db.json` (wiki-synced raw equipment data)
+- `src/data/` — Static data: `items.ts` (dynamic from wiki DB + 14 manual), `pacts.ts` (132 skill tree nodes), `boss-presets.ts` (41 bosses), `equipment-db.json` (wiki-synced raw equipment data)
 - `src/lib/` — Core logic: `dps-engine.ts`, `gear-optimizer.ts`, `build-storage.ts`, `pact-effects.ts` (skill tree aggregation), `wiki-compare.ts` (wiki data comparison)
 - `scripts/` — `sync-items.py` (wiki equipment sync), `dps-validation.ts` (formula validation vs wiki reference)
 - `src/types/dps.ts` — All TypeScript type definitions
@@ -104,10 +105,11 @@ OSRS-themed dark UI in `src/app/globals.css` using Tailwind CSS 4 custom theme:
 - Colors: `--color-osrs-gold`, `--color-demon-glow`, `--color-osrs-dark`
 - Font: Cinzel (`--font-runescape`) for headings
 - Animations: `ember-glow`, `flicker`, `fill-progress`
-- Utilities: `text-glow`, `border-glow`, `card-hover`, `fire-text`
+- Utilities: `text-glow-gold`, `text-glow-red`, `border-glow-gold`, `border-glow-red`, `border-glow-blue`, `card-hover`, `fire-text`
 
 ## Data accuracy rules
 
+- **Every decision that CAN be data-driven MUST be data-driven.** Before writing any value — item stat, boss property, formula coefficient, region assignment, drop source, effect magnitude — look it up from a primary source. Cite the source inline (wiki page, repo file, API response) so it can be verified. "I think" or "it should be" is never acceptable when a lookup is possible. If no source exists, say so explicitly rather than guessing.
 - **Wiki data is authoritative** for item stats, boss defence values, and combat formulas.
 - **Never fabricate specific numbers** — all DPS values are computed from formulas.
 - **10 echo items** have wiki-verified stats from Apr 10 2026 reveal.
@@ -124,6 +126,6 @@ This app targets OSRS (Old School RuneScape) players. Key domain concepts:
 
 ### Demonic Pacts League
 - Leagues VI. Separate servers, boosted XP/drops, pact skill tree.
-- Pact skill tree: ~85 interconnected nodes (40 point budget), sourced from wiki DB. ~25 nodes are DPS-relevant.
+- Pact skill tree: 132 interconnected nodes (40 point budget), sourced from wiki DB. ~25 nodes are DPS-relevant.
 - Echo items: 10 powerful items tied to specific regions.
 - Regions: Varlamore + Karamja start, Misthalin auto, 3 choosable from 8.
