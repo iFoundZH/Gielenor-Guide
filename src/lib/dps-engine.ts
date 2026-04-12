@@ -696,6 +696,11 @@ export function getMultiplierChain(ctx: DpsContext, pe: AggregatedPactEffects, _
     chain.push({ name: "DHL vs Dragons", factor: 1.20 });
   }
 
+  // 11b. Dragon Hunter Wand vs dragons (+50% dmg)
+  if (weapon?.id === "dh-wand" && ctx.target.isDragon) {
+    chain.push({ name: "DH Wand vs Dragons", factor: 1.50 });
+  }
+
   // 12. Wilderness weapons (+50% dmg)
   const wildernessWeapons = ["craws-bow", "webweaver-bow", "viggoras-chainmace", "ursine-chainmace"];
   if (weapon && wildernessWeapons.includes(weapon.id) && ctx.target.region === "wilderness") {
@@ -868,6 +873,11 @@ export function calculateAttackRoll(ctx: DpsContext, pe: AggregatedPactEffects, 
     roll = Math.floor(roll * 1.20);
   }
 
+  // Dragon Hunter Wand accuracy vs dragons (+50%)
+  if (weapon?.id === "dh-wand" && ctx.target.isDragon) {
+    roll = Math.floor(roll * 1.50);
+  }
+
   // Wilderness weapon accuracy
   const wildernessWeapons = ["craws-bow", "webweaver-bow", "viggoras-chainmace", "ursine-chainmace"];
   if (weapon && wildernessWeapons.includes(weapon.id) && ctx.target.region === "wilderness") {
@@ -1024,9 +1034,10 @@ function getAttackSpeed(ctx: DpsContext, pe: AggregatedPactEffects): number {
     speed = Math.max(2, speed);
   }
 
-  // Powered staff speed pact: -3t (min 1t)
+  // Powered staff speed pact: -3t (min 2t, same floor as standard spells)
   if (weaponCat === "powered-staff" && pe.poweredStaffSpeedReduction > 0) {
     speed -= pe.poweredStaffSpeedReduction;
+    speed = Math.max(2, speed);
   }
 
   // Light weapon faster pact: -1t for <1kg melee

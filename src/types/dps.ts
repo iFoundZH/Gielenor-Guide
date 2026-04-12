@@ -322,6 +322,7 @@ export interface OptimizedConfig {
   voidSet?: "none" | "void" | "elite-void";
   activePacts?: string[];
   spellMaxHit?: number;
+  regions?: string[];
 }
 
 export interface OptimizerConfig {
@@ -335,6 +336,7 @@ export interface OptimizerResult {
   loadout: BuildLoadout;
   result: DpsResult;
   optimizedConfig?: OptimizedConfig;
+  combinationsEvaluated?: number;
 }
 
 /* ── Saved Builds ────────────────────────────────────────────────────── */

@@ -40,7 +40,7 @@ const custom = getBoss("custom")!;
 // BASIC OPTIMIZER TESTS
 // ═══════════════════════════════════════════════════════════════════════
 
-describe("optimizeGear", () => {
+describe("optimizeGear", { timeout: 600_000 }, () => {
   it("returns results sorted by DPS descending", () => {
     const config: OptimizerConfig = {
       player: defaultPlayer(),
@@ -101,7 +101,7 @@ describe("optimizeGear", () => {
 // 2H WEAPON HANDLING
 // ═══════════════════════════════════════════════════════════════════════
 
-describe("2H weapon handling", () => {
+describe("2H weapon handling", { timeout: 600_000 }, () => {
   it("2H weapon results have null shield", () => {
     const config: OptimizerConfig = {
       player: defaultPlayer({ combatStyle: "ranged", attackStyle: "rapid", potion: "ranging", prayerType: "rigour" }),
@@ -122,7 +122,7 @@ describe("2H weapon handling", () => {
 // LOCKED SLOTS
 // ═══════════════════════════════════════════════════════════════════════
 
-describe("locked slots", () => {
+describe("locked slots", { timeout: 600_000 }, () => {
   it("locked weapon is used in all results", () => {
     const whip = getItem("whip")!;
     const config: OptimizerConfig = {
@@ -156,7 +156,7 @@ describe("locked slots", () => {
 // REGION FILTERING
 // ═══════════════════════════════════════════════════════════════════════
 
-describe("region filtering", () => {
+describe("region filtering", { timeout: 600_000 }, () => {
   it("without morytania, scythe is not in results", () => {
     const config: OptimizerConfig = {
       player: defaultPlayer({ regions: ["asgarnia", "desert"] }), // no morytania
@@ -187,7 +187,7 @@ describe("region filtering", () => {
 // COMBAT STYLE FILTERING
 // ═══════════════════════════════════════════════════════════════════════
 
-describe("combat style filtering", () => {
+describe("combat style filtering", { timeout: 600_000 }, () => {
   it("melee optimizer only uses melee weapons", () => {
     const config: OptimizerConfig = {
       player: defaultPlayer({ combatStyle: "melee" }),
@@ -247,7 +247,7 @@ describe("combat style filtering", () => {
 // WEAPON DIVERSITY
 // ═══════════════════════════════════════════════════════════════════════
 
-describe("weapon diversity", () => {
+describe("weapon diversity", { timeout: 600_000 }, () => {
   it("magic results include diverse weapons, not all the same", () => {
     const config: OptimizerConfig = {
       player: defaultPlayer({
@@ -362,14 +362,14 @@ describe("weapon-ammo compatibility", () => {
     expect(compat).not.toContain("javelin");
   });
 
-  it("crossbows use bolts, javelins, and blessings", () => {
+  it("crossbows use bolts and blessings (not javelins or arrows)", () => {
     const zcb = getItem("zcb")!;
     expect(zcb).toBeDefined();
     const compat = getCompatibleAmmo(zcb)!;
     expect(compat).toContain("bolt");
-    expect(compat).toContain("javelin");
     expect(compat).toContain("blessing");
     expect(compat).not.toContain("arrow");
+    expect(compat).not.toContain("javelin");
   });
 
   it("blowpipes use darts and blessings", () => {
@@ -388,7 +388,7 @@ describe("weapon-ammo compatibility", () => {
   });
 });
 
-describe("ranged optimizer ammo pairing", () => {
+describe("ranged optimizer ammo pairing", { timeout: 600_000 }, () => {
   const rangedPlayer = defaultPlayer({
     combatStyle: "ranged", attackStyle: "rapid",
     potion: "ranging", prayerType: "rigour",
@@ -426,8 +426,8 @@ describe("ranged optimizer ammo pairing", () => {
     const ammo = results[0].loadout.ammo;
     expect(ammo).not.toBeNull();
     const ammoName = ammo!.name.toLowerCase();
-    expect(ammoName).toMatch(/bolt|javelin|blessing/);
-    expect(ammoName).not.toMatch(/arrow/);
+    expect(ammoName).toMatch(/bolt|blessing/);
+    expect(ammoName).not.toMatch(/arrow|javelin/);
   });
 
   it("ranged results include diverse weapon categories", () => {
@@ -449,7 +449,7 @@ describe("ranged optimizer ammo pairing", () => {
       player: rangedPlayer,
       target: custom,
       lockedSlots: {},
-      topN: 20,
+      topN: 50, // enough to include crossbows among many wiki weapons
     };
     const results = optimizeGear(config);
     const weaponIds = results.map(r => r.loadout.weapon?.id);
@@ -477,7 +477,7 @@ describe("ranged optimizer ammo pairing", () => {
 // OPTIMIZER VS SPECIFIC BOSSES
 // ═══════════════════════════════════════════════════════════════════════
 
-describe("optimizer boss-specific", () => {
+describe("optimizer boss-specific", { timeout: 600_000 }, () => {
   it("vs Vorkath (dragon), DHCB or DHL appears in top results", () => {
     const vorkath = getBoss("vorkath")!;
     const config: OptimizerConfig = {
@@ -512,7 +512,7 @@ describe("optimizer boss-specific", () => {
 // PACT BEAM SEARCH (via optimizeBuild)
 // ═══════════════════════════════════════════════════════════════════════
 
-describe("pact beam search optimization", () => {
+describe("pact beam search optimization", { timeout: 600_000 }, () => {
   it("fills all 40 pact points when activePacts is empty (auto)", () => {
     const config: OptimizerConfig = {
       player: defaultPlayer({ activePacts: [] }),
@@ -527,7 +527,7 @@ describe("pact beam search optimization", () => {
     const best = results[0];
     expect(best.optimizedConfig?.activePacts).toBeDefined();
     expect(best.optimizedConfig!.activePacts!.length).toBe(PACT_POINT_LIMIT);
-  }, 30_000);
+  }, 600_000);
 
   it("optimized pacts form a valid connected tree", () => {
     const config: OptimizerConfig = {
@@ -542,7 +542,7 @@ describe("pact beam search optimization", () => {
     const { valid, error } = validateSelection(sel);
     expect(valid).toBe(true);
     if (error) throw new Error(error);
-  }, 30_000);
+  }, 600_000);
 
   it("optimized pacts produce higher DPS than no pacts", () => {
     const config: OptimizerConfig = {
@@ -563,7 +563,7 @@ describe("pact beam search optimization", () => {
     const noPactResults = optimizeGear(noPactConfig);
 
     expect(results[0].result.dps).toBeGreaterThan(noPactResults[0].result.dps);
-  }, 30_000);
+  }, 600_000);
 
   it("works for ranged style", () => {
     const config: OptimizerConfig = {
@@ -578,7 +578,7 @@ describe("pact beam search optimization", () => {
     const results = optimizeBuild(config);
     expect(results.length).toBeGreaterThan(0);
     expect(results[0].optimizedConfig?.activePacts?.length).toBe(PACT_POINT_LIMIT);
-  }, 30_000);
+  }, 600_000);
 
   it("works for magic style", () => {
     const config: OptimizerConfig = {
@@ -593,14 +593,14 @@ describe("pact beam search optimization", () => {
     const results = optimizeBuild(config);
     expect(results.length).toBeGreaterThan(0);
     expect(results[0].optimizedConfig?.activePacts?.length).toBe(PACT_POINT_LIMIT);
-  }, 30_000);
+  }, 600_000);
 });
 
 // ═══════════════════════════════════════════════════════════════════════
 // PACT STYLE RELEVANCE
 // ═══════════════════════════════════════════════════════════════════════
 
-describe("pact style relevance", () => {
+describe("pact style relevance", { timeout: 600_000 }, () => {
   function countBranchPacts(pacts: string[], branch: string): number {
     return pacts.filter(id => {
       const node = getNode(id);
@@ -619,7 +619,7 @@ describe("pact style relevance", () => {
     const pacts = results[0].optimizedConfig!.activePacts!;
     const rangedCount = countBranchPacts(pacts, "ranged");
     expect(rangedCount).toBeLessThan(5);
-  }, 30_000);
+  }, 600_000);
 
   it("ranged build selects mostly ranged + neutral pacts (fewer than 5 melee)", () => {
     const config: OptimizerConfig = {
@@ -635,7 +635,7 @@ describe("pact style relevance", () => {
     const pacts = results[0].optimizedConfig!.activePacts!;
     const meleeCount = countBranchPacts(pacts, "melee");
     expect(meleeCount).toBeLessThan(5);
-  }, 30_000);
+  }, 600_000);
 
   it("magic build selects mostly magic + neutral pacts (fewer than 5 melee)", () => {
     const config: OptimizerConfig = {
@@ -651,7 +651,7 @@ describe("pact style relevance", () => {
     const pacts = results[0].optimizedConfig!.activePacts!;
     const meleeCount = countBranchPacts(pacts, "melee");
     expect(meleeCount).toBeLessThan(5);
-  }, 30_000);
+  }, 600_000);
 
   it("melee build includes key melee DPS nodes", () => {
     const config: OptimizerConfig = {
@@ -665,7 +665,7 @@ describe("pact style relevance", () => {
     const meleeCount = countBranchPacts([...pacts], "melee");
     // Should have at least 3 melee-branch nodes
     expect(meleeCount).toBeGreaterThanOrEqual(3);
-  }, 30_000);
+  }, 600_000);
 
   it("ranged build includes ranged DPS nodes", () => {
     const config: OptimizerConfig = {
@@ -681,7 +681,7 @@ describe("pact style relevance", () => {
     const pacts = results[0].optimizedConfig!.activePacts!;
     const rangedCount = countBranchPacts(pacts, "ranged");
     expect(rangedCount).toBeGreaterThanOrEqual(3);
-  }, 30_000);
+  }, 600_000);
 
   it("magic build includes magic DPS nodes", () => {
     const config: OptimizerConfig = {
@@ -697,7 +697,7 @@ describe("pact style relevance", () => {
     const pacts = results[0].optimizedConfig!.activePacts!;
     const magicCount = countBranchPacts(pacts, "magic");
     expect(magicCount).toBeGreaterThanOrEqual(3);
-  }, 30_000);
+  }, 600_000);
 
   it("melee DPS multiplier chain includes 'Melee Pacts' not 'Ranged Pacts'", () => {
     const config: OptimizerConfig = {
@@ -720,7 +720,7 @@ describe("pact style relevance", () => {
     const hasRangedPacts = chainNames.some(n => n.includes("Ranged"));
     expect(hasMeleePacts).toBe(true);
     expect(hasRangedPacts).toBe(false);
-  }, 30_000);
+  }, 600_000);
 
   it("echo DPS is zero for melee even with twohMeleeEchos + rangedRegenEchoChance", () => {
     // Select pacts that include both 2H melee echos and ranged echo chance

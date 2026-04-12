@@ -34,6 +34,13 @@ const LABEL_MAP: Record<string, string> = {
   "elite-void": "Elite Void",
 };
 
+const STARTING_REGIONS = new Set(["varlamore", "karamja", "misthalin"]);
+const REGION_LABELS: Record<string, string> = {
+  asgarnia: "Asgarnia", fremennik: "Fremennik", kandarin: "Kandarin",
+  morytania: "Morytania", desert: "Desert", tirannwn: "Tirannwn",
+  kourend: "Kourend", wilderness: "Wilderness",
+};
+
 function formatOptimizedConfig(opt?: OptimizedConfig): string | null {
   if (!opt) return null;
   const parts: string[] = [];
@@ -43,6 +50,13 @@ function formatOptimizedConfig(opt?: OptimizedConfig): string | null {
   if (opt.voidSet && opt.voidSet !== "none") parts.push(LABEL_MAP[opt.voidSet] ?? opt.voidSet);
   if (opt.activePacts && opt.activePacts.length > 0) parts.push(`${opt.activePacts.length} pacts`);
   return parts.length > 0 ? parts.join(" · ") : null;
+}
+
+function formatRegions(opt?: OptimizedConfig): string | null {
+  if (!opt?.regions) return null;
+  const chosen = opt.regions.filter(r => !STARTING_REGIONS.has(r));
+  if (chosen.length === 0) return null;
+  return chosen.map(r => REGION_LABELS[r] ?? r).join(" + ");
 }
 
 export function TopBuildsPanel({ results, isRunning, onSelect, onOptimize }: Props) {
@@ -59,6 +73,12 @@ export function TopBuildsPanel({ results, isRunning, onSelect, onOptimize }: Pro
         </button>
       </div>
 
+      {results.length > 0 && results[0].combinationsEvaluated && (
+        <div className="text-[10px] text-osrs-text-dim text-center">
+          {results[0].combinationsEvaluated.toLocaleString()} combinations evaluated
+        </div>
+      )}
+
       {results.length === 0 && !isRunning && (
         <div className="text-xs text-osrs-text-dim text-center py-8">
           Click Optimize to find the best gear
@@ -70,6 +90,7 @@ export function TopBuildsPanel({ results, isRunning, onSelect, onOptimize }: Pro
           const weapon = r.loadout.weapon;
           const keyItems = getKeyItems(r.loadout);
           const configLabel = formatOptimizedConfig(r.optimizedConfig);
+          const regionLabel = formatRegions(r.optimizedConfig);
 
           return (
             <button
@@ -96,6 +117,11 @@ export function TopBuildsPanel({ results, isRunning, onSelect, onOptimize }: Pro
               {configLabel && (
                 <div className="text-[10px] text-demon-glow mt-1 truncate">
                   {configLabel}
+                </div>
+              )}
+              {regionLabel && (
+                <div className="text-[10px] text-osrs-gold/70 mt-0.5 truncate">
+                  Regions: {regionLabel}
                 </div>
               )}
             </button>

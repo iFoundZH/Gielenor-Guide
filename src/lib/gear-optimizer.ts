@@ -48,16 +48,42 @@ export function optimizeGear(config: OptimizerConfig): OptimizerResult[] {
         prunedWeapons.push(...pruneDominated(group, style));
       }
       slotItems.weapon = prunedWeapons;
+    } else if (slot === "ammo") {
+      // Group ammo by category, prune within each group only
+      // Prevents bolts (rstr 122) from dominating arrows (rstr 60) which are needed for bows
+      const ammoByCategory = new Map<string, Item[]>();
+      for (const a of slotItems.ammo) {
+        const cat = getAmmoCategory(a);
+        if (!ammoByCategory.has(cat)) ammoByCategory.set(cat, []);
+        ammoByCategory.get(cat)!.push(a);
+      }
+      const prunedAmmo: Item[] = [];
+      for (const [, group] of ammoByCategory) {
+        prunedAmmo.push(...pruneDominated(group, style));
+      }
+      slotItems.ammo = prunedAmmo;
     } else {
       slotItems[slot] = pruneDominated(slotItems[slot], style);
     }
   }
 
-  // Step 3: Weapon-first enumeration — keep best result per weapon for diversity
+  // Step 3: Exhaustive combinatorial search — try EVERY combination across all slots
+  // NO budget cap: user explicitly wants millions of combinations evaluated
   const weapons = slotItems.weapon;
   const bestPerWeapon = new Map<string, OptimizerResult>();
+  let totalCombinations = 0;
+
+  // Free slots (excluding weapon and shield, which are enumerated in the weapon loop)
+  const freeSlots = (["head", "cape", "neck", "ammo", "body", "legs", "hands", "feet", "ring"] as EquipmentSlot[])
+    .filter(s => !lockedSlots[s]);
 
   for (const weapon of weapons) {
+    // Set optimal spell for staff weapons (Ice Barrage for ancient-capable staves)
+    const spellMax = getOptimalSpellMaxHit(weapon);
+    const adjustedPlayer = spellMax !== undefined
+      ? { ...player, spellMaxHit: spellMax }
+      : player;
+
     // 2H: no shield. 1H: try each shield + no-shield fallback
     const shields: (Item | null)[] = weapon.isTwoHanded
       ? [null]
@@ -65,30 +91,64 @@ export function optimizeGear(config: OptimizerConfig): OptimizerResult[] {
         ? [...slotItems.shield, null]
         : [null];
 
-    // Set optimal spell for staff weapons (Ice Barrage for ancient-capable staves)
-    const spellMax = getOptimalSpellMaxHit(weapon);
-    const adjustedPlayer = spellMax !== undefined
-      ? { ...player, spellMaxHit: spellMax }
-      : player;
+    // Build per-slot candidate arrays (ammo filtered by weapon compatibility)
+    const candidates: (Item | null)[][] = freeSlots.map(slot => {
+      let items = slotItems[slot];
+      if (slot === "ammo") {
+        const compat = getCompatibleAmmo(weapon);
+        if (compat) {
+          items = items.filter(a => compat.includes(getAmmoCategory(a)));
+        }
+      }
+      return items.length > 0 ? items : [null];
+    });
+
+    const wid = weapon.id;
 
     for (const shield of shields) {
-      const loadout = buildBestLoadout(slotItems, weapon, shield, lockedSlots);
-
-      const ctx = { player: adjustedPlayer, loadout, target };
-      const result = calculateDps(ctx);
-
-      const wid = weapon.id;
-      const existing = bestPerWeapon.get(wid);
-      if (!existing || result.dps > existing.result.dps) {
-        bestPerWeapon.set(wid, { loadout, result });
+      // Mutable loadout — reused across all combinations for this weapon+shield
+      const loadout: BuildLoadout = {
+        head: null, cape: null, neck: null, ammo: null,
+        weapon, body: null, shield, legs: null,
+        hands: null, feet: null, ring: null,
+      };
+      for (const slot of Object.keys(lockedSlots) as EquipmentSlot[]) {
+        if (lockedSlots[slot]) loadout[slot] = lockedSlots[slot]!;
       }
+
+      // Recursive exhaustive enumeration — no caps, no shortcuts
+      const enumerate = (depth: number) => {
+        if (depth === freeSlots.length) {
+          totalCombinations++;
+          const result = calculateDps({ player: adjustedPlayer, loadout, target });
+          const existing = bestPerWeapon.get(wid);
+          if (!existing || result.dps > existing.result.dps) {
+            bestPerWeapon.set(wid, { loadout: { ...loadout }, result });
+          }
+          return;
+        }
+        const slot = freeSlots[depth];
+        for (const item of candidates[depth]) {
+          loadout[slot] = item;
+          enumerate(depth + 1);
+        }
+      };
+
+      enumerate(0);
     }
   }
 
   // Return one result per weapon, sorted by DPS, top N
-  return [...bestPerWeapon.values()]
+  const results = [...bestPerWeapon.values()]
     .sort((a, b) => b.result.dps - a.result.dps)
     .slice(0, topN);
+
+  // Tag the top result with the total combinations evaluated
+  if (results.length > 0) {
+    results[0].combinationsEvaluated = totalCombinations;
+  }
+
+  return results;
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -108,21 +168,17 @@ export function optimizeBuild(config: OptimizerConfig): OptimizerResult[] {
   const { player, target, lockedSlots, topN } = config;
   const style = player.combatStyle;
 
-  // Phase 1: Enumerate all config combos for "auto" fields
-  const combos = enumerateConfigCombos(player);
+  // Phase 0: Auto-select regions if user hasn't chosen any
+  const autoRegion = needsRegionAutoSelect(player.regions);
+  const regionSets = autoRegion
+    ? rankRegionCombos(player, target, lockedSlots, style)
+    : [player.regions];
 
-  // Phase 2: Quick rank — test top 5 weapons with greedy fill for each combo
-  const ranked = quickRankCombos(combos, player, target, lockedSlots, style);
-
-  // Phase 3: Full gear optimize for top 5 combos
-  // Use per-weapon-best map for diversity across all combos
-  const topCombos = ranked.slice(0, 5);
   const bestPerWeapon = new Map<string, OptimizerResult>();
 
   function mergeResults(results: OptimizerResult[], optConfig: OptimizedConfig) {
     for (const r of results) {
       const wid = r.loadout.weapon?.id ?? "";
-      // Add spellMaxHit to config if weapon is a regular staff
       const spellMax = getOptimalSpellMaxHit(r.loadout.weapon);
       const config = spellMax !== undefined
         ? { ...optConfig, spellMaxHit: spellMax }
@@ -136,53 +192,51 @@ export function optimizeBuild(config: OptimizerConfig): OptimizerResult[] {
     }
   }
 
-  for (const { combo } of topCombos) {
-    const resolved = resolvePlayer(player, combo);
-    const results = optimizeGear({
-      player: resolved,
-      target,
-      lockedSlots,
-      topN,
-    });
-    // Always include activePacts in config so clicking a build sets the correct pacts
-    mergeResults(results, { ...buildOptimizedConfig(player, combo), activePacts: resolved.activePacts });
-  }
+  for (const regionSet of regionSets) {
+    const regionPlayer = { ...player, regions: regionSet };
 
-  // Phase 4: Always optimize pacts via beam search — each build gets its own optimal pact tree
-  {
-    const numPactCombos = Math.min(2, topCombos.length);
-    for (let ci = 0; ci < numPactCombos; ci++) {
-      const combo = topCombos[ci].combo;
-      const resolved = resolvePlayer(player, combo);
-      // Clear pacts so beam search starts fresh
+    // Phase 1: Enumerate all config combos for "auto" fields
+    const combos = enumerateConfigCombos(regionPlayer);
+
+    // Phase 2: Quick rank — test top 5 weapons with greedy fill for each combo
+    const ranked = quickRankCombos(combos, regionPlayer, target, lockedSlots, style);
+    const topCombos = ranked.slice(0, 5);
+    const baseOptConfig = autoRegion ? { regions: regionSet } : {};
+
+    // Phase 3: Pact beam search using greedy fill (fast)
+    // Only for the best config combo — beam search is cheap, exhaustive gear search is not
+    const bestCombo = topCombos[0]?.combo;
+    let bestPacts: string[] = regionPlayer.activePacts;
+    if (bestCombo) {
+      const resolved = resolvePlayer(regionPlayer, bestCombo);
       const cleanPlayer = { ...resolved, activePacts: [] as string[] };
       const pactConfigs = optimizePactsBeam(cleanPlayer, target, lockedSlots);
-      for (const pacts of pactConfigs) {
-        const pactPlayer = { ...resolved, activePacts: pacts };
-        const pactResults = optimizeGear({
-          player: pactPlayer, target, lockedSlots, topN,
-        });
-        mergeResults(pactResults, { ...buildOptimizedConfig(player, combo), activePacts: pacts });
+      if (pactConfigs.length > 0) {
+        bestPacts = pactConfigs[0];
       }
     }
 
-    // Iterative refinement: re-optimise pacts against the best gear found so far
-    const bestSoFar = [...bestPerWeapon.values()].reduce(
-      (a, b) => (a.result.dps > b.result.dps ? a : b),
-      { result: { dps: 0 } } as OptimizerResult,
-    );
-    if (bestSoFar.result.dps > 0) {
-      const bestCombo = topCombos[0]?.combo;
-      if (bestCombo) {
-        const resolved = resolvePlayer(player, bestCombo);
-        const cleanPlayer = { ...resolved, activePacts: [] as string[] };
-        const refinedPacts = optimizePactsBeam(cleanPlayer, target, lockedSlots, bestSoFar.loadout);
-        for (const pacts of refinedPacts.slice(0, 2)) {
-          const pactPlayer = { ...resolved, activePacts: pacts };
-          const pactResults = optimizeGear({
-            player: pactPlayer, target, lockedSlots, topN,
+    // Phase 4: Exhaustive gear search — ONE call with best config + best pacts
+    // This is the expensive step (millions of combinations)
+    if (bestCombo) {
+      const resolved = resolvePlayer(regionPlayer, bestCombo);
+      const pactPlayer = { ...resolved, activePacts: bestPacts };
+      const results = optimizeGear({
+        player: pactPlayer, target, lockedSlots, topN,
+      });
+      mergeResults(results, { ...baseOptConfig, ...buildOptimizedConfig(regionPlayer, bestCombo), activePacts: bestPacts });
+
+      // Iterative refinement: re-optimise pacts against the best gear found
+      const best = results[0];
+      if (best) {
+        const cleanPlayer2 = { ...resolved, activePacts: [] as string[] };
+        const refinedPacts = optimizePactsBeam(cleanPlayer2, target, lockedSlots, best.loadout);
+        if (refinedPacts.length > 0 && refinedPacts[0].join(",") !== bestPacts.join(",")) {
+          const refinedPlayer = { ...resolved, activePacts: refinedPacts[0] };
+          const refinedResults = optimizeGear({
+            player: refinedPlayer, target, lockedSlots, topN,
           });
-          mergeResults(pactResults, { ...buildOptimizedConfig(player, bestCombo), activePacts: pacts });
+          mergeResults(refinedResults, { ...baseOptConfig, ...buildOptimizedConfig(regionPlayer, bestCombo), activePacts: refinedPacts[0] });
         }
       }
     }
@@ -231,8 +285,11 @@ function enumerateConfigCombos(player: PlayerConfig): ConfigCombo[] {
   const potions = player.potion === "auto" ? getValidPotions(style) : [player.potion];
   const prayers = player.prayerType === "auto" ? getValidPrayers(style) : [player.prayerType];
   const styles = player.attackStyle === "auto" ? getValidAttackStyles(style) : [player.attackStyle];
+  // Void requires wearing void armour (head/body/legs/hands) which replaces BIS gear.
+  // Since we don't model void equipment, never auto-select void — it would stack
+  // percentage bonuses on top of BIS gear, massively inflating DPS.
   const voids: ("none" | "void" | "elite-void")[] =
-    player.voidSet === "auto" ? ["none", "void", "elite-void"] : [player.voidSet];
+    player.voidSet === "auto" ? ["none"] : [player.voidSet];
 
   const combos: ConfigCombo[] = [];
   for (const potion of potions) {
@@ -264,6 +321,79 @@ function buildOptimizedConfig(player: PlayerConfig, combo: ConfigCombo): Optimiz
   if (player.attackStyle === "auto") opt.attackStyle = combo.attackStyle;
   if (player.voidSet === "auto") opt.voidSet = combo.voidSet;
   return opt;
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// REGION AUTO-SELECTION
+// ═══════════════════════════════════════════════════════════════════════
+
+const STARTING_REGIONS = ["varlamore", "karamja", "misthalin"];
+const CHOOSABLE_REGIONS = ["asgarnia", "fremennik", "kandarin", "morytania", "desert", "tirannwn", "kourend", "wilderness"];
+
+/** True if the user hasn't selected any choosable regions beyond the 3 starting ones. */
+function needsRegionAutoSelect(regions: string[]): boolean {
+  return !regions.some(r => CHOOSABLE_REGIONS.includes(r));
+}
+
+/** Generate all C(n,k) combinations of an array. */
+function combinations<T>(arr: T[], k: number): T[][] {
+  if (k === 0) return [[]];
+  if (arr.length < k) return [];
+  const [first, ...rest] = arr;
+  const withFirst = combinations(rest, k - 1).map(c => [first, ...c]);
+  const withoutFirst = combinations(rest, k);
+  return [...withFirst, ...withoutFirst];
+}
+
+/**
+ * Rank all C(8,3)=56 possible region combos by quick DPS estimate.
+ * Returns the top 5 full region arrays (starting + chosen), best first.
+ */
+function rankRegionCombos(
+  player: PlayerConfig,
+  target: BossPreset,
+  locked: Partial<BuildLoadout>,
+  style: CombatStyle,
+): string[][] {
+  const allCombos = combinations(CHOOSABLE_REGIONS, 3);
+
+  // Use BIS config assumptions for speed
+  const bestPotion = getValidPotions(style)[0];
+  const bestPrayer = getValidPrayers(style)[0];
+  const bestStyle = getValidAttackStyles(style)[0];
+  const resolved: PlayerConfig = {
+    ...player,
+    potion: bestPotion,
+    prayerType: bestPrayer,
+    attackStyle: bestStyle,
+    voidSet: "none",
+  };
+
+  const scored = allCombos.map(chosen => {
+    const regions = [...STARTING_REGIONS, ...chosen];
+    const regionPlayer = { ...resolved, regions };
+    const slotItems = getSlotCandidates(style, regions, locked);
+
+    // Quick estimate: top 5 weapons by score, greedy fill
+    const weaponScores = slotItems.weapon.map(w => ({ w, score: offensiveScore(w, style) }));
+    weaponScores.sort((a, b) => b.score - a.score);
+    const topWeapons = weaponScores.slice(0, 5);
+
+    let bestDps = 0;
+    for (const { w } of topWeapons) {
+      const shield = w.isTwoHanded ? null : (slotItems.shield[0] ?? null);
+      const loadout = buildBestLoadout(slotItems, w, shield, locked);
+      const spellMax = getOptimalSpellMaxHit(w);
+      const evalPlayer = spellMax !== undefined ? { ...regionPlayer, spellMaxHit: spellMax } : regionPlayer;
+      const result = calculateDps({ player: evalPlayer, loadout, target });
+      if (result.dps > bestDps) bestDps = result.dps;
+    }
+
+    return { regions, dps: bestDps };
+  });
+
+  scored.sort((a, b) => b.dps - a.dps);
+  return scored.slice(0, 5).map(s => s.regions);
 }
 
 function quickRankCombos(
@@ -517,7 +647,7 @@ export function getCompatibleAmmo(weapon: Item | null): AmmoCategory[] | null {
   if (!weapon?.weaponCategory) return null;
   switch (weapon.weaponCategory) {
     case "bow": return ["arrow", "blessing"];
-    case "crossbow": return ["bolt", "javelin", "blessing"];
+    case "crossbow": return ["bolt", "blessing"];
     case "blowpipe": return ["dart", "blessing"];
     case "thrown": return ["blessing"];
     default: return null;
@@ -583,14 +713,15 @@ function getSlotCandidates(
 }
 
 function isUsefulForStyle(item: Item, style: CombatStyle): boolean {
+  // Prayer bonus doesn't affect DPS formulas (only prayer sustain), so exclude it
   const b = item.bonuses;
   switch (style) {
     case "melee":
-      return b.mstr > 0 || b.astab > 0 || b.aslash > 0 || b.acrush > 0 || b.prayer > 0;
+      return b.mstr > 0 || b.astab > 0 || b.aslash > 0 || b.acrush > 0;
     case "ranged":
-      return b.rstr > 0 || b.aranged > 0 || b.prayer > 0;
+      return b.rstr > 0 || b.aranged > 0;
     case "magic":
-      return b.mdmg > 0 || b.amagic > 0 || b.prayer > 0;
+      return b.mdmg > 0 || b.amagic > 0;
   }
 }
 
@@ -614,7 +745,8 @@ function pruneDominated(items: Item[], style: CombatStyle): Item[] {
 }
 
 function dominates(a: Item, b: Item, style: CombatStyle): boolean {
-  // a dominates b if a is >= b in all offensive stats and > in at least one
+  // a dominates b if a is >= b in all DPS-relevant stats and > in at least one
+  // Prayer bonus excluded — it doesn't affect DPS formulas
   const ab = a.bonuses;
   const bb = b.bonuses;
 
@@ -626,22 +758,19 @@ function dominates(a: Item, b: Item, style: CombatStyle): boolean {
       if (ab.astab < bb.astab) return false;
       if (ab.aslash < bb.aslash) return false;
       if (ab.acrush < bb.acrush) return false;
-      if (ab.prayer < bb.prayer) return false;
-      if (ab.mstr > bb.mstr || ab.astab > bb.astab || ab.aslash > bb.aslash || ab.acrush > bb.acrush || ab.prayer > bb.prayer) strictlyBetter = true;
+      if (ab.mstr > bb.mstr || ab.astab > bb.astab || ab.aslash > bb.aslash || ab.acrush > bb.acrush) strictlyBetter = true;
       break;
     }
     case "ranged": {
       if (ab.rstr < bb.rstr) return false;
       if (ab.aranged < bb.aranged) return false;
-      if (ab.prayer < bb.prayer) return false;
-      if (ab.rstr > bb.rstr || ab.aranged > bb.aranged || ab.prayer > bb.prayer) strictlyBetter = true;
+      if (ab.rstr > bb.rstr || ab.aranged > bb.aranged) strictlyBetter = true;
       break;
     }
     case "magic": {
       if (ab.mdmg < bb.mdmg) return false;
       if (ab.amagic < bb.amagic) return false;
-      if (ab.prayer < bb.prayer) return false;
-      if (ab.mdmg > bb.mdmg || ab.amagic > bb.amagic || ab.prayer > bb.prayer) strictlyBetter = true;
+      if (ab.mdmg > bb.mdmg || ab.amagic > bb.amagic) strictlyBetter = true;
       break;
     }
   }
@@ -738,7 +867,8 @@ function offensiveScore(item: Item, style: string): number {
 
 /** Staves that can autocast ancient magicks (Ice Barrage base max = 30) */
 const ANCIENT_AUTOCAST_STAVES = new Set([
-  "kodai", "nightmare-staff", "echo-shadowflame",
+  "kodai", "nightmare-staff", "harm-staff", "echo-shadowflame",
+  "ancient-staff", "master-wand", "toxic-sotd", "sotd", "ahrim-staff",
 ]);
 
 /**

@@ -912,11 +912,11 @@ describe("attack speed", () => {
       custom,
     );
     const result = calculateDps(ctx);
-    // Base 4t, powered staff speed -3 = 1
-    expect(result.speed).toBe(1);
+    // Base 4t, powered staff speed -3 = 1, but min 2t floor
+    expect(result.speed).toBe(2);
   });
 
-  it("minimum speed is 1 tick", () => {
+  it("minimum speed is 2 ticks for powered staves", () => {
     const ctx = makeCtx(
       {
         combatStyle: "magic", attackStyle: "autocast",
@@ -926,8 +926,8 @@ describe("attack speed", () => {
       custom,
     );
     const result = calculateDps(ctx);
-    // Base 5t - 3 = 2, minimum 1 → 2 (not below 1)
-    expect(result.speed).toBeGreaterThanOrEqual(1);
+    // Base 5t - 3 = 2, minimum 2t floor (same as standard spells)
+    expect(result.speed).toBe(2);
   });
 });
 

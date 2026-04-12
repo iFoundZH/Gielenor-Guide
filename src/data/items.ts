@@ -63,6 +63,12 @@ const ID_OVERRIDES: Record<string, string> = {
   "harm-staff": "Harmonised nightmare staff",
   "thammarons-sceptre": "Thammaron's sceptre",
   "accursed-sceptre": "Accursed sceptre",
+  "ancient-staff": "Ancient staff",
+  "master-wand": "Master wand",
+  "toxic-sotd": "Toxic staff of the dead",
+  "sotd": "Staff of the dead",
+  "ahrim-staff": "Ahrim's staff",
+  "dh-wand": "Dragon hunter wand",
   // Head
   "torva-helm": "Torva full helm",
   "neit-helm": "Neitiznot faceguard",
@@ -171,12 +177,16 @@ const PASSIVES: Record<string, string> = {
   "kodai": "Autocast ancient magicks, 15% rune saving, unlimited water runes",
   "nightmare-staff": "Accepts orbs for enhanced attacks",
   "harm-staff": "Standard spells cast at 4t instead of 5t",
+  "toxic-sotd": "1/8 envenom. Can autocast ancient magicks",
+  "sotd": "Can autocast ancient magicks. Special attack: halves melee damage for 1 min",
+  "dh-wand": "+50% accuracy and damage vs dragons",
   "slayer-helm-i": "Melee: +16.67% acc & dmg. Ranged/Magic: +15% acc & dmg. On task only.",
   "crystal-helm": "+5% ranged acc, +2.5% ranged dmg with Bow of Faerdhinen",
   "crystal-body": "+15% ranged acc, +7.5% ranged dmg with Bow of Faerdhinen",
   "crystal-legs": "+10% ranged acc, +5% ranged dmg with Bow of Faerdhinen",
   "blood-fury": "20% chance to heal 30% of melee damage dealt",
   "salve-ei": "+20% accuracy and damage vs undead (all styles)",
+  "zcb": "Enhanced bolt specs: +10% proc chance on all enchanted bolts",
   "ruby-bolts-e": "Blood Forfeit: 6% chance to hit 20% of target's remaining HP",
   "diamond-bolts-e": "Armour Piercing: 10% chance to ignore ranged defence",
   "craws-bow": "+50% accuracy and damage in wilderness",
@@ -205,13 +215,13 @@ const REGIONS: Record<string, string> = {
   "bcp": "asgarnia", "tassets": "asgarnia",
   "armadyl-helm": "asgarnia", "armadyl-body": "asgarnia", "armadyl-skirt": "asgarnia",
   "virtus-mask": "asgarnia", "virtus-top": "asgarnia", "virtus-bottom": "asgarnia",
-  "sgs": "asgarnia", "zgs": "asgarnia",
+  "sgs": "asgarnia", "zgs": "asgarnia", "sotd": "asgarnia",
   "zcb": "asgarnia", "acb": "asgarnia",
   "zaryte-vambs": "asgarnia",
   "echo-fang-hound": "asgarnia",
   // Morytania — ToB, Barrows, Nightmare
   "scythe": "morytania", "rapier": "morytania", "avernic": "morytania",
-  "sang": "morytania",
+  "sang": "morytania", "ahrim-staff": "morytania",
   "inq-mace": "morytania", "inq-helm": "morytania", "inq-body": "morytania", "inq-legs": "morytania",
   "nightmare-staff": "morytania", "harm-staff": "morytania",
   "echo-lithic-sceptre": "morytania",
@@ -227,14 +237,15 @@ const REGIONS: Record<string, string> = {
   "keris-breaching": "desert",
   "ultor": "desert", "venator": "desert", "magus": "desert", "bellator": "desert",
   "echo-drygore-blowpipe": "desert",
-  // Tirannwn — Gauntlet, Crystal
+  // Tirannwn — Gauntlet, Crystal, Zulrah
   "bowfa": "tirannwn", "saeldor": "tirannwn",
   "crystal-helm": "tirannwn", "crystal-body": "tirannwn", "crystal-legs": "tirannwn",
-  "crystal-halberd": "tirannwn",
+  "crystal-halberd": "tirannwn", "toxic-sotd": "tirannwn",
   "echo-crystal-blessing": "tirannwn",
-  // Fremennik — DKS, Vorkath
+  // Fremennik — DKS, Vorkath, Duke Sucellus
   "neit-helm": "fremennik",
   "echo-vs-helm": "fremennik",
+  "dh-wand": "fremennik",
   // Wilderness — Rev weapons
   "craws-bow": "wilderness", "webweaver-bow": "wilderness",
   "viggoras-chainmace": "wilderness", "ursine-chainmace": "wilderness",
@@ -243,9 +254,12 @@ const REGIONS: Record<string, string> = {
   // Varlamore
   "eclipse-atlatl": "varlamore",
   "echo-tecpatl": "varlamore",
-  // Kandarin
+  // Kandarin — Kraken, Echo
+  "trident-swamp": "kandarin",
   "echo-shadowflame": "kandarin",
   "echo-devils-element": "kandarin",
+  // Misthalin — MTA
+  "master-wand": "misthalin",
 };
 
 // ── Stat overrides (wiki (i) variants differ from base DB data) ──
@@ -278,6 +292,11 @@ const MANUAL_ITEMS: Item[] = [
   { id: "atlatl-dart", name: "Atlatl Dart", slot: "ammo",
     bonuses: { ...Z, rstr: 55 },
     region: "varlamore" },
+  // Dart ammo for blowpipe — wiki DB has darts as weapons, but blowpipe needs them as ammo
+  { id: "dragon-dart-ammo", name: "Dragon dart", slot: "ammo",
+    bonuses: { ...Z, rstr: 35 } },
+  { id: "amethyst-dart-ammo", name: "Amethyst dart", slot: "ammo",
+    bonuses: { ...Z, rstr: 28 } },
   // Masori Assembler Max Cape — not in wiki (custom combined item)
   { id: "ma2-cape-range", name: "Masori Assembler Max Cape", slot: "cape",
     bonuses: { ...Z, aranged: 10, dstab: 3, dslash: 3, dcrush: 3, dranged: 5, rstr: 2, prayer: 4 } },
@@ -405,16 +424,47 @@ for (const item of MANUAL_ITEMS) {
   }
 }
 
-// Then process wiki items — ONLY include curated items (those with ID overrides)
-// Non-curated items lack region locks and pollute the optimizer with junk
-for (const raw of rawItems) {
-  const nameLower = raw.name.toLowerCase();
-  if (!nameToOurId.has(nameLower)) continue; // skip non-curated items
-  const item = processItem(raw);
-  if (!usedIds.has(item.id)) {
-    usedIds.add(item.id);
-    items.push(item);
+// Items unavailable in DP league
+const EXCLUDED_PATTERNS = ["(deadman mode)", "(nz)", "(beta)", "(historical)"];
+function isExcluded(name: string): boolean {
+  const lower = name.toLowerCase();
+  return EXCLUDED_PATTERNS.some(pat => lower.includes(pat));
+}
+
+// Dedup cosmetic variants with identical slot + ALL bonuses + weapon properties
+const seenStats = new Set<string>();
+function statKey(item: Item): string {
+  const b = item.bonuses;
+  const parts: (string | number)[] = [item.slot, b.astab, b.aslash, b.acrush, b.aranged, b.amagic, b.mstr, b.rstr, b.mdmg, b.prayer];
+  if (item.slot === "weapon") {
+    parts.push(item.attackSpeed ?? 0, item.isTwoHanded ? 1 : 0, item.weaponCategory ?? "");
   }
+  return parts.join("|");
+}
+for (const item of items) seenStats.add(statKey(item));
+
+// Pass 1: Curated items (with ID overrides) — always included
+for (const raw of rawItems) {
+  if (isExcluded(raw.name)) continue;
+  if (!nameToOurId.has(raw.name.toLowerCase())) continue;
+  const item = processItem(raw);
+  if (usedIds.has(item.id)) continue;
+  usedIds.add(item.id);
+  items.push(item);
+  seenStats.add(statKey(item));
+}
+
+// Pass 2: ALL remaining wiki items — dedup cosmetic variants only
+for (const raw of rawItems) {
+  if (isExcluded(raw.name)) continue;
+  if (nameToOurId.has(raw.name.toLowerCase())) continue;
+  const item = processItem(raw);
+  if (usedIds.has(item.id)) continue;
+  const key = statKey(item);
+  if (seenStats.has(key)) continue;
+  seenStats.add(key);
+  usedIds.add(item.id);
+  items.push(item);
 }
 
 export const ITEMS: Item[] = items;

@@ -155,6 +155,7 @@ export default function CalculatorPage() {
     if (opt.voidSet) updates.voidSet = opt.voidSet;
     if (opt.activePacts) updates.activePacts = opt.activePacts;
     if (opt.spellMaxHit !== undefined) updates.spellMaxHit = opt.spellMaxHit;
+    if (opt.regions) updates.regions = opt.regions;
     if (Object.keys(updates).length > 0) {
       dispatch({ type: "SET_PLAYER", player: { ...state.player, ...updates } });
     }
