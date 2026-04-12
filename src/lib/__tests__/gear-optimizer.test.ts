@@ -339,7 +339,7 @@ describe("ammo classification", () => {
   });
 
   it("classifies javelins correctly", () => {
-    const jav = getItem("dragon-javelin-19486")!;
+    const jav = getItem("dragon-javelin")!;
     expect(jav).toBeDefined();
     expect(getAmmoCategory(jav)).toBe("javelin");
   });

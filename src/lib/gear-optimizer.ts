@@ -144,17 +144,19 @@ export function optimizeBuild(config: OptimizerConfig): OptimizerResult[] {
       lockedSlots,
       topN,
     });
-    mergeResults(results, buildOptimizedConfig(player, combo));
+    // Always include activePacts in config so clicking a build sets the correct pacts
+    mergeResults(results, { ...buildOptimizedConfig(player, combo), activePacts: resolved.activePacts });
   }
 
-  // Phase 4: Comprehensive pact optimization via beam search (if activePacts empty = auto)
-  if (player.activePacts.length === 0) {
-    // Run beam search for top 2 config combos — different potions/prayers may favour different pacts
+  // Phase 4: Always optimize pacts via beam search — each build gets its own optimal pact tree
+  {
     const numPactCombos = Math.min(2, topCombos.length);
     for (let ci = 0; ci < numPactCombos; ci++) {
       const combo = topCombos[ci].combo;
       const resolved = resolvePlayer(player, combo);
-      const pactConfigs = optimizePactsBeam(resolved, target, lockedSlots);
+      // Clear pacts so beam search starts fresh
+      const cleanPlayer = { ...resolved, activePacts: [] as string[] };
+      const pactConfigs = optimizePactsBeam(cleanPlayer, target, lockedSlots);
       for (const pacts of pactConfigs) {
         const pactPlayer = { ...resolved, activePacts: pacts };
         const pactResults = optimizeGear({
@@ -173,7 +175,8 @@ export function optimizeBuild(config: OptimizerConfig): OptimizerResult[] {
       const bestCombo = topCombos[0]?.combo;
       if (bestCombo) {
         const resolved = resolvePlayer(player, bestCombo);
-        const refinedPacts = optimizePactsBeam(resolved, target, lockedSlots, bestSoFar.loadout);
+        const cleanPlayer = { ...resolved, activePacts: [] as string[] };
+        const refinedPacts = optimizePactsBeam(cleanPlayer, target, lockedSlots, bestSoFar.loadout);
         for (const pacts of refinedPacts.slice(0, 2)) {
           const pactPlayer = { ...resolved, activePacts: pacts };
           const pactResults = optimizeGear({

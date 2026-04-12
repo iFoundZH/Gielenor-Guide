@@ -122,6 +122,7 @@ const ID_OVERRIDES: Record<string, string> = {
   "rune-arrows": "Rune arrow",
   "amethyst-darts": "Amethyst dart",
   "dragon-darts": "Dragon dart",
+  "dragon-javelin": "Dragon javelin",
   // Hands
   "ferocious": "Ferocious gloves",
   "zaryte-vambs": "Zaryte vambraces",
@@ -404,8 +405,11 @@ for (const item of MANUAL_ITEMS) {
   }
 }
 
-// Then process wiki items (deduped against manual items)
+// Then process wiki items — ONLY include curated items (those with ID overrides)
+// Non-curated items lack region locks and pollute the optimizer with junk
 for (const raw of rawItems) {
+  const nameLower = raw.name.toLowerCase();
+  if (!nameToOurId.has(nameLower)) continue; // skip non-curated items
   const item = processItem(raw);
   if (!usedIds.has(item.id)) {
     usedIds.add(item.id);
