@@ -21,6 +21,8 @@ export type AttackType = "stab" | "slash" | "crush" | "ranged" | "magic";
 
 export type SpellElement = "air" | "water" | "fire" | "earth" | "smoke" | "ice" | "blood" | "shadow" | "none";
 
+export type AmmoCategory = "arrow" | "bolt" | "dart" | "javelin" | "blessing" | "other";
+
 export type WeaponCategory =
   | "bow"
   | "crossbow"

@@ -12,6 +12,7 @@ import type {
   AttackStyleBonus,
   BossPreset,
   PactNode,
+  AmmoCategory,
 } from "@/types/dps";
 import { PACT_POINT_LIMIT } from "@/types/dps";
 import { ITEMS } from "@/data/items";
@@ -33,7 +34,23 @@ export function optimizeGear(config: OptimizerConfig): OptimizerResult[] {
   // Step 2: Prune dominated items per slot
   for (const slot of Object.keys(slotItems) as EquipmentSlot[]) {
     if (lockedSlots[slot]) continue; // don't prune locked slots
-    slotItems[slot] = pruneDominated(slotItems[slot], style);
+    if (slot === "weapon") {
+      // Group weapons by category, prune within each group only
+      // Prevents bows from dominating crossbows (which get rstr from bolts)
+      const weaponsByCategory = new Map<string, Item[]>();
+      for (const w of slotItems.weapon) {
+        const cat = w.weaponCategory ?? "other";
+        if (!weaponsByCategory.has(cat)) weaponsByCategory.set(cat, []);
+        weaponsByCategory.get(cat)!.push(w);
+      }
+      const prunedWeapons: Item[] = [];
+      for (const [, group] of weaponsByCategory) {
+        prunedWeapons.push(...pruneDominated(group, style));
+      }
+      slotItems.weapon = prunedWeapons;
+    } else {
+      slotItems[slot] = pruneDominated(slotItems[slot], style);
+    }
   }
 
   // Step 3: Weapon-first enumeration — keep best result per weapon for diversity
@@ -398,7 +415,21 @@ function optimizePactsBeam(
     slotItems = getSlotCandidates(style, player.regions, lockedSlots);
     for (const slot of Object.keys(slotItems) as EquipmentSlot[]) {
       if (lockedSlots[slot]) continue;
-      slotItems[slot] = pruneDominated(slotItems[slot], style);
+      if (slot === "weapon") {
+        const weaponsByCategory = new Map<string, Item[]>();
+        for (const w of slotItems.weapon) {
+          const cat = w.weaponCategory ?? "other";
+          if (!weaponsByCategory.has(cat)) weaponsByCategory.set(cat, []);
+          weaponsByCategory.get(cat)!.push(w);
+        }
+        const pruned: Item[] = [];
+        for (const [, group] of weaponsByCategory) {
+          pruned.push(...pruneDominated(group, style));
+        }
+        slotItems.weapon = pruned;
+      } else {
+        slotItems[slot] = pruneDominated(slotItems[slot], style);
+      }
     }
     const scores = slotItems.weapon.map(w => ({ w, s: offensiveScore(w, style) }));
     scores.sort((a, b) => b.s - a.s);
@@ -463,6 +494,31 @@ function optimizePactsBeam(
 
   beam.sort((a, b) => b.dps - a.dps);
   return beam.slice(0, NUM_RESULTS).map(e => [...e.selected]);
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// AMMO CLASSIFICATION & COMPATIBILITY
+// ═══════════════════════════════════════════════════════════════════════
+
+export function getAmmoCategory(item: Item): AmmoCategory {
+  const name = item.name.toLowerCase();
+  if (name.includes("arrow")) return "arrow";
+  if (name.includes("bolt")) return "bolt";
+  if (name.includes("dart") || name.includes("tar")) return "dart";
+  if (name.includes("javelin")) return "javelin";
+  if (name.includes("blessing")) return "blessing";
+  return "other";
+}
+
+export function getCompatibleAmmo(weapon: Item | null): AmmoCategory[] | null {
+  if (!weapon?.weaponCategory) return null;
+  switch (weapon.weaponCategory) {
+    case "bow": return ["arrow", "blessing"];
+    case "crossbow": return ["bolt", "javelin", "blessing"];
+    case "blowpipe": return ["dart", "blessing"];
+    case "thrown": return ["blessing"];
+    default: return null;
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -621,7 +677,16 @@ function buildBestLoadout(
     if (locked[slot]) continue;
     if (slot === "shield" && weapon.isTwoHanded) continue;
 
-    const candidates = slotItems[slot];
+    let candidates = slotItems[slot];
+
+    // Filter ammo by weapon compatibility
+    if (slot === "ammo") {
+      const compat = getCompatibleAmmo(weapon);
+      if (compat) {
+        candidates = candidates.filter(a => compat.includes(getAmmoCategory(a)));
+      }
+    }
+
     if (candidates.length === 0) continue;
 
     let bestItem: Item | null = null;

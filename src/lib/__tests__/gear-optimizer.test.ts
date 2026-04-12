@@ -10,7 +10,7 @@
  * - Optimizer returns valid DPS results
  */
 import { describe, it, expect } from "vitest";
-import { optimizeGear, optimizeBuild, isNodeRelevantForStyle } from "@/lib/gear-optimizer";
+import { optimizeGear, optimizeBuild, isNodeRelevantForStyle, getAmmoCategory, getCompatibleAmmo } from "@/lib/gear-optimizer";
 import { calculateDps } from "@/lib/dps-engine";
 import { getItem } from "@/data/items";
 import { getBoss } from "@/data/boss-presets";
@@ -312,6 +312,164 @@ describe("weapon diversity", () => {
     expect(results.length).toBeGreaterThan(0);
     const has1H = results.some(r => r.loadout.weapon && !r.loadout.weapon.isTwoHanded);
     expect(has1H).toBe(true);
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+// AMMO CLASSIFICATION & COMPATIBILITY
+// ═══════════════════════════════════════════════════════════════════════
+
+describe("ammo classification", () => {
+  it("classifies arrows correctly", () => {
+    const arrow = getItem("dragon-arrows")!;
+    expect(arrow).toBeDefined();
+    expect(getAmmoCategory(arrow)).toBe("arrow");
+  });
+
+  it("classifies bolts correctly", () => {
+    const bolt = getItem("ruby-bolts-e")!;
+    expect(bolt).toBeDefined();
+    expect(getAmmoCategory(bolt)).toBe("bolt");
+  });
+
+  it("classifies darts correctly", () => {
+    const dart = getItem("atlatl-dart")!;
+    expect(dart).toBeDefined();
+    expect(getAmmoCategory(dart)).toBe("dart");
+  });
+
+  it("classifies javelins correctly", () => {
+    const jav = getItem("dragon-javelin-19486")!;
+    expect(jav).toBeDefined();
+    expect(getAmmoCategory(jav)).toBe("javelin");
+  });
+
+  it("classifies blessings correctly", () => {
+    const blessing = getItem("echo-crystal-blessing")!;
+    expect(blessing).toBeDefined();
+    expect(getAmmoCategory(blessing)).toBe("blessing");
+  });
+});
+
+describe("weapon-ammo compatibility", () => {
+  it("bows use arrows and blessings", () => {
+    const tbow = getItem("tbow")!;
+    expect(tbow).toBeDefined();
+    const compat = getCompatibleAmmo(tbow)!;
+    expect(compat).toContain("arrow");
+    expect(compat).toContain("blessing");
+    expect(compat).not.toContain("bolt");
+    expect(compat).not.toContain("javelin");
+  });
+
+  it("crossbows use bolts, javelins, and blessings", () => {
+    const zcb = getItem("zcb")!;
+    expect(zcb).toBeDefined();
+    const compat = getCompatibleAmmo(zcb)!;
+    expect(compat).toContain("bolt");
+    expect(compat).toContain("javelin");
+    expect(compat).toContain("blessing");
+    expect(compat).not.toContain("arrow");
+  });
+
+  it("blowpipes use darts and blessings", () => {
+    const bp = getItem("blowpipe")!;
+    expect(bp).toBeDefined();
+    const compat = getCompatibleAmmo(bp)!;
+    expect(compat).toContain("dart");
+    expect(compat).toContain("blessing");
+    expect(compat).not.toContain("arrow");
+    expect(compat).not.toContain("bolt");
+  });
+
+  it("melee weapons return null (no ammo restriction)", () => {
+    const whip = getItem("whip")!;
+    expect(getCompatibleAmmo(whip)).toBeNull();
+  });
+});
+
+describe("ranged optimizer ammo pairing", () => {
+  const rangedPlayer = defaultPlayer({
+    combatStyle: "ranged", attackStyle: "rapid",
+    potion: "ranging", prayerType: "rigour",
+  });
+
+  it("TBow uses arrows, not bolts or javelins", () => {
+    const tbow = getItem("tbow")!;
+    expect(tbow).toBeDefined();
+    const config: OptimizerConfig = {
+      player: rangedPlayer,
+      target: custom,
+      lockedSlots: { weapon: tbow } as Partial<BuildLoadout>,
+      topN: 1,
+    };
+    const results = optimizeGear(config);
+    expect(results.length).toBe(1);
+    const ammo = results[0].loadout.ammo;
+    expect(ammo).not.toBeNull();
+    const ammoName = ammo!.name.toLowerCase();
+    expect(ammoName).toMatch(/arrow|blessing/);
+    expect(ammoName).not.toMatch(/bolt|javelin/);
+  });
+
+  it("ZCB uses bolts, not arrows", () => {
+    const zcb = getItem("zcb")!;
+    expect(zcb).toBeDefined();
+    const config: OptimizerConfig = {
+      player: rangedPlayer,
+      target: custom,
+      lockedSlots: { weapon: zcb } as Partial<BuildLoadout>,
+      topN: 1,
+    };
+    const results = optimizeGear(config);
+    expect(results.length).toBe(1);
+    const ammo = results[0].loadout.ammo;
+    expect(ammo).not.toBeNull();
+    const ammoName = ammo!.name.toLowerCase();
+    expect(ammoName).toMatch(/bolt|javelin|blessing/);
+    expect(ammoName).not.toMatch(/arrow/);
+  });
+
+  it("ranged results include diverse weapon categories", () => {
+    const config: OptimizerConfig = {
+      player: rangedPlayer,
+      target: custom,
+      lockedSlots: {},
+      topN: 20,
+    };
+    const results = optimizeGear(config);
+    const categories = new Set(results.map(r => r.loadout.weapon?.weaponCategory));
+    // Should have at least bow and crossbow categories
+    expect(categories.has("bow")).toBe(true);
+    expect(categories.has("crossbow")).toBe(true);
+  });
+
+  it("ZCB is not pruned by bowfa (cross-category pruning prevented)", () => {
+    const config: OptimizerConfig = {
+      player: rangedPlayer,
+      target: custom,
+      lockedSlots: {},
+      topN: 20,
+    };
+    const results = optimizeGear(config);
+    const weaponIds = results.map(r => r.loadout.weapon?.id);
+    expect(weaponIds).toContain("zcb");
+  });
+
+  it("all ranged results have valid DPS (not inflated by wrong ammo)", () => {
+    const config: OptimizerConfig = {
+      player: rangedPlayer,
+      target: custom,
+      lockedSlots: {},
+      topN: 20,
+    };
+    const results = optimizeGear(config);
+    for (const r of results) {
+      expect(r.result.dps).toBeGreaterThan(0);
+      expect(Number.isFinite(r.result.dps)).toBe(true);
+      // No DPS should be wildly inflated (e.g., >30 would be suspicious for custom target)
+      expect(r.result.dps).toBeLessThan(30);
+    }
   });
 });
 
