@@ -30,6 +30,8 @@ export interface SpecAttack {
   darkBowMinHit?: number;        // Min per arrow (8 dragon, 5 other)
   darkBowCap?: number;           // Cap per arrow (48)
   secondHitGuaranteedOnAccurate?: boolean; // 2nd hit guaranteed if 1st hits (abyssal dagger)
+  soulreaperSpecDmg?: boolean;             // Soulreaper: (100+6*stacks)/100 dmg multiplier during spec
+  zcbGuaranteedBoltProc?: boolean;         // ZCB: bolt spec guaranteed during spec
 }
 
 export const SPEC_ATTACKS: Record<string, SpecAttack> = {
@@ -40,13 +42,13 @@ export const SPEC_ATTACKS: Record<string, SpecAttack> = {
     name: "Armadyl Godsword",
     energyCost: 50,
     accMultiplier: 2.0,
-    dmgMultiplier: 1.375,
+    dmgMultiplier: 5 / 4, // 1.25 — post-Equipment Rebalance (was 1.375)
   },
   "bgs": {
     name: "Bandos Godsword",
     energyCost: 50,
     accMultiplier: 2.0,
-    dmgMultiplier: 1.21,
+    dmgMultiplier: 11 / 10, // 1.10 — post-Equipment Rebalance (was 1.21)
   },
   "sgs": {
     name: "Saradomin Godsword",
@@ -199,6 +201,13 @@ export const SPEC_ATTACKS: Record<string, SpecAttack> = {
     energyCost: 75,
     accMultiplier: 2.0,
   },
+  "soulreaper-axe": {
+    name: "Soulreaper Axe",
+    energyCost: 50,
+    accMultiplier: 2.0,
+    // Spec: (100 + 6*stacks)/100 multiplier — handled in engine via soulreaperSpecDmg flag
+    soulreaperSpecDmg: true,
+  },
 
   // ═══════════════════════════════════════════════════════════════════════
   // RANGED
@@ -219,7 +228,7 @@ export const SPEC_ATTACKS: Record<string, SpecAttack> = {
   "dark-bow": {
     name: "Dark Bow",
     energyCost: 55,
-    dmgMultiplier: 1.5,
+    // dmgMultiplier handled in engine: dragon arrows 15/10, non-dragon 13/10
     hits: 2,
     darkBowMinHit: 8,  // 8 for dragon arrows, 5 for other — engine checks ammo
     darkBowCap: 48,
@@ -227,7 +236,7 @@ export const SPEC_ATTACKS: Record<string, SpecAttack> = {
   "msb-i": {
     name: "Magic Shortbow (i)",
     energyCost: 50,
-    accMultiplier: 1.43,
+    accMultiplier: 10 / 7, // weirdgloop: [10, 7] ≈ 1.4286
     hits: 2,
   },
   "magic-longbow": {
@@ -258,7 +267,7 @@ export const SPEC_ATTACKS: Record<string, SpecAttack> = {
     name: "Zaryte Crossbow",
     energyCost: 75,
     accMultiplier: 2.0,
-    // Bolt specs still apply during ZCB spec
+    zcbGuaranteedBoltProc: true, // Guaranteed bolt spec on hit
   },
   "tonalztics": {
     name: "Tonalztics of Ralos",
@@ -292,12 +301,14 @@ export const SPEC_ATTACKS: Record<string, SpecAttack> = {
     name: "Volatile Nightmare Staff",
     energyCost: 55,
     accMultiplier: 1.5,
-    customMaxHit: (magicLevel: number) => Math.min(58, Math.floor(magicLevel * 0.6)),
+    // Source: weirdgloop — min(58, floor((99 + 58*M)/99))
+    customMaxHit: (magicLevel: number) => Math.max(1, Math.min(58, Math.trunc((99 + 58 * magicLevel) / 99))),
   },
   "eldritch-staff": {
     name: "Eldritch Nightmare Staff",
     energyCost: 55,
-    customMaxHit: (magicLevel: number) => Math.min(44, Math.floor(magicLevel * 0.6)),
+    // Source: weirdgloop — min(44, floor((99 + 44*M)/99))
+    customMaxHit: (magicLevel: number) => Math.max(1, Math.min(44, Math.trunc((99 + 44 * magicLevel) / 99))),
   },
 };
 

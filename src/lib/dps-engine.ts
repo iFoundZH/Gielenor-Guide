@@ -43,7 +43,10 @@ export function calculateDps(ctx: DpsContext): DpsResult {
 
   const equipStr = getEquipmentStrength(ctx, pe, totalBonuses);
   const effStrLevel = calculateEffectiveStrengthLevel(ctx, pe);
-  const baseMax = calculateBaseMaxHit(ctx, effStrLevel, equipStr, weapon);
+  let baseMax = calculateBaseMaxHit(ctx, effStrLevel, equipStr, weapon);
+
+  // Additive bonuses applied before multiplier chain
+  baseMax += getAdditiveMaxHitBonus(ctx, baseMax);
 
   const chain = getMultiplierChain(ctx, pe, baseMax);
   let finalMax = baseMax;
@@ -83,7 +86,7 @@ export function calculateDps(ctx: DpsContext): DpsResult {
 
   // Max accuracy roll from range pact: proc chance of min(1, 0.05 * distance)
   if (pe.maxAccuracyRollFromRange) {
-    const dist = ctx.player.targetDistance ?? 1;
+    const dist = getEffectiveDistance(ctx, pe);
     const procChance = Math.min(1, 0.05 * dist);
     finalAcc = procChance + (1 - procChance) * finalAcc;
   }
@@ -107,7 +110,7 @@ export function calculateDps(ctx: DpsContext): DpsResult {
 
   // Distance melee min hit: +3 + 3 per tile
   if (pe.distanceMeleeMinHit > 0 && ctx.player.combatStyle === "melee") {
-    const dist = ctx.player.targetDistance ?? 1;
+    const dist = getEffectiveDistance(ctx, pe);
     const newMin = pe.distanceMeleeMinHit + pe.distanceMeleeMinHit * dist;
     if (newMin > minHit) {
       const avgAdjust = (newMin - minHit) / 2;
@@ -283,7 +286,7 @@ export function calculateDps(ctx: DpsContext): DpsResult {
 
   // Style swap: +12.5% when distance >= 3 (averaged: assume 50% of attacks qualify)
   if (pe.maxHitStyleSwap) {
-    const dist = ctx.player.targetDistance ?? 1;
+    const dist = getEffectiveDistance(ctx, pe);
     if (dist >= 3) {
       // +25% on style swap hits, ~50% of attacks qualify on avg
       bonusDps += 0.125 * baseDps;
@@ -411,6 +414,15 @@ export function calculateEffectiveStrengthLevel(ctx: DpsContext, pe?: Aggregated
   if (player.voidSet !== "none") {
     const voidMult = getVoidStrengthMultiplier(player.voidSet, style);
     base = Math.floor(base * voidMult);
+  }
+
+  // Step 5: Soulreaper Axe — additive to effective level (non-spec only)
+  // Source: weirdgloop — floor(baseStrLevel * stacks * 6 / 100) added to effective level
+  if (ctx.loadout.weapon?.id === "soulreaper-axe" && style === "melee") {
+    const stacks = Math.max(0, Math.min(5, player.soulreaperStacks ?? 0));
+    if (stacks > 0) {
+      base += Math.floor(player.strength * stacks * 6 / 100);
+    }
   }
 
   return base;
@@ -653,7 +665,8 @@ export function calculateMaxHit(ctx: DpsContext): number {
   applyOffhandStatBoost(ctx, pe, totalBonuses);
   const equipStr = getEquipmentStrength(ctx, pe, totalBonuses);
   const effLevel = calculateEffectiveStrengthLevel(ctx, pe);
-  const baseMax = calculateBaseMaxHit(ctx, effLevel, equipStr, weapon);
+  let baseMax = calculateBaseMaxHit(ctx, effLevel, equipStr, weapon);
+  baseMax += getAdditiveMaxHitBonus(ctx, baseMax);
 
   const chain = getMultiplierChain(ctx, pe, baseMax);
   let finalMax = baseMax;
@@ -715,7 +728,7 @@ export function getMultiplierChain(ctx: DpsContext, pe: AggregatedPactEffects, _
 
   // 4. Melee distance damage: +4% + 4% per 3 tiles
   if (pe.meleeDistanceDamagePercent > 0 && style === "melee") {
-    const dist = ctx.player.targetDistance ?? 1;
+    const dist = getEffectiveDistance(ctx, pe);
     const pct = pe.meleeDistanceDamagePercent;
     const bonus = 1 + (pct * (Math.floor(dist / 3) + 1)) / 100;
     if (bonus > 1) {
@@ -764,9 +777,9 @@ export function getMultiplierChain(ctx: DpsContext, pe: AggregatedPactEffects, _
     chain.push({ name: "DHL vs Dragons", factor: 1.20 });
   }
 
-  // 11b. Dragon Hunter Wand vs dragons (+50% dmg)
+  // 11b. Dragon Hunter Wand vs dragons (+40% dmg) — weirdgloop: [7, 5]
   if (weapon?.id === "dh-wand" && ctx.target.isDragon) {
-    chain.push({ name: "DH Wand vs Dragons", factor: 1.50 });
+    chain.push({ name: "DH Wand vs Dragons", factor: 7 / 5 });
   }
 
   // 12. Wilderness weapons (+50% dmg)
@@ -781,9 +794,9 @@ export function getMultiplierChain(ctx: DpsContext, pe: AggregatedPactEffects, _
     chain.push({ name: `${weapon.name} (Wilderness)`, factor: 1.25 });
   }
 
-  // 14. Keris Partisan vs kalphites (+33% dmg)
+  // 14. Keris Partisan vs kalphites (+33% dmg) — exact fraction from weirdgloop: 133/100
   if (weapon?.id === "keris-breaching" && ctx.target.isKalphite) {
-    chain.push({ name: "Keris vs Kalphites", factor: 4 / 3 });
+    chain.push({ name: "Keris vs Kalphites", factor: 133 / 100 });
   }
 
   // 15. Crystal armour set bonus (Bow of Faerdhinen, or any weapon with Crystal blessing)
@@ -798,14 +811,21 @@ export function getMultiplierChain(ctx: DpsContext, pe: AggregatedPactEffects, _
   }
 
   // 16. Inquisitor's armour set bonus (crush weapons only)
+  // Source: weirdgloop — with mace: 2.5% per piece; without mace: 0.5% per piece, full set = 2.5%
   if (style === "melee" && getAttackType(ctx) === "crush") {
     let inqPieces = 0;
     if (ctx.loadout.head?.id === "inq-helm") inqPieces++;
     if (ctx.loadout.body?.id === "inq-body") inqPieces++;
     if (ctx.loadout.legs?.id === "inq-legs") inqPieces++;
     if (inqPieces > 0) {
-      const inqBonus = inqPieces * 0.005 + (inqPieces === 3 ? 0.025 : 0);
-      chain.push({ name: `Inquisitor's (${inqPieces}pc)`, factor: 1 + inqBonus });
+      let inqValue = inqPieces; // each piece = 1 unit
+      if (weapon?.id === "inq-mace") {
+        inqValue = inqPieces * 5; // each piece = 5 units (2.5%)
+      } else if (inqPieces === 3) {
+        inqValue = 5; // full set without mace = 2.5% total
+      }
+      const label = weapon?.id === "inq-mace" ? `Inquisitor's+Mace (${inqPieces}pc)` : `Inquisitor's (${inqPieces}pc)`;
+      chain.push({ name: label, factor: (200 + inqValue) / 200 });
     }
   }
 
@@ -824,16 +844,16 @@ export function getMultiplierChain(ctx: DpsContext, pe: AggregatedPactEffects, _
     chain.push({ name: "Smoke Battlestaff", factor: 1.10 });
   }
 
-  // 19. Tome of Fire/Water/Earth: element-matching spell damage bonus
+  // 19. Tome of Fire/Water/Earth: +10% spell damage (PvE) when element matches
+  // All nerfed to 10% vs NPCs on 29 May 2024 (was 50%/20%/10%) to account for elemental weaknesses
+  // Source: weirdgloop [11, 10], OSRS wiki
   if (style === "magic" && weaponCat !== "powered-staff") {
     const shield = ctx.loadout.shield;
     const element = ctx.player.spellElement ?? "none";
-    if (shield?.id === "tome-of-fire" && element === "fire") {
-      chain.push({ name: "Tome of Fire", factor: 1.50 });
-    } else if (shield?.id === "tome-of-water" && element === "water") {
-      chain.push({ name: "Tome of Water", factor: 1.20 });
-    } else if (shield?.id === "tome-of-earth" && element === "earth") {
-      chain.push({ name: "Tome of Earth", factor: 1.10 });
+    if ((shield?.id === "tome-of-fire" && element === "fire")
+      || (shield?.id === "tome-of-water" && element === "water")
+      || (shield?.id === "tome-of-earth" && element === "earth")) {
+      chain.push({ name: shield.name, factor: 11 / 10 });
     }
   }
 
@@ -854,13 +874,8 @@ export function getMultiplierChain(ctx: DpsContext, pe: AggregatedPactEffects, _
     }
   }
 
-  // 21. Soulreaper Axe stacks: +6% damage per stack (0-5)
-  if (weapon?.id === "soulreaper-axe" && style === "melee") {
-    const stacks = ctx.player.soulreaperStacks ?? 0;
-    if (stacks > 0) {
-      chain.push({ name: `Soulreaper (${stacks} stacks)`, factor: 1 + 0.06 * stacks });
-    }
-  }
+  // 21. Soulreaper Axe — non-spec bonus handled in effective level (calculateEffectiveStrengthLevel)
+  // Spec bonus (multiplicative on max hit) handled in calculateBlendedSpecDps via SPEC_ATTACKS
 
   // 22. Water spell pact: +20% at full HP (scales with HP%) — standard spells only
   if (pe.waterSpellDamageHighHp && style === "magic" && weaponCat !== "powered-staff") {
@@ -912,6 +927,15 @@ export function calculateAttackRoll(ctx: DpsContext, pe: AggregatedPactEffects, 
     }
     if (voidAccMult > 1) {
       base = Math.floor(base * voidAccMult);
+    }
+  }
+
+  // Step 5: Soulreaper Axe — additive to effective attack level (non-spec)
+  // Source: weirdgloop — floor(baseAtkLevel * stacks * 6 / 100) added to effective level
+  if (weapon?.id === "soulreaper-axe" && style === "melee") {
+    const stacks = Math.max(0, Math.min(5, ctx.player.soulreaperStacks ?? 0));
+    if (stacks > 0) {
+      base += Math.floor(ctx.player.attack * stacks * 6 / 100);
     }
   }
 
@@ -993,9 +1017,9 @@ export function calculateAttackRoll(ctx: DpsContext, pe: AggregatedPactEffects, 
     roll = Math.floor(roll * 1.20);
   }
 
-  // Dragon Hunter Wand accuracy vs dragons (+50%)
+  // Dragon Hunter Wand accuracy vs dragons (+75%) — weirdgloop: [7, 4]
   if (weapon?.id === "dh-wand" && ctx.target.isDragon) {
-    roll = Math.floor(roll * 1.50);
+    roll = Math.floor(roll * (7 / 4));
   }
 
   // Wilderness weapon accuracy
@@ -1019,23 +1043,33 @@ export function calculateAttackRoll(ctx: DpsContext, pe: AggregatedPactEffects, 
     }
   }
 
-  // Soulreaper Axe stacks: +6% accuracy per stack
-  if (weapon?.id === "soulreaper-axe" && style === "melee") {
-    const stacks = ctx.player.soulreaperStacks ?? 0;
-    if (stacks > 0) {
-      roll = Math.floor(roll * (1 + 0.06 * stacks));
+  // Soulreaper Axe accuracy — handled in effective attack level above (Step 5)
+
+  // Obsidian armour set accuracy: +10% attack roll with tzhaar weapon + 3 obsidian pieces
+  if (style === "melee" && weapon && OBSIDIAN_WEAPONS.includes(weapon.id)) {
+    let obsidianPieces = 0;
+    if (ctx.loadout.head?.id === "obsidian-helm") obsidianPieces++;
+    if (ctx.loadout.body?.id === "obsidian-body") obsidianPieces++;
+    if (ctx.loadout.legs?.id === "obsidian-legs") obsidianPieces++;
+    if (obsidianPieces === 3) {
+      roll = Math.floor(roll * 1.10);
     }
   }
 
-  // Inquisitor's armour accuracy bonus (crush only)
+  // Inquisitor's armour accuracy bonus (crush only) — same formula as damage
   if (style === "melee" && atkType === "crush") {
     let inqPieces = 0;
     if (ctx.loadout.head?.id === "inq-helm") inqPieces++;
     if (ctx.loadout.body?.id === "inq-body") inqPieces++;
     if (ctx.loadout.legs?.id === "inq-legs") inqPieces++;
     if (inqPieces > 0) {
-      const inqBonus = inqPieces * 0.005 + (inqPieces === 3 ? 0.025 : 0);
-      roll = Math.floor(roll * (1 + inqBonus));
+      let inqValue = inqPieces;
+      if (weapon?.id === "inq-mace") {
+        inqValue = inqPieces * 5;
+      } else if (inqPieces === 3) {
+        inqValue = 5;
+      }
+      roll = Math.floor(roll * ((200 + inqValue) / 200));
     }
   }
 
@@ -1163,6 +1197,43 @@ function fangExactAccuracy(attackRoll: number, defenceRoll: number): number {
   } else {
     return A * (4 * A + 5) / (6 * (A + 1) * (D + 1));
   }
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// EFFECTIVE MELEE RANGE
+// ═══════════════════════════════════════════════════════════════════════
+
+/**
+ * Compute effective attack distance for distance-dependent pacts.
+ * For melee: weapon range (base × multiplier × conditional boost).
+ *   Halberds have base range 2; all other melee weapons have range 1.
+ *   Node 43 "2H Range Double" doubles 2H weapon range.
+ *   Node 155 "Melee Range Boost" sets range to 7 if ≥ 4.
+ * For ranged/magic: user-set targetDistance.
+ */
+function getEffectiveDistance(ctx: DpsContext, pe: AggregatedPactEffects): number {
+  if (ctx.player.combatStyle === "melee") {
+    const weapon = ctx.loadout.weapon;
+    // Base weapon range: halberds = 2, all other melee = 1
+    let range = weapon?.weaponCategory === "halberd" ? 2 : 1;
+
+    // Node 43: 2H weapons melee range doubled
+    if (pe.meleeRangeMultiplier > 0 && weapon?.isTwoHanded) {
+      range *= pe.meleeRangeMultiplier;
+    }
+
+    // Node 155: if melee range >= 4, increase to 7
+    if (pe.meleeRangeConditionalBoost && range >= 4) {
+      range = 7;
+    }
+
+    // For melee, you attack at your weapon's max range (optimal for distance pacts).
+    // Allow user targetDistance if they set it higher for some reason, but they can't
+    // exceed weapon range in practice so use the max of (range, targetDistance).
+    return Math.max(range, ctx.player.targetDistance ?? 1);
+  }
+
+  return ctx.player.targetDistance ?? 1;
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -1356,8 +1427,9 @@ function buildSustainInfo(ctx: DpsContext, pe: AggregatedPactEffects, _bonuses: 
   if (pe.maxHitStyleSwap) {
     info.push("Max hit from 3+ tiles: next different-style hit +25%");
   }
-  if (pe.meleeRangeMultiplier > 0 && style === "melee") {
-    info.push(`2H melee attack range doubled (${pe.meleeRangeMultiplier}x)`);
+  if ((pe.meleeRangeMultiplier > 0 || pe.meleeRangeConditionalBoost) && style === "melee") {
+    const effectiveDist = getEffectiveDistance(ctx, pe);
+    info.push(`Effective melee attack range: ${effectiveDist} tiles`);
   }
 
   // Defensive bonuses display
@@ -1437,6 +1509,44 @@ function calculateBoltSpecDps(ctx: DpsContext, pe: AggregatedPactEffects, maxHit
   return 0;
 }
 
+/**
+ * ZCB spec: guaranteed bolt proc — returns extra average damage per spec attack.
+ * The bolt proc fires at 100% rate (instead of the normal 6-11%).
+ * ZCB +10% bolt spec damage also applies.
+ */
+function getZcbBoltProcDmg(ctx: DpsContext, specMax: number, specAcc: number): number {
+  const ammo = ctx.loadout.ammo;
+  if (!ammo) return 0;
+
+  const zcbDmgMult = 1.10; // ZCB always boosts bolt spec damage by 10%
+
+  if (ammo.id === "ruby-bolts-e") {
+    // 100% proc: deal floor(20% of boss HP), capped at 100, instead of normal hit
+    const procDmg = Math.min(100, Math.floor(ctx.target.hp * 0.20)) * zcbDmgMult;
+    const normalAvg = specMax / 2;
+    return Math.max(0, procDmg - normalAvg) * specAcc;
+  }
+
+  if (ammo.id === "diamond-bolts-e") {
+    // 100% proc: guaranteed accuracy (spec already has doubled acc, but diamond ignores defence entirely)
+    // Extra value: (1 - specAcc) * specMax/2 — the damage gained from the extra accuracy
+    return (1 - specAcc) * specMax / 2;
+  }
+
+  if (ammo.id === "onyx-bolts-e") {
+    // 100% proc: +20% extra damage on the hit
+    return specMax * 0.20 * zcbDmgMult / 2 * specAcc;
+  }
+
+  if (ammo.id === "dragonstone-bolts-e") {
+    // 100% proc: extra damage = floor(rangedLevel * 0.20)
+    const extraDmg = Math.floor(ctx.player.ranged * 0.20) * zcbDmgMult;
+    return extraDmg * specAcc;
+  }
+
+  return 0;
+}
+
 // ═══════════════════════════════════════════════════════════════════════
 // BOSS DAMAGE MODIFIERS
 // ═══════════════════════════════════════════════════════════════════════
@@ -1460,9 +1570,9 @@ function applyBossModifier(ctx: DpsContext, dps: number, _maxHit: number): numbe
       if (style === "magic") return dps * 0.20;
       return dps;
     case "kraken-ranged":
-      // Kraken: only magic deals full damage; ranged deals ~14%; melee immune
+      // Kraken: only magic deals full damage; ranged deals 1/7; melee immune
       if (style === "melee") return 0;
-      if (style === "ranged") return dps * 0.14;
+      if (style === "ranged") return dps * (1 / 7);
       return dps;
     case "zulrah-cap":
       // Zulrah: max hit capped at 50
@@ -1481,6 +1591,39 @@ function applyBossModifier(ctx: DpsContext, dps: number, _maxHit: number): numbe
 function isSpearOrHasta(weapon: Item): boolean {
   const name = weapon.name.toLowerCase();
   return name.includes("spear") || name.includes("hasta");
+}
+
+const OBSIDIAN_WEAPONS = ["toktz-xil-ak", "tzhaar-ket-om", "tzhaar-ket-em", "toktz-xil-ek", "toktz-mej-tal"];
+
+/**
+ * Additive max hit bonuses applied before the multiplier chain.
+ * Source: weirdgloop/osrs-dps-calc PlayerVsNPCCalc.ts
+ */
+function getAdditiveMaxHitBonus(ctx: DpsContext, baseMax: number): number {
+  let bonus = 0;
+  const weapon = ctx.loadout.weapon;
+  const style = ctx.player.combatStyle;
+
+  // Obsidian armour set: +floor(baseMax / 10) with tzhaar weapon + 3 obsidian pieces
+  // Source: wiki — "grants a 10% melee damage and accuracy boost"
+  if (style === "melee" && weapon && OBSIDIAN_WEAPONS.includes(weapon.id)) {
+    let obsidianPieces = 0;
+    if (ctx.loadout.head?.id === "obsidian-helm") obsidianPieces++;
+    if (ctx.loadout.body?.id === "obsidian-body") obsidianPieces++;
+    if (ctx.loadout.legs?.id === "obsidian-legs") obsidianPieces++;
+    if (obsidianPieces === 3) {
+      bonus += Math.floor(baseMax / 10);
+    }
+  }
+
+  // Colossal blade: +min(target_size * 2, 10) melee damage bonus
+  // Source: wiki — "extra damage equal to twice the target's size, capped at 10"
+  if (weapon?.id === "colossal-blade" && style === "melee") {
+    const targetSize = ctx.target.size ?? 1;
+    bonus += Math.min(targetSize * 2, 10);
+  }
+
+  return bonus;
 }
 
 function getAttackType(ctx: DpsContext): AttackType {
@@ -1523,7 +1666,21 @@ function calculateBlendedSpecDps(
 ): BlendedResult | null {
   // Compute spec max hit and accuracy
   const specAtkRoll = Math.floor(baseAtkRoll * (spec.accMultiplier ?? 1));
-  let specMax = Math.floor(normalMax * (spec.dmgMultiplier ?? 1));
+  let specDmgMult = spec.dmgMultiplier ?? 1;
+
+  // Dark bow: dragon arrows 15/10 (1.5x), non-dragon 13/10 (1.3x)
+  if (spec.darkBowMinHit !== undefined) {
+    const isDragonArrow = ctx.loadout.ammo?.id === "dragon-arrows";
+    specDmgMult = isDragonArrow ? 15 / 10 : 13 / 10;
+  }
+
+  // Soulreaper Axe spec: (100 + 6*stacks)/100 multiplier on max hit
+  if (spec.soulreaperSpecDmg) {
+    const stacks = Math.max(0, Math.min(5, ctx.player.soulreaperStacks ?? 0));
+    specDmgMult = (100 + 6 * stacks) / 100;
+  }
+
+  let specMax = Math.floor(normalMax * specDmgMult);
   specMax += spec.flatDmgBonus ?? 0;
 
   // Fang spec: 1.5x on attack roll, then fang double-roll formula still applies
@@ -1556,7 +1713,12 @@ function calculateBlendedSpecDps(
   }
 
   // Compute average damage per spec attack
-  const specAvgDmg = calculateSpecAvgDmg(spec, specMax, specAcc, normalMax, ctx);
+  let specAvgDmg = calculateSpecAvgDmg(spec, specMax, specAcc, normalMax, ctx);
+
+  // ZCB: guaranteed bolt proc on each spec hit (100% proc rate)
+  if (spec.zcbGuaranteedBoltProc) {
+    specAvgDmg += getZcbBoltProcDmg(ctx, specMax, specAcc);
+  }
 
   // Spec speed (some specs have speed overrides)
   const specSpeed = spec.speedOverride ?? speed;
@@ -1588,7 +1750,7 @@ function calculateBlendedSpecDps(
   }
 
   // Distance spec energy restoration
-  if (pe.restoreSaEnergyFromDistance && (ctx.player.targetDistance ?? 1) >= 2) {
+  if (pe.restoreSaEnergyFromDistance && getEffectiveDistance(ctx, pe) >= 2) {
     // Restore 2% per attack from 2+ tile distance
     const normalPhaseTicks = cycleTimeTicks - specPhaseTicks;
     const normalAttacks = Math.floor(normalPhaseTicks / speed);
@@ -1743,72 +1905,77 @@ function calculateSpecAvgDmg(
 
 /**
  * Dragon Claws expected value — exact cascade formula.
- * Source: weirdgloop/osrs-dps-calc PlayerVsNPCCalc.ts
+ * Source: weirdgloop/osrs-dps-calc dists/claws.ts
  *
- * 4 cascading accuracy rolls:
- * - All hit: total = sum of 4 hits where hit1 = rand[max/2, max], others derived
- * - Miss roll 0, hit roll 1: 3 hits
- * - Miss rolls 0-1, hit roll 2: 2 hits
- * - Miss rolls 0-2, hit roll 3: 1 hit
- * - All miss: 1 damage (75%) or 0 (25%)
+ * 4 cascading accuracy rolls. For roll i (0-3):
+ *   low = floor(max * (4 - i) / 4)
+ *   high = max + low - 1
+ *   Total damage is uniform over [low, high], split into 4 hitsplats.
+ *   P(exactly roll i succeeds) = (1-acc)^i * acc
+ * All miss: 2/3 chance of 2 damage, 1/3 chance of 0.
  */
 function clawsAvgDamage(acc: number, max: number): number {
-  // Simplified expected value using the weirdgloop approach:
-  // Each cascade level has a range of total damage
-  // P(exactly roll i succeeds) = (1-acc)^i * acc
+  if (max <= 0) return 0;
   let avg = 0;
 
-  // Roll 0 hits (all 4 hit): total range [max, 2*max-1]
-  // hits: max/2..max, max/4..(max/2-1), max/8..(max/4-1), max/8..(max/4-1)
-  // Avg total ≈ (3*max-1)/2 (simplified)
+  // Roll 0: low=max, high=2*max-1. avg=(3*max-1)/2
   const p0 = acc;
-  const avg0 = max > 0 ? (3 * max - 1) / 2 : 0;
-  avg += p0 * avg0;
+  avg += p0 * (3 * max - 1) / 2;
 
-  // Roll 1 hits (1st miss, 2nd-4th hit): total range [3*max/4, 3*max/2-1]
+  // Roll 1: low=floor(3*max/4), high=max+floor(3*max/4)-1. avg=(low+high)/2
+  const low1 = Math.floor(3 * max / 4);
   const p1 = (1 - acc) * acc;
-  const avg1 = max > 0 ? (7 * max / 4 - 1) / 2 : 0;
-  avg += p1 * avg1;
+  avg += p1 * (low1 + max + low1 - 1) / 2;
 
-  // Roll 2 hits (2 miss, 3rd-4th hit): total range [max/2, max-1]
+  // Roll 2: low=floor(max/2), high=max+floor(max/2)-1. avg=(low+high)/2
+  const low2 = Math.floor(max / 2);
   const p2 = (1 - acc) * (1 - acc) * acc;
-  const avg2 = max > 0 ? (3 * max / 2 - 1) / 2 : 0;
-  avg += p2 * avg2;
+  avg += p2 * (low2 + max + low2 - 1) / 2;
 
-  // Roll 3 hits (3 miss, 4th hit): total range [max/4, max/2-1]
+  // Roll 3: low=floor(max/4), high=max+floor(max/4)-1. avg=(low+high)/2
+  const low3 = Math.floor(max / 4);
   const p3 = (1 - acc) * (1 - acc) * (1 - acc) * acc;
-  const avg3 = max > 0 ? (5 * max / 4 - 1) / 2 : 0;
-  avg += p3 * avg3;
+  avg += p3 * (low3 + max + low3 - 1) / 2;
 
-  // All miss: 75% chance of 1 damage, 25% chance of 0
+  // All miss: 2/3 chance of [1,1,0,0]=2 damage, 1/3 chance of 0
   const pMiss = Math.pow(1 - acc, 4);
-  avg += pMiss * 0.75;
+  avg += pMiss * (4 / 3);
 
   return avg;
 }
 
 /**
  * Burning Claws expected value — 3-hit cascade.
- * Similar to dragon claws but with 3 hits and different distributions.
+ * Source: weirdgloop/osrs-dps-calc dists/claws.ts
+ *
+ * 3 cascading accuracy rolls. For roll i (0-2):
+ *   low = floor(max * (3 - i) / 4)
+ *   high = max + low
+ *   Total damage is uniform over [low, high].
+ * All miss: 2/5 chance of 1, 2/5 chance of 2, 1/5 chance of 0.
  */
 function burningClawsAvgDamage(acc: number, max: number): number {
+  if (max <= 0) return 0;
   let avg = 0;
 
-  // Roll 0 hits (all 3 hit): total ≈ 1.5 * max
+  // Roll 0: low=floor(3*max/4), high=max+floor(3*max/4). avg=(low+high)/2
+  const low0 = Math.floor(3 * max / 4);
   const p0 = acc;
-  avg += p0 * (max > 0 ? 1.5 * max : 0);
+  avg += p0 * (low0 + max + low0) / 2;
 
-  // Roll 1 hits: total ≈ max
+  // Roll 1: low=floor(max/2), high=max+floor(max/2). avg=(low+high)/2
+  const low1 = Math.floor(max / 2);
   const p1 = (1 - acc) * acc;
-  avg += p1 * max;
+  avg += p1 * (low1 + max + low1) / 2;
 
-  // Roll 2 hits: total ≈ max/2
+  // Roll 2: low=floor(max/4), high=max+floor(max/4). avg=(low+high)/2
+  const low2 = Math.floor(max / 4);
   const p2 = (1 - acc) * (1 - acc) * acc;
-  avg += p2 * (max / 2);
+  avg += p2 * (low2 + max + low2) / 2;
 
-  // All miss: small residual
+  // All miss: 2/5 chance of 1 + 2/5 chance of 2 + 1/5 chance of 0
   const pMiss = Math.pow(1 - acc, 3);
-  avg += pMiss * 0.5;
+  avg += pMiss * (2 / 5 * 1 + 2 / 5 * 2);
 
   return avg;
 }

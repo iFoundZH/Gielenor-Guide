@@ -802,7 +802,7 @@ describe("spec attacks data integrity", () => {
     expect(ags!.name).toBe("Armadyl Godsword");
     expect(ags!.energyCost).toBe(50);
     expect(ags!.accMultiplier).toBe(2.0);
-    expect(ags!.dmgMultiplier).toBe(1.375);
+    expect(ags!.dmgMultiplier).toBe(1.25); // post-Equipment Rebalance
   });
 
   it("hasSpecAttack returns false for non-spec weapons", () => {

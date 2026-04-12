@@ -364,7 +364,7 @@ export interface OptimizerResult {
   loadout: BuildLoadout;
   result: DpsResult;
   optimizedConfig?: OptimizedConfig;
-  combinationsEvaluated?: number;
+  totalEvaluations?: number;
 }
 
 /* ── Saved Builds ────────────────────────────────────────────────────── */

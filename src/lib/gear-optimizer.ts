@@ -18,7 +18,7 @@ import type {
 import { PACT_POINT_LIMIT } from "@/types/dps";
 import { ITEMS } from "@/data/items";
 import { calculateDps } from "@/lib/dps-engine";
-import { getAllNodes, canSelectNode } from "@/data/pacts";
+import { getAllNodes, canSelectNode, canDeselectNode } from "@/data/pacts";
 import { aggregatePactEffects } from "@/lib/pact-effects";
 import { ANCIENT_SPELLS as ANCIENT_SPELL_DATA, STANDARD_SPELLS as STANDARD_SPELL_DATA } from "@/data/spells";
 
@@ -27,6 +27,32 @@ import { ANCIENT_SPELLS as ANCIENT_SPELL_DATA, STANDARD_SPELLS as STANDARD_SPELL
 // Items must score ≥ threshold fraction of the best item in their slot.
 // This replaces hard top-K caps with adaptive, score-relative filtering.
 // ═══════════════════════════════════════════════════════════════════════
+
+// Module-level counter: tracks ALL calculateDps calls across all optimizer phases.
+// Reset at the start of optimizeBuild, read at the end to report total work done.
+let _totalEvaluations = 0;
+let _beamCalls = 0;
+
+/** Tracked wrapper around calculateDps — increments the global evaluation counter. */
+function evalDpsTracked(params: { player: PlayerConfig; loadout: BuildLoadout; target: BossPreset }): import("@/types/dps").DpsResult {
+  _totalEvaluations++;
+  return calculateDps(params);
+}
+
+/** Flags for pact effects that make non-offensive equipment stats DPS-relevant. */
+interface PactAwareness {
+  hasThornsScaling: boolean;     // defenceRecoilScaling: defence bonuses → thorns damage
+  hasAirPrayerScaling: boolean;  // airSpellMaxHitPrayerBonus: prayer bonus → air spell max hit chance
+  hasMeleePrayerScaling: boolean; // meleePrayerStrBonus: prayer bonus → melee str (+50%)
+  hasThrownMeleeScaling: boolean; // thrownMeleeStrScale: melee str → ranged str for thrown (+80%)
+}
+
+const NO_PACT_FLAGS: PactAwareness = {
+  hasThornsScaling: false,
+  hasAirPrayerScaling: false,
+  hasMeleePrayerScaling: false,
+  hasThrownMeleeScaling: false,
+};
 
 const ARMOUR_SCORE_THRESHOLD = 0.4;  // 40% of best — kills junk wiki items, keeps viable options
 const ARMOUR_HARD_CAP = 6;           // Safety cap per armour slot
@@ -52,12 +78,16 @@ export function optimizeGear(config: OptimizerConfig): OptimizerResult[] {
 
   // Step 1: Detect pact-based item pool expansions
   const pe = aggregatePactEffects(player.activePacts);
-  const hasThornsScaling = pe.thornsDamage > 0 && pe.defenceRecoilScaling;
-  const hasAirPrayerScaling = style === "magic" && (pe.airSpellMaxHitPrayerBonus > 0 || pe.airSpellDamagePerPrayer > 0)
-    && (player.spellElement === "air" || player.spellElement === "smoke");
+  const pactFlags: PactAwareness = {
+    hasThornsScaling: pe.thornsDamage > 0 && pe.defenceRecoilScaling,
+    hasAirPrayerScaling: style === "magic" && (pe.airSpellMaxHitPrayerBonus > 0 || pe.airSpellDamagePerPrayer > 0)
+      && (player.spellElement === "air" || player.spellElement === "smoke"),
+    hasMeleePrayerScaling: style === "melee" && pe.meleePrayerStrBonus,
+    hasThrownMeleeScaling: style === "ranged" && pe.thrownMeleeStrScale,
+  };
 
   // Step 2: Get available items by slot (filtered by region + style + pact awareness)
-  const slotItems = getSlotCandidates(style, regions, lockedSlots, hasThornsScaling, hasAirPrayerScaling);
+  const slotItems = getSlotCandidates(style, regions, lockedSlots, pactFlags);
 
   // Step 3: Smart pruning — dominated-item removal + score threshold filtering
   // The wiki DB has 2000+ items; dominated pruning removes strictly inferior items,
@@ -76,8 +106,8 @@ export function optimizeGear(config: OptimizerConfig): OptimizerResult[] {
       }
       const prunedWeapons: Item[] = [];
       for (const [, group] of weaponsByCategory) {
-        const pruned = pruneDominated(group, style);
-        prunedWeapons.push(...pruneByThreshold(pruned, style, WEAPON_SCORE_THRESHOLD, WEAPON_HARD_CAP, false));
+        const pruned = pruneDominated(group, style, pactFlags);
+        prunedWeapons.push(...pruneByThreshold(pruned, style, WEAPON_SCORE_THRESHOLD, WEAPON_HARD_CAP, pactFlags));
       }
       slotItems.weapon = prunedWeapons;
     } else if (slot === "ammo") {
@@ -90,14 +120,14 @@ export function optimizeGear(config: OptimizerConfig): OptimizerResult[] {
       }
       const prunedAmmo: Item[] = [];
       for (const [, group] of ammoByCategory) {
-        const pruned = pruneDominated(group, style);
-        prunedAmmo.push(...pruneByThreshold(pruned, style, AMMO_SCORE_THRESHOLD, AMMO_HARD_CAP, false));
+        const pruned = pruneDominated(group, style, pactFlags);
+        prunedAmmo.push(...pruneByThreshold(pruned, style, AMMO_SCORE_THRESHOLD, AMMO_HARD_CAP, pactFlags));
       }
       slotItems.ammo = prunedAmmo;
     } else {
       slotItems[slot] = pruneByThreshold(
-        pruneDominated(slotItems[slot], style),
-        style, ARMOUR_SCORE_THRESHOLD, ARMOUR_HARD_CAP, hasThornsScaling, hasAirPrayerScaling,
+        pruneDominated(slotItems[slot], style, pactFlags),
+        style, ARMOUR_SCORE_THRESHOLD, ARMOUR_HARD_CAP, pactFlags,
       );
     }
   }
@@ -154,7 +184,7 @@ export function optimizeGear(config: OptimizerConfig): OptimizerResult[] {
       const enumerate = (depth: number) => {
         if (depth === freeSlots.length) {
           totalCombinations++;
-          const result = calculateDps({ player: adjustedPlayer, loadout, target });
+          const result = evalDpsTracked({ player: adjustedPlayer, loadout, target });
           const existing = bestPerWeapon.get(wid);
           if (!existing || result.dps > existing.result.dps) {
             bestPerWeapon.set(wid, { loadout: { ...loadout }, result });
@@ -177,9 +207,9 @@ export function optimizeGear(config: OptimizerConfig): OptimizerResult[] {
     .sort((a, b) => b.result.dps - a.result.dps)
     .slice(0, topN);
 
-  // Tag the top result with the total combinations evaluated
+  // Tag the top result with gear combinations counted (Phase 4 only — total evals tracked globally)
   if (results.length > 0) {
-    results[0].combinationsEvaluated = totalCombinations;
+    results[0].totalEvaluations = totalCombinations;
   }
 
   return results;
@@ -200,6 +230,8 @@ interface ConfigCombo {
 }
 
 export function optimizeBuild(config: OptimizerConfig): OptimizerResult[] {
+  _totalEvaluations = 0;
+  _beamCalls = 0;
   const { player, target, lockedSlots, topN } = config;
   const style = player.combatStyle;
 
@@ -246,8 +278,10 @@ export function optimizeBuild(config: OptimizerConfig): OptimizerResult[] {
     const userLockedPacts = regionPlayer.activePacts.length > 0;
     let bestPacts: string[] = regionPlayer.activePacts;
     let bestSpellCfg: SpellConfig | undefined;
-    // Check if user explicitly set a spell (spellElement present and not "none")
-    const userLockedSpell = regionPlayer.spellElement !== undefined && regionPlayer.spellElement !== "none";
+    // Spell element is only "locked" when the user manually chose BOTH pacts and a spell.
+    // When pacts are auto, spellElement was likely set by a previous optimizer run — always re-search.
+    const userLockedSpell = userLockedPacts
+      && regionPlayer.spellElement !== undefined && regionPlayer.spellElement !== "none";
     // Additional pact+spell combos to try in Phase 4 (magic archetypes: element vs powered)
     const extraPactConfigs: { pacts: string[]; spell?: SpellConfig }[] = [];
 
@@ -275,7 +309,7 @@ export function optimizeBuild(config: OptimizerConfig): OptimizerResult[] {
             const staffLoadout = buildBestLoadout(si, staffW, staffShield, lockedSlots);
             for (const spell of viableSpells) {
               const spellPlayer = { ...resolved, spellMaxHit: spell.spellMaxHit, spellElement: spell.spellElement };
-              const dps = calculateDps({ player: spellPlayer, loadout: staffLoadout, target }).dps;
+              const dps = evalDpsTracked({ player: spellPlayer, loadout: staffLoadout, target }).dps;
               if (dps > bestSpellDpsLocked) {
                 bestSpellDpsLocked = dps;
                 bestSpellCfg = spell;
@@ -337,7 +371,7 @@ export function optimizeBuild(config: OptimizerConfig): OptimizerResult[] {
                 const evalPlayer = { ...spellPlayer, activePacts: pactConfigs[0] };
                 const shield = staffW.isTwoHanded ? null : (si.shield[0] ?? null);
                 const loadout = buildBestLoadout(si, staffW, shield, lockedSlots);
-                const dps = calculateDps({ player: evalPlayer, loadout, target }).dps;
+                const dps = evalDpsTracked({ player: evalPlayer, loadout, target }).dps;
                 if (dps > bestStaffDps) {
                   bestStaffDps = dps;
                   bestStaffPacts = pactConfigs[0];
@@ -389,7 +423,7 @@ export function optimizeBuild(config: OptimizerConfig): OptimizerResult[] {
             const pactConfigs = optimizePactsBeam(cleanPlayer, target, lockedSlots, loadout);
             if (pactConfigs.length > 0) {
               const evalPlayer = { ...cleanPlayer, activePacts: pactConfigs[0] };
-              const dps = calculateDps({ player: evalPlayer, loadout, target }).dps;
+              const dps = evalDpsTracked({ player: evalPlayer, loadout, target }).dps;
               if (dps > bestArchDps) {
                 bestArchDps = dps;
                 bestPacts = pactConfigs[0];
@@ -423,6 +457,7 @@ export function optimizeBuild(config: OptimizerConfig): OptimizerResult[] {
         }
       }
 
+      if (typeof process !== "undefined") process.stderr.write(`[P4] start evals=${_totalEvaluations.toLocaleString()}, configs=${phase4Configs.length}\n`);
       const allPhase4Results: OptimizerResult[] = [];
       for (const p4cfg of phase4Configs) {
         const isAirSpell = p4cfg.spell?.spellElement === "air" || p4cfg.spell?.spellElement === "smoke";
@@ -444,6 +479,7 @@ export function optimizeBuild(config: OptimizerConfig): OptimizerResult[] {
 
       // Iterative refinement: re-optimise pacts (+ spell for magic) against best gear
       // Skip if user locked pacts — nothing to refine
+      if (typeof process !== "undefined") process.stderr.write(`[P4] after gear evals=${_totalEvaluations.toLocaleString()}\n`);
       const sortedP4 = allPhase4Results.sort((a, b) => b.result.dps - a.result.dps);
       const best = sortedP4[0];
       if (best && !userLockedPacts) {
@@ -461,7 +497,7 @@ export function optimizeBuild(config: OptimizerConfig): OptimizerResult[] {
             const pactConfigs = optimizePactsBeam(spellPlayer, target, lockedSlots, best.loadout);
             if (pactConfigs.length > 0) {
               const evalPlayer = { ...spellPlayer, activePacts: pactConfigs[0] };
-              const dps = calculateDps({ player: evalPlayer, loadout: best.loadout, target }).dps;
+              const dps = evalDpsTracked({ player: evalPlayer, loadout: best.loadout, target }).dps;
               if (dps > refinedBestDps) {
                 refinedBestDps = dps;
                 refinedPacts = pactConfigs[0];
@@ -482,7 +518,7 @@ export function optimizeBuild(config: OptimizerConfig): OptimizerResult[] {
                 const pactConfigs = optimizePactsBeam(spellPlayer, target, lockedSlots, staffResult.loadout);
                 if (pactConfigs.length > 0) {
                   const evalPlayer = { ...spellPlayer, activePacts: pactConfigs[0] };
-                  const dps = calculateDps({ player: evalPlayer, loadout: staffResult.loadout, target }).dps;
+                  const dps = evalDpsTracked({ player: evalPlayer, loadout: staffResult.loadout, target }).dps;
                   if (dps > refinedBestDps) {
                     refinedBestDps = dps;
                     refinedPacts = pactConfigs[0];
@@ -496,7 +532,7 @@ export function optimizeBuild(config: OptimizerConfig): OptimizerResult[] {
             const pactConfigs = optimizePactsBeam(cleanPlayer2, target, lockedSlots, best.loadout);
             if (pactConfigs.length > 0) {
               const evalPlayer = { ...cleanPlayer2, activePacts: pactConfigs[0] };
-              const dps = calculateDps({ player: evalPlayer, loadout: best.loadout, target }).dps;
+              const dps = evalDpsTracked({ player: evalPlayer, loadout: best.loadout, target }).dps;
               if (dps > refinedBestDps) {
                 refinedBestDps = dps;
                 refinedPacts = pactConfigs[0];
@@ -534,6 +570,7 @@ export function optimizeBuild(config: OptimizerConfig): OptimizerResult[] {
     .sort((a, b) => b.result.dps - a.result.dps)
     .slice(0, topN);
 
+  if (typeof process !== "undefined") process.stderr.write(`[P5] start evals=${_totalEvaluations.toLocaleString()}, builds=${finalResults.length}\n`);
   const userLockedPactsGlobal = player.activePacts.length > 0;
   if (!userLockedPactsGlobal) {
     for (const r of finalResults) {
@@ -577,7 +614,7 @@ export function optimizeBuild(config: OptimizerConfig): OptimizerResult[] {
           const pactConfigs = optimizePactsBeam(sp, target, lockedSlots, r.loadout);
           if (pactConfigs.length > 0) {
             const ep = { ...sp, activePacts: pactConfigs[0] };
-            const dps = calculateDps({ player: ep, loadout: r.loadout, target }).dps;
+            const dps = evalDpsTracked({ player: ep, loadout: r.loadout, target }).dps;
             if (dps > bestDps) {
               bestDps = dps;
               bestPactsForBuild = pactConfigs[0];
@@ -590,7 +627,7 @@ export function optimizeBuild(config: OptimizerConfig): OptimizerResult[] {
         const noSpellPacts = optimizePactsBeam(resolved, target, lockedSlots, r.loadout);
         if (noSpellPacts.length > 0) {
           const ep = { ...resolved, activePacts: noSpellPacts[0] };
-          const dps = calculateDps({ player: ep, loadout: r.loadout, target }).dps;
+          const dps = evalDpsTracked({ player: ep, loadout: r.loadout, target }).dps;
           if (dps > bestDps) { bestDps = dps; bestPactsForBuild = noSpellPacts[0]; bestSpellForBuild = undefined; bestPrayerCount = undefined; }
         }
 
@@ -602,21 +639,29 @@ export function optimizeBuild(config: OptimizerConfig): OptimizerResult[] {
           ...(bestSpellForBuild ? { spellElement: bestSpellForBuild.spellElement, spellMaxHit: bestSpellForBuild.spellMaxHit } : {}),
           ...(bestPrayerCount ? { activePrayerCount: bestPrayerCount } : {}),
         };
-        r.result = calculateDps({ player: finalPlayer, loadout: r.loadout, target });
+        r.result = evalDpsTracked({ player: finalPlayer, loadout: r.loadout, target });
       } else {
-        // Melee or ranged — beam search pacts for this specific loadout
-        const pactConfigs = optimizePactsBeam(resolved, target, lockedSlots, r.loadout);
+        // Melee or ranged — beam search pacts for this specific loadout (with capstone injection)
+        const pactConfigs = optimizePactsBeam(resolved, target, lockedSlots, r.loadout, undefined, true);
         if (pactConfigs.length > 0) {
           r.optimizedConfig = { ...opt, activePacts: pactConfigs[0] };
           const finalPlayer = { ...resolved, activePacts: pactConfigs[0] };
-          r.result = calculateDps({ player: finalPlayer, loadout: r.loadout, target });
+          r.result = evalDpsTracked({ player: finalPlayer, loadout: r.loadout, target });
         }
       }
     }
   }
 
   // Re-sort after per-build refinement (different pacts change DPS)
-  return finalResults.sort((a, b) => b.result.dps - a.result.dps);
+  const sorted = finalResults.sort((a, b) => b.result.dps - a.result.dps);
+
+  // Attach total evaluation count across ALL phases (pact beam, gear search, refinement, etc.)
+  if (sorted.length > 0) {
+    sorted[0].totalEvaluations = _totalEvaluations;
+    (sorted[0] as Record<string, unknown>)._beamCalls = _beamCalls;
+  }
+
+  return sorted;
 }
 
 function getValidPotions(style: CombatStyle, boss?: BossPreset): Exclude<PotionType, "auto">[] {
@@ -793,7 +838,7 @@ function rankRegionCombos(
       const evalPlayer = spellConfig
         ? { ...regionPlayer, spellMaxHit: spellConfig.spellMaxHit, spellElement: spellConfig.spellElement }
         : regionPlayer;
-      const result = calculateDps({ player: evalPlayer, loadout, target });
+      const result = evalDpsTracked({ player: evalPlayer, loadout, target });
       if (result.dps > bestDps) bestDps = result.dps;
     }
 
@@ -835,7 +880,7 @@ function quickRankCombos(
         ? { ...resolved, spellMaxHit: spellConfig.spellMaxHit, spellElement: spellConfig.spellElement }
         : resolved;
 
-      const result = calculateDps({ player: evalPlayer, loadout, target });
+      const result = evalDpsTracked({ player: evalPlayer, loadout, target });
       if (result.dps > bestDps) bestDps = result.dps;
     }
 
@@ -950,7 +995,11 @@ function optimizePactsBeam(
   fixedLoadout?: BuildLoadout,
   /** When set, quickWeapons only includes weapons from these categories */
   weaponCategoryFilter?: Set<string>,
+  /** Enable capstone injection post-processing (expensive — only for final per-build refinement) */
+  enableCapstoneInjection: boolean = false,
 ): string[][] {
+  _beamCalls++;
+  const _beamStart = _totalEvaluations;
   const BEAM_WIDTH = 6;
   const NUM_RESULTS = 3;
   const allNodes = getAllNodes();
@@ -974,20 +1023,22 @@ function optimizePactsBeam(
         }
         const pruned: Item[] = [];
         for (const [, group] of weaponsByCategory) {
-          pruned.push(...pruneByThreshold(pruneDominated(group, style), style, 0.25, 2, false));
+          pruned.push(...pruneByThreshold(pruneDominated(group, style), style, 0.25, 2));
         }
         slotItems.weapon = pruned;
       } else {
-        slotItems[slot] = pruneByThreshold(pruneDominated(slotItems[slot], style), style, 0.5, 3, false);
+        slotItems[slot] = pruneByThreshold(pruneDominated(slotItems[slot], style), style, 0.5, 3);
       }
     }
     const scores = slotItems.weapon.map(w => ({ w, s: offensiveScore(w, style) }));
     scores.sort((a, b) => b.s - a.s);
-    // Include top weapon from each weapon category so category-specific pacts
-    // are evaluated against the right weapon type (e.g. crossbow pacts vs crossbows,
-    // element pacts vs standard staves, not just the single highest-scoring weapon).
+    // Use top-2 weapons for quick estimation — more is diminishing returns since we
+    // re-optimize pacts per build in Phase 5. This keeps beam search fast (~2 weapons
+    // instead of 6+ categories).
+    const MAX_QUICK_WEAPONS = 2;
     const seenCats = new Set<string>();
     for (const { w } of scores) {
+      if (quickWeapons.length >= MAX_QUICK_WEAPONS) break;
       const cat = w.weaponCategory ?? "other";
       if (weaponCategoryFilter && !weaponCategoryFilter.has(cat)) continue;
       if (!seenCats.has(cat)) {
@@ -1008,7 +1059,7 @@ function optimizePactsBeam(
       const evalPlayer = spellConfig
         ? { ...p, spellMaxHit: spellConfig.spellMaxHit, spellElement: spellConfig.spellElement }
         : p;
-      return calculateDps({ player: evalPlayer, loadout: fixedLoadout, target }).dps;
+      return evalDpsTracked({ player: evalPlayer, loadout: fixedLoadout, target }).dps;
     }
     let best = 0;
     for (const { weapon, shield } of quickWeapons) {
@@ -1017,13 +1068,35 @@ function optimizePactsBeam(
       const evalPlayer = spellConfig
         ? { ...p, spellMaxHit: spellConfig.spellMaxHit, spellElement: spellConfig.spellElement }
         : p;
-      const dps = calculateDps({ player: evalPlayer, loadout, target }).dps;
+      const dps = evalDpsTracked({ player: evalPlayer, loadout, target }).dps;
       if (dps > best) best = dps;
     }
     return best;
   }
 
   // --- Beam search ---------------------------------------------------------
+  // Pre-build adjacency index and style-relevant node set for fast frontier computation.
+  // Instead of iterating all 132 nodes per beam entry, we compute the "frontier" — only
+  // unselected nodes adjacent to the current selection. Typically 10-20 nodes vs 132.
+  const nodeIndex = new Map(allNodes.map(n => [n.id, n]));
+  const relevantNodes = new Set(allNodes.filter(n => isNodeRelevantForStyle(n, style)).map(n => n.id));
+
+  /** Get the frontier: unselected, style-relevant nodes adjacent to selected. */
+  function getFrontier(selected: Set<string>): string[] {
+    const frontier: string[] = [];
+    const seen = new Set<string>();
+    for (const id of selected) {
+      const node = nodeIndex.get(id);
+      if (!node) continue;
+      for (const neighbor of node.linkedNodes) {
+        if (selected.has(neighbor) || seen.has(neighbor)) continue;
+        seen.add(neighbor);
+        if (relevantNodes.has(neighbor)) frontier.push(neighbor);
+      }
+    }
+    return frontier;
+  }
+
   interface BeamEntry { selected: Set<string>; dps: number }
   let beam: BeamEntry[] = [{ selected: new Set([ROOT]), dps: evalDps([ROOT]) }];
 
@@ -1031,15 +1104,13 @@ function optimizePactsBeam(
     const next = new Map<string, BeamEntry>();
 
     for (const entry of beam) {
-      for (const node of allNodes) {
-        if (entry.selected.has(node.id)) continue;
-        if (!isNodeRelevantForStyle(node, style)) continue;
-        if (!canSelectNode(node.id, entry.selected)) continue;
+      const frontier = getFrontier(entry.selected);
 
+      for (const nodeId of frontier) {
         const sel = new Set(entry.selected);
-        sel.add(node.id);
+        sel.add(nodeId);
 
-        const pacts = [...sel].sort(); // sorted for deterministic key + DPS doesn't depend on order
+        const pacts = [...sel].sort();
         const dps = evalDps(pacts);
         const key = pacts.join(",");
 
@@ -1050,14 +1121,135 @@ function optimizePactsBeam(
       }
     }
 
-    if (next.size === 0) break; // no more reachable nodes
+    if (next.size === 0) break;
 
     const sorted = [...next.values()].sort((a, b) => b.dps - a.dps);
     beam = sorted.slice(0, BEAM_WIDTH);
   }
 
+  // --- Capstone injection: try paths to unreached capstone nodes ----------
+  // The greedy beam misses capstones behind low-value gateway nodes (e.g. node155
+  // for halberds requires traversing node88 which has minimal DPS value on its own).
+  // Only enabled for final per-build refinement (Phase 5) to avoid N^2 blowup.
+  if (!enableCapstoneInjection) {
+    // eslint-disable-next-line no-console
+    if (typeof process !== "undefined") process.stderr.write(`[beam#${_beamCalls}] ${(_totalEvaluations - _beamStart).toLocaleString()} evals, fixed=${!!fixedLoadout}, qw=${quickWeapons.length}\n`);
+    beam.sort((a, b) => b.dps - a.dps);
+    return beam.slice(0, NUM_RESULTS).map(e => [...e.selected]);
+  }
+  const capstones = allNodes.filter(n => n.size === "node_capstone" && isNodeRelevantForStyle(n, style));
+
+  const best = beam[0]; // only refine the top candidate
+  if (best && best.selected.size >= PACT_POINT_LIMIT) {
+    // Pre-compute marginal DPS for all removable nodes (once, reused across capstones)
+    const basePacts = [...best.selected];
+    const removable: { id: string; marginalDps: number }[] = [];
+    for (const id of best.selected) {
+      if (id === ROOT) continue;
+      if (!canDeselectNode(id, best.selected)) continue;
+      const marginal = best.dps - evalDps(basePacts.filter(p => p !== id));
+      removable.push({ id, marginalDps: marginal });
+    }
+    removable.sort((a, b) => a.marginalDps - b.marginalDps);
+
+    // Try all capstones and pick the one with the biggest DPS improvement
+    let bestCapResult: { selected: Set<string>; dps: number } | null = null;
+    for (const cap of capstones) {
+      if (best.selected.has(cap.id)) continue;
+
+      const path = bfsPathToSelected(cap.id, best.selected, nodeIndex);
+      if (!path || path.length === 0) continue;
+      const toAdd = path.filter(id => !best.selected.has(id));
+      if (toAdd.length === 0) continue;
+
+      // Sequentially remove least-valuable nodes, verifying connectivity after each
+      const available = removable.filter(r => !toAdd.includes(r.id));
+      const newSelected = new Set(best.selected);
+      let removed = 0;
+      for (const r of available) {
+        if (removed >= toAdd.length) break;
+        if (!newSelected.has(r.id)) continue;
+        newSelected.delete(r.id);
+        if (!isConnectedFromRoot(ROOT, newSelected, nodeIndex)) {
+          newSelected.add(r.id); continue;
+        }
+        removed++;
+      }
+      if (removed < toAdd.length) continue;
+
+      for (const id of toAdd) newSelected.add(id);
+      if (!isConnectedFromRoot(ROOT, newSelected, nodeIndex)) continue;
+      if (newSelected.size !== PACT_POINT_LIMIT) continue;
+
+      const newDps = evalDps([...newSelected]);
+      if (newDps > best.dps && (!bestCapResult || newDps > bestCapResult.dps)) {
+        bestCapResult = { selected: newSelected, dps: newDps };
+      }
+    }
+    if (bestCapResult) {
+      best.selected = bestCapResult.selected;
+      best.dps = bestCapResult.dps;
+    }
+  }
+
+  // eslint-disable-next-line no-console
+  if (typeof process !== "undefined") process.stderr.write(`[beam#${_beamCalls}+cap] ${(_totalEvaluations - _beamStart).toLocaleString()} evals, fixed=${!!fixedLoadout}\n`);
   beam.sort((a, b) => b.dps - a.dps);
   return beam.slice(0, NUM_RESULTS).map(e => [...e.selected]);
+}
+
+/** BFS from target node backward through tree to find shortest path to any node in `selected` */
+function bfsPathToSelected(targetId: string, selected: Set<string>, nodeIndex: Map<string, PactNode>): string[] | null {
+  const visited = new Set<string>();
+  const parent = new Map<string, string>();
+  const queue = [targetId];
+  visited.add(targetId);
+
+  while (queue.length > 0) {
+    const current = queue.shift()!;
+    const node = nodeIndex.get(current);
+    if (!node) continue;
+
+    for (const neighbor of node.linkedNodes) {
+      if (visited.has(neighbor)) continue;
+      visited.add(neighbor);
+      parent.set(neighbor, current);
+
+      if (selected.has(neighbor)) {
+        // Reconstruct path from target to this selected node (excluding the anchor)
+        const path: string[] = [];
+        let cur = current;
+        while (cur !== targetId) {
+          path.push(cur);
+          cur = parent.get(cur)!;
+        }
+        path.push(targetId);
+        return path;
+      }
+      queue.push(neighbor);
+    }
+  }
+  return null;
+}
+
+/** BFS from root to verify all nodes in `selected` are reachable through selected neighbors */
+function isConnectedFromRoot(root: string, selected: Set<string>, nodeIndex: Map<string, PactNode>): boolean {
+  if (!selected.has(root)) return false;
+  const visited = new Set<string>();
+  const queue = [root];
+  visited.add(root);
+  while (queue.length > 0) {
+    const cur = queue.shift()!;
+    const node = nodeIndex.get(cur);
+    if (!node) continue;
+    for (const neighbor of node.linkedNodes) {
+      if (!visited.has(neighbor) && selected.has(neighbor)) {
+        visited.add(neighbor);
+        queue.push(neighbor);
+      }
+    }
+  }
+  return visited.size === selected.size;
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -1095,8 +1287,7 @@ function getSlotCandidates(
   style: CombatStyle,
   regions: string[],
   locked: Partial<BuildLoadout>,
-  hasThornsScaling: boolean = false,
-  hasAirPrayerScaling: boolean = false,
+  pactFlags: PactAwareness = NO_PACT_FLAGS,
 ): SlotItemMap {
   const result: SlotItemMap = {
     head: [], cape: [], neck: [], ammo: [], weapon: [],
@@ -1122,7 +1313,7 @@ function getSlotCandidates(
 
     // For non-weapon slots, include if it has any offensive value for the style
     // (or defensive value when thorns scaling is active)
-    if (isUsefulForStyle(item, style, hasThornsScaling, hasAirPrayerScaling)) {
+    if (isUsefulForStyle(item, style, pactFlags)) {
       result[slot].push(item);
     }
   }
@@ -1148,20 +1339,25 @@ function getSlotCandidates(
 
 function isUsefulForStyle(
   item: Item, style: CombatStyle,
-  hasThornsScaling: boolean = false,
-  hasAirPrayerScaling: boolean = false,
+  pactFlags: PactAwareness = NO_PACT_FLAGS,
 ): boolean {
   const b = item.bonuses;
 
   // When thorns + defence_recoil_scaling pacts are active, high-defence items
   // contribute to DPS through thorns damage. Include items with meaningful total def.
-  if (hasThornsScaling) {
+  if (pactFlags.hasThornsScaling) {
     const totalDef = b.dstab + b.dslash + b.dcrush + b.dranged + b.dmagic;
     if (totalDef >= 100) return true; // +1 thorns damage threshold
   }
 
-  // When air spell pacts scale with prayer bonus, prayer items become DPS-relevant for magic
-  if (hasAirPrayerScaling && style === "magic" && b.prayer > 0) {
+  // When prayer bonus → DPS pacts are active, prayer items become relevant
+  if (b.prayer > 0) {
+    if (pactFlags.hasAirPrayerScaling && style === "magic") return true;
+    if (pactFlags.hasMeleePrayerScaling && style === "melee") return true;
+  }
+
+  // When thrown melee str scale pact is active, melee str items are relevant for ranged
+  if (pactFlags.hasThrownMeleeScaling && style === "ranged" && b.mstr > 0) {
     return true;
   }
 
@@ -1199,8 +1395,7 @@ function pruneByThreshold(
   style: CombatStyle,
   threshold: number,
   hardCap: number,
-  hasThornsScaling: boolean,
-  hasAirPrayerScaling: boolean = false,
+  pactFlags: PactAwareness = NO_PACT_FLAGS,
 ): Item[] {
   if (items.length <= 1) return items;
 
@@ -1209,8 +1404,8 @@ function pruneByThreshold(
 
   if (withoutPassive.length === 0) return withPassive;
 
-  // Score each item — includes defensive contribution when thorns scaling is active
-  const scored = withoutPassive.map(i => ({ item: i, score: pruningScore(i, style, hasThornsScaling, hasAirPrayerScaling) }));
+  // Score each item — includes pact-based cross-stat contributions
+  const scored = withoutPassive.map(i => ({ item: i, score: pruningScore(i, style, pactFlags) }));
   const bestScore = Math.max(...scored.map(s => s.score));
   if (bestScore <= 0) return withPassive;
 
@@ -1236,9 +1431,9 @@ function pruneByThreshold(
 }
 
 /** Scoring function for pruning decisions. Includes pact-based value when relevant. */
-function pruningScore(item: Item, style: CombatStyle, hasThornsScaling: boolean, hasAirPrayerScaling: boolean = false): number {
-  let score = offensiveScore(item, style, hasAirPrayerScaling);
-  if (hasThornsScaling) {
+function pruningScore(item: Item, style: CombatStyle, pactFlags: PactAwareness = NO_PACT_FLAGS): number {
+  let score = offensiveScore(item, style, pactFlags);
+  if (pactFlags.hasThornsScaling) {
     const b = item.bonuses;
     const totalDef = b.dstab + b.dslash + b.dcrush + b.dranged + b.dmagic;
     if (totalDef > 0) score += totalDef * 0.05;
@@ -1246,7 +1441,7 @@ function pruningScore(item: Item, style: CombatStyle, hasThornsScaling: boolean,
   return score;
 }
 
-function pruneDominated(items: Item[], style: CombatStyle): Item[] {
+function pruneDominated(items: Item[], style: CombatStyle, pactFlags: PactAwareness = NO_PACT_FLAGS): Item[] {
   if (items.length <= 1) return items;
 
   return items.filter((item, i) => {
@@ -1255,19 +1450,25 @@ function pruneDominated(items: Item[], style: CombatStyle): Item[] {
 
     for (let j = 0; j < items.length; j++) {
       if (i === j) continue;
-      if (dominates(items[j], item, style)) return false;
+      if (dominates(items[j], item, style, pactFlags)) return false;
     }
     return true;
   });
 }
 
-function dominates(a: Item, b: Item, style: CombatStyle): boolean {
+function dominates(a: Item, b: Item, style: CombatStyle, pactFlags: PactAwareness = NO_PACT_FLAGS): boolean {
   // a dominates b if a is >= b in all DPS-relevant stats and > in at least one
-  // Prayer bonus excluded — it doesn't affect DPS formulas
   const ab = a.bonuses;
   const bb = b.bonuses;
 
   let strictlyBetter = false;
+
+  // When pacts make prayer bonus DPS-relevant, include it in domination check
+  const prayerMatters = pactFlags.hasMeleePrayerScaling || pactFlags.hasAirPrayerScaling;
+  if (prayerMatters) {
+    if (ab.prayer < bb.prayer) return false;
+    if (ab.prayer > bb.prayer) strictlyBetter = true;
+  }
 
   switch (style) {
     case "melee": {
@@ -1281,6 +1482,11 @@ function dominates(a: Item, b: Item, style: CombatStyle): boolean {
     case "ranged": {
       if (ab.rstr < bb.rstr) return false;
       if (ab.aranged < bb.aranged) return false;
+      // When thrown melee scaling is active, melee str contributes to ranged DPS
+      if (pactFlags.hasThrownMeleeScaling) {
+        if (ab.mstr < bb.mstr) return false;
+        if (ab.mstr > bb.mstr) strictlyBetter = true;
+      }
       if (ab.rstr > bb.rstr || ab.aranged > bb.aranged) strictlyBetter = true;
       break;
     }
@@ -1357,16 +1563,30 @@ function buildBestLoadout(
   return loadout;
 }
 
-function offensiveScore(item: Item, style: string, hasAirPrayerScaling: boolean = false): number {
+function offensiveScore(item: Item, style: string, pactFlags: PactAwareness = NO_PACT_FLAGS): number {
   const b = item.bonuses;
   switch (style) {
-    case "melee":
+    case "melee": {
       // Weight mstr 5x: +1 mstr ≈ +0.1 DPS while +1 attack ≈ +0.0005 DPS for armour.
       // For weapons both stats are large so relative ranking is preserved.
-      return b.mstr * 5 + Math.max(b.astab, b.aslash, b.acrush);
-    case "ranged":
+      let score = b.mstr * 5 + Math.max(b.astab, b.aslash, b.acrush);
+      // meleePrayerStrBonus: +50% of prayer bonus as melee str
+      // +1 prayer = +0.5 mstr ≈ weight 2.5 (half of mstr weight 5)
+      if (pactFlags.hasMeleePrayerScaling && b.prayer > 0) {
+        score += b.prayer * 2.5;
+      }
+      return score;
+    }
+    case "ranged": {
       // Weight rstr 5x to match melee — ranged str is equally impactful for DPS
-      return b.rstr * 5 + b.aranged;
+      let score = b.rstr * 5 + b.aranged;
+      // thrownMeleeStrScale: +80% of mstr as ranged str for thrown
+      // +1 mstr = +0.8 rstr ≈ weight 4 (0.8 * 5)
+      if (pactFlags.hasThrownMeleeScaling && b.mstr > 0) {
+        score += b.mstr * 4;
+      }
+      return score;
+    }
     case "magic": {
       let score = b.mdmg * 3 + b.amagic;
       // Powered staves have mdmg=0 but high base damage from magic level.
@@ -1376,7 +1596,7 @@ function offensiveScore(item: Item, style: string, hasAirPrayerScaling: boolean 
       }
       // Air pact prayer scaling: prayer bonus → max hit chance
       // +1 prayer bonus ≈ +1% max hit chance ≈ +0.5% DPS
-      if (hasAirPrayerScaling && b.prayer > 0) {
+      if (pactFlags.hasAirPrayerScaling && b.prayer > 0) {
         score += b.prayer * 2;
       }
       return score;

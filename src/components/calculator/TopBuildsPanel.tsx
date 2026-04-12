@@ -81,9 +81,9 @@ export function TopBuildsPanel({ results, isRunning, selectedIndex, onSelect, on
         </button>
       </div>
 
-      {results.length > 0 && results[0].combinationsEvaluated && (
+      {results.length > 0 && results[0].totalEvaluations && (
         <div className="text-[10px] text-osrs-text-dim text-center">
-          {results[0].combinationsEvaluated.toLocaleString()} combinations evaluated
+          {results[0].totalEvaluations.toLocaleString()} DPS evaluations
         </div>
       )}
 

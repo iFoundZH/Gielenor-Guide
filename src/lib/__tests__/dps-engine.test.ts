@@ -578,7 +578,7 @@ describe("multiplier chain", () => {
     expect(chain.find(s => s.name === "DHL vs Dragons")?.factor).toBe(1.20);
   });
 
-  it("keris vs kalphite: ×4/3", () => {
+  it("keris vs kalphite: ×133/100 (per weirdgloop)", () => {
     const kq = getBoss("kq")!; // isKalphite=true
     const ctx = makeCtx(
       { combatStyle: "melee", attackStyle: "accurate" },
@@ -587,7 +587,7 @@ describe("multiplier chain", () => {
     );
     const pe = aggregatePactEffects([]);
     const chain = getMultiplierChain(ctx, pe, 20);
-    expect(chain.find(s => s.name === "Keris vs Kalphites")?.factor).toBeCloseTo(4 / 3, 5);
+    expect(chain.find(s => s.name === "Keris vs Kalphites")?.factor).toBeCloseTo(133 / 100, 5);
   });
 
   it("slayer helm (i) on task: melee ×7/6, ranged/magic ×1.15", () => {
@@ -632,7 +632,7 @@ describe("multiplier chain", () => {
     expect(crystal?.factor).toBeCloseTo(1.15, 5);
   });
 
-  it("inquisitor set (3pc) vs crush: 0.5%×3 + 2.5% = 4%", () => {
+  it("inquisitor set (3pc) without mace: 2.5% total (weirdgloop override)", () => {
     const ctx = makeCtx(
       { combatStyle: "melee", attackStyle: "accurate" },
       {
@@ -646,8 +646,8 @@ describe("multiplier chain", () => {
     const pe = aggregatePactEffects([]);
     const chain = getMultiplierChain(ctx, pe, 20);
     const inq = chain.find(s => s.name.includes("Inquisitor"));
-    // 3*0.005 + 0.025 = 0.040
-    expect(inq?.factor).toBeCloseTo(1.04, 5);
+    // Full set WITH mace: (200 + 3*5) / 200 = 215/200 = 1.075 per weirdgloop
+    expect(inq?.factor).toBeCloseTo(1.075, 5);
   });
 
   it("fang max hit reduction: maxHit - trunc(maxHit * 3/20)", () => {
@@ -982,12 +982,12 @@ describe("attack speed", () => {
         combatStyle: "magic", attackStyle: "autocast",
         activePacts: ["node1", "node8", "node58", "node83", "node86", "node67", "node68", "node69", "node70", "node117", "node124", "node127", "node122"],
       },
-      { weapon: getItem("kodai")! }, // staff, 4t (wiki-verified)
+      { weapon: getItem("kodai")! }, // staff, 5t (standard spell casting speed)
       custom,
     );
     const result = calculateDps(ctx);
-    // Base 4t, spell speed -2 = 2
-    expect(result.speed).toBe(2);
+    // Base 5t, spell speed -2 = 3 (min 2t floor)
+    expect(result.speed).toBe(3);
   });
 
   it("powered staff speed pact: -3t", () => {
@@ -1995,7 +1995,7 @@ describe("Smoke Battlestaff", () => {
 // ═══════════════════════════════════════════════════════════════════════
 
 describe("Tome of Fire", () => {
-  it("gives +50% damage for fire spells", () => {
+  it("gives +10% damage for fire spells (PvE, nerfed May 2024)", () => {
     const tome = getItem("tome-of-fire");
     if (!tome) return; // May not be in wiki DB yet
     const ctx = makeCtx(
@@ -2005,7 +2005,8 @@ describe("Tome of Fire", () => {
     );
     const result = calculateDps(ctx);
     const chain = result.breakdown.multiplierChain;
-    expect(chain.find(s => s.name === "Tome of Fire")?.factor).toBe(1.50);
+    // All tomes nerfed to 10% vs NPCs on 29 May 2024 — weirdgloop [11, 10]
+    expect(chain.find(s => s.name === "Tome of fire")?.factor).toBeCloseTo(11 / 10, 5);
   });
 
   it("does not apply for non-fire spells", () => {
@@ -2027,19 +2028,28 @@ describe("Tome of Fire", () => {
 // ═══════════════════════════════════════════════════════════════════════
 
 describe("Soulreaper Axe stacks", () => {
-  it("5 stacks give +30% damage and accuracy", () => {
+  it("5 stacks add to effective level (weirdgloop formula)", () => {
     const sra = getItem("soulreaper-axe");
     if (!sra) return;
-    const ctx = makeCtx(
+    const ctx5 = makeCtx(
       { combatStyle: "melee", attackStyle: "accurate", soulreaperStacks: 5 },
       { weapon: sra },
       custom,
     );
-    const result = calculateDps(ctx);
-    const chain = result.breakdown.multiplierChain;
-    const step = chain.find(s => s.name.includes("Soulreaper"));
-    expect(step).toBeDefined();
-    expect(step!.factor).toBeCloseTo(1.30, 5);
+    const ctx0 = makeCtx(
+      { combatStyle: "melee", attackStyle: "accurate", soulreaperStacks: 0 },
+      { weapon: sra },
+      custom,
+    );
+    const r5 = calculateDps(ctx5);
+    const r0 = calculateDps(ctx0);
+    // Per weirdgloop: adds floor(baseStrLevel * stacks * 6 / 100) to effective str level
+    // 5 stacks at 99 str: floor(99 * 5 * 6 / 100) = floor(29.7) = 29
+    expect(r5.breakdown.effectiveLevel - r0.breakdown.effectiveLevel).toBe(29);
+    // Should not appear in multiplier chain — applied as additive to effective level
+    expect(r5.breakdown.multiplierChain.find(s => s.name.includes("Soulreaper"))).toBeUndefined();
+    // Higher stacks = higher DPS
+    expect(r5.dps).toBeGreaterThan(r0.dps);
   });
 
   it("0 stacks give no bonus", () => {
@@ -2222,7 +2232,7 @@ describe("special attack DPS", () => {
     expect(specResult.breakdown.specInfo!.specsPerCycle).toBe(2);
   });
 
-  it("AGS spec max hit is 1.375x with 2x accuracy", () => {
+  it("AGS spec max hit is 1.25x with 2x accuracy (post-Equipment Rebalance)", () => {
     const ctx = makeCtx(
       { combatStyle: "melee", attackStyle: "aggressive", potion: "super-combat", prayerType: "piety", usingSpecialAttack: true },
       { weapon: getItem("ags")! },
@@ -2230,9 +2240,9 @@ describe("special attack DPS", () => {
     );
     const result = calculateDps(ctx);
     const si = result.breakdown.specInfo!;
-    // Spec max hit should be floor(normalMax * 1.375)
+    // Spec max hit should be floor(normalMax * 1.25) — post-Equipment Rebalance
     const normalMax = result.maxHit;
-    expect(si.specMaxHit).toBe(Math.floor(normalMax * 1.375));
+    expect(si.specMaxHit).toBe(Math.floor(normalMax * 1.25));
     // Spec accuracy should be higher than normal (2x attack roll)
     expect(si.specAccuracy).toBeGreaterThan(result.accuracy);
   });
@@ -2572,5 +2582,127 @@ describe("earthScaleDefenceStat element gating", () => {
     const r2 = calculateDps(noCapstone);
     // Earth scale should not apply for powered staves
     expect(r1.breakdown.bonusDps).toBe(r2.breakdown.bonusDps);
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+// EFFECTIVE MELEE RANGE — halberd range pacts interact with distance damage
+// node43: meleeRangeMultiplier = 2 (2H weapons: melee range doubled)
+// node155: meleeRangeConditionalBoost (if range >= 4, increase to 7; halberds >5t → 5t)
+// node74: distanceMeleeMinHit = 3 (min hit +3 + 3 per tile)
+// node153: meleeDistanceDamagePercent = 4 (+4% + 4% per 3 tiles)
+// ═══════════════════════════════════════════════════════════════════════
+
+describe("effective melee range", () => {
+  // Path: node1 → node74 → node43 → node83 → node88 → node156 → node153 → node154 → node155
+  const rangePacts = ["node1", "node74", "node43"];
+  const allRangePacts = ["node1", "node74", "node43", "node83", "node88", "node156", "node153", "node154", "node155"];
+  const distMinPacts = ["node1", "node74"]; // node74 = distanceMeleeMinHit
+  const distMaxPacts = ["node1", "node74", "node43", "node83", "node88", "node156", "node153"]; // node153 = distanceDamagePercent
+
+  it("halberd base range = 2: distance min hit uses dist 2 (min = 3+3*2 = 9)", () => {
+    // Halberd with just distanceMeleeMinHit pact — no range pacts
+    // Base halberd range is 2, so effective distance = 2
+    const ctx = makeCtx(
+      { combatStyle: "melee", attackStyle: "accurate", activePacts: distMinPacts },
+      { weapon: getItem("d-halberd")! },
+      custom,
+    );
+    const result = calculateDps(ctx);
+    // min = 3 + 3*2 = 9 (halberd attacks from range 2)
+    expect(result.breakdown.minHit).toBe(9);
+  });
+
+  it("whip base range = 1: distance min hit uses dist 1 (min = 3+3*1 = 6)", () => {
+    const ctx = makeCtx(
+      { combatStyle: "melee", attackStyle: "accurate", activePacts: distMinPacts },
+      { weapon: getItem("whip")! },
+      custom,
+    );
+    const result = calculateDps(ctx);
+    expect(result.breakdown.minHit).toBe(6);
+  });
+
+  it("node43 doubles 2H halberd range: 2→4, distance min hit uses 4 (min = 3+3*4 = 15)", () => {
+    const ctx = makeCtx(
+      { combatStyle: "melee", attackStyle: "accurate", activePacts: rangePacts },
+      { weapon: getItem("d-halberd")! },
+      custom,
+    );
+    const result = calculateDps(ctx);
+    // range = 2 * 2 = 4, min = 3 + 3*4 = 15
+    expect(result.breakdown.minHit).toBe(15);
+  });
+
+  it("node43 + node155: halberd range 2→4→7, distance min hit = 3+3*7 = 24", () => {
+    const ctx = makeCtx(
+      { combatStyle: "melee", attackStyle: "accurate", activePacts: allRangePacts },
+      { weapon: getItem("d-halberd")! },
+      custom,
+    );
+    const result = calculateDps(ctx);
+    // range = 2*2=4, >=4 so set to 7, min = 3 + 3*7 = 24
+    expect(result.breakdown.minHit).toBe(24);
+  });
+
+  it("distance max hit scales with effective range: halberd with all range pacts gives +12%", () => {
+    // node153: +4% + 4% per 3 tiles. At dist 7: factor = 1 + 4*(floor(7/3)+1)/100 = 1.12
+    const ctx = makeCtx(
+      { combatStyle: "melee", attackStyle: "accurate", activePacts: allRangePacts },
+      { weapon: getItem("d-halberd")! },
+      custom,
+    );
+    const pe = aggregatePactEffects(allRangePacts);
+    const chain = getMultiplierChain(ctx, pe, 100);
+    const distStep = chain.find(s => s.name === "Distance Max Hit");
+    expect(distStep).toBeDefined();
+    // 1 + 4 * (floor(7/3) + 1) / 100 = 1 + 4 * 3 / 100 = 1.12
+    expect(distStep!.factor).toBeCloseTo(1.12, 4);
+  });
+
+  it("distance max hit with node43 (range doubled): halberd dist 4 gives +8%", () => {
+    // Path to node153 goes through node43 (2H range double): halberd 2→4
+    // At dist 4: factor = 1 + 4*(floor(4/3)+1)/100 = 1 + 4*2/100 = 1.08
+    const pacts = distMaxPacts;
+    const ctx = makeCtx(
+      { combatStyle: "melee", attackStyle: "accurate", activePacts: pacts },
+      { weapon: getItem("d-halberd")! },
+      custom,
+    );
+    const pe = aggregatePactEffects(pacts);
+    const chain = getMultiplierChain(ctx, pe, 100);
+    const distStep = chain.find(s => s.name === "Distance Max Hit");
+    expect(distStep).toBeDefined();
+    // halberd range = 2*2=4: 1 + 4*(floor(4/3)+1)/100 = 1.08
+    expect(distStep!.factor).toBeCloseTo(1.08, 4);
+  });
+
+  it("non-2H weapon not affected by node43 range double", () => {
+    // Whip is 1H — node43 only affects 2H weapons
+    const ctx = makeCtx(
+      { combatStyle: "melee", attackStyle: "accurate", activePacts: rangePacts },
+      { weapon: getItem("whip")! },
+      custom,
+    );
+    const result = calculateDps(ctx);
+    // Whip range stays 1 (not 2H), min = 3 + 3*1 = 6
+    expect(result.breakdown.minHit).toBe(6);
+  });
+
+  it("halberd + all range pacts gives significantly more DPS than without", () => {
+    const noPacts = makeCtx(
+      { combatStyle: "melee", attackStyle: "accurate" },
+      { weapon: getItem("d-halberd")! },
+      custom,
+    );
+    const withPacts = makeCtx(
+      { combatStyle: "melee", attackStyle: "accurate", activePacts: allRangePacts },
+      { weapon: getItem("d-halberd")! },
+      custom,
+    );
+    const r1 = calculateDps(noPacts);
+    const r2 = calculateDps(withPacts);
+    // Range 7 with distance pacts should give substantial DPS boost
+    expect(r2.dps).toBeGreaterThan(r1.dps * 1.15);
   });
 });

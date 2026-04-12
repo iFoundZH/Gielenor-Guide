@@ -48,6 +48,7 @@ const ID_OVERRIDES: Record<string, string> = {
   "d-mace": "Dragon mace",
   "d-long": "Dragon longsword",
   "d-halberd": "Dragon halberd",
+  "noxious-halberd": "Noxious halberd",
   "abyssal-dagger": "Abyssal dagger",
   "elder-maul": "Elder maul",
   "granite-hammer": "Granite hammer",
@@ -63,6 +64,14 @@ const ID_OVERRIDES: Record<string, string> = {
   "toktz-xil-ek": "Toktz-xil-ek",
   "toktz-mej-tal": "Toktz-mej-tal",
   "tzhaar-ket-em": "Tzhaar-ket-em",
+  // Obsidian armour (TzHaar / Karamja) — set bonus with obsidian weapons
+  "obsidian-helm": "Obsidian helmet",
+  "obsidian-body": "Obsidian platebody",
+  "obsidian-legs": "Obsidian platelegs",
+  // Colossal blade (Giants' Foundry / Asgarnia) — +min(size*2, 10) vs larger targets
+  "colossal-blade": "Colossal blade",
+  // Soulreaper axe (Nex / Asgarnia)
+  "soulreaper-axe": "Soulreaper axe",
   // Rings (pass through with correct region)
   "berserker-ring": "Berserker ring",
   "berserker-ring-i": "Berserker ring (i)",
@@ -172,7 +181,6 @@ const ID_OVERRIDES: Record<string, string> = {
   "dragon-javelin": "Dragon javelin",
   // Additional weapons
   "smoke-battlestaff": "Smoke battlestaff",
-  "soulreaper-axe": "Soulreaper axe",
   // Additional ammo
   "onyx-bolts-e": "Onyx bolts (e)",
   "dragonstone-bolts-e": "Dragonstone bolts (e)",
@@ -328,6 +336,7 @@ const REGIONS: Record<string, string> = {
   "granite-hammer": "morytania", // Grotesque Guardians (Slayer Tower)
   "echo-lithic-sceptre": "morytania",
   "rancour": "morytania", // Araxxor (araxyte fang + amulet of torture)
+  "noxious-halberd": "morytania", // Araxxor
   "aranea-boots": "morytania", // Araxytes (Morytania Spider Cave)
   // Kourend — CoX, Hydra, Yama
   "tbow": "kourend", "kodai": "kourend",
@@ -401,6 +410,9 @@ const REGIONS: Record<string, string> = {
   "toktz-xil-ak": "karamja", "tzhaar-ket-om": "karamja",
   "toktz-xil-ek": "karamja", "toktz-mej-tal": "karamja",
   "tzhaar-ket-em": "karamja",
+  "obsidian-helm": "karamja", "obsidian-body": "karamja", "obsidian-legs": "karamja",
+  "colossal-blade": "asgarnia", // Giants' Foundry
+  "soulreaper-axe": "asgarnia", // Nex (GWD)
   // Rings from bosses
   "berserker-ring": "fremennik", "berserker-ring-i": "fremennik", // DKS
   "tyrannical-ring": "wilderness", "tyrannical-ring-i": "wilderness", // Callisto
@@ -416,8 +428,17 @@ const STAT_OVERRIDES: Record<string, Partial<EquipmentBonuses>> = {
 };
 
 // ── Attack speed overrides (wiki DB may not reflect effective speed) ──
+// The wiki equipment DB stores MELEE weapon speed, but staves cast spells at 5t
+// (standard/ancient spell speed). Wands have 4t melee speed in the DB, which is
+// wrong for spell casting. All standard-casting staves must be 5t except Harm (4t).
 const ATTACK_SPEED_OVERRIDES: Record<string, number> = {
   "harm-staff": 4, // Harmonised orb: standard spells cast at 4t instead of 5t
+  // Wands/staves with 4t melee speed that should be 5t when casting spells:
+  "kodai": 5,
+  "master-wand": 5,
+  "ancient-staff": 5,
+  "sotd": 5,
+  "toxic-sotd": 5,
 };
 
 // ── Weapon category overrides (for items whose wiki category doesn't map well) ──
