@@ -210,7 +210,7 @@ const PASSIVES: Record<string, string> = {
 
 // ── Region mapping (DP league region locks) ──
 const REGIONS: Record<string, string> = {
-  // Asgarnia — GWD, Nex, Corp, Cerberus
+  // Asgarnia — GWD, Nex, Corp, Cerberus, Warriors' Guild
   "torva-helm": "asgarnia", "torva-body": "asgarnia", "torva-legs": "asgarnia",
   "bcp": "asgarnia", "tassets": "asgarnia",
   "armadyl-helm": "asgarnia", "armadyl-body": "asgarnia", "armadyl-skirt": "asgarnia",
@@ -218,19 +218,24 @@ const REGIONS: Record<string, string> = {
   "sgs": "asgarnia", "zgs": "asgarnia", "sotd": "asgarnia",
   "zcb": "asgarnia", "acb": "asgarnia",
   "zaryte-vambs": "asgarnia",
+  "primordial": "asgarnia", "pegasian": "asgarnia", "eternal": "asgarnia",
+  "spectral": "asgarnia", "arcane": "asgarnia",
+  "dragon-def": "asgarnia", "dragon-boots": "asgarnia",
   "echo-fang-hound": "asgarnia",
-  // Morytania — ToB, Barrows, Nightmare
+  // Morytania — ToB, Barrows, Nightmare, Slayer Tower, Darkmeyer
   "scythe": "morytania", "rapier": "morytania", "avernic": "morytania",
   "sang": "morytania", "ahrim-staff": "morytania",
   "inq-mace": "morytania", "inq-helm": "morytania", "inq-body": "morytania", "inq-legs": "morytania",
   "nightmare-staff": "morytania", "harm-staff": "morytania",
+  "whip": "morytania", "blood-fury": "morytania", "salve-ei": "morytania",
   "echo-lithic-sceptre": "morytania",
-  // Kourend — CoX
+  // Kourend — CoX, Hydra
   "tbow": "kourend", "kodai": "kourend",
   "ancestral-hat": "kourend", "ancestral-top": "kourend", "ancestral-bottom": "kourend",
   "twisted-buckler": "kourend", "book-of-dead": "kourend",
+  "dclaws": "kourend", "dhcb": "kourend", "dhl": "kourend", "ferocious": "kourend",
   "echo-natures-recurve": "kourend",
-  // Desert — ToA, DKS rings
+  // Desert — ToA, DT2 rings
   "shadow": "desert", "fang": "desert",
   "masori-mask": "desert", "masori-body": "desert", "masori-chaps": "desert",
   "elidinis-ward": "desert",
@@ -241,25 +246,34 @@ const REGIONS: Record<string, string> = {
   "bowfa": "tirannwn", "saeldor": "tirannwn",
   "crystal-helm": "tirannwn", "crystal-body": "tirannwn", "crystal-legs": "tirannwn",
   "crystal-halberd": "tirannwn", "toxic-sotd": "tirannwn",
+  "blowpipe": "tirannwn", "serp-helm": "tirannwn",
   "echo-crystal-blessing": "tirannwn",
   // Fremennik — DKS, Vorkath, Duke Sucellus
   "neit-helm": "fremennik",
+  "berserker-i": "fremennik", "archers-i": "fremennik", "seers-i": "fremennik",
+  "avas-assembler": "fremennik", "dragon-javelin": "fremennik",
   "echo-vs-helm": "fremennik",
   "dh-wand": "fremennik",
-  // Wilderness — Rev weapons
+  // Wilderness — Rev weapons, Mage Arena II
   "craws-bow": "wilderness", "webweaver-bow": "wilderness",
   "viggoras-chainmace": "wilderness", "ursine-chainmace": "wilderness",
   "thammarons-sceptre": "wilderness", "accursed-sceptre": "wilderness",
+  "imbued-god-cape": "wilderness",
   "echo-kings-barrage": "wilderness",
   // Varlamore
   "eclipse-atlatl": "varlamore",
   "echo-tecpatl": "varlamore",
-  // Kandarin — Kraken, Echo
+  // Kandarin — Kraken, Zenyte, BA, Thermy, Echo
   "trident-swamp": "kandarin",
+  "torture": "kandarin", "anguish": "kandarin", "tormented": "kandarin",
+  "tentacle": "kandarin", "fighter-torso": "kandarin", "occult": "kandarin",
   "echo-shadowflame": "kandarin",
   "echo-devils-element": "kandarin",
-  // Misthalin — MTA
+  // Karamja — TzHaar, Fight Caves, Inferno
+  "infernal-cape": "karamja", "fire-cape": "karamja",
+  // Misthalin — MTA, RFD
   "master-wand": "misthalin",
+  "barrows-gloves": "misthalin",
 };
 
 // ── Stat overrides (wiki (i) variants differ from base DB data) ──

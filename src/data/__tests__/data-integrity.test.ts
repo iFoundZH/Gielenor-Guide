@@ -505,12 +505,12 @@ describe("item region assignments", () => {
     expect(getItem("viggoras-chainmace")!.region).toBe("wilderness");
   });
 
-  it("Whip has no region (available everywhere)", () => {
-    expect(getItem("whip")!.region).toBeUndefined();
+  it("Whip is in Morytania (from Slayer Tower)", () => {
+    expect(getItem("whip")!.region).toBe("morytania");
   });
 
-  it("Barrows gloves have no region", () => {
-    expect(getItem("barrows-gloves")!.region).toBeUndefined();
+  it("Barrows gloves are in Misthalin (from RFD)", () => {
+    expect(getItem("barrows-gloves")!.region).toBe("misthalin");
   });
 });
 

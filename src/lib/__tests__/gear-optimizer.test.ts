@@ -170,7 +170,7 @@ describe("region filtering", { timeout: 600_000 }, () => {
     }
   });
 
-  it("regionless items (whip) are always available", () => {
+  it("regionless items (d-scim, arclight) are always available", () => {
     const config: OptimizerConfig = {
       player: defaultPlayer({ regions: [] }), // no regions
       target: custom,
@@ -178,8 +178,34 @@ describe("region filtering", { timeout: 600_000 }, () => {
       topN: 5,
     };
     const results = optimizeGear(config);
-    // Should still have results with whip or other regionless weapons
+    // Should still have results with regionless weapons like d-scim or arclight
     expect(results.length).toBeGreaterThan(0);
+  });
+
+  it("region-locked items don't appear without their region", () => {
+    const config: OptimizerConfig = {
+      player: defaultPlayer({
+        combatStyle: "ranged", attackStyle: "rapid",
+        potion: "ranging", prayerType: "rigour",
+        regions: ["wilderness", "varlamore", "karamja", "misthalin"],
+      }),
+      target: custom,
+      lockedSlots: {},
+      topN: 50,
+    };
+    const results = optimizeGear(config);
+    for (const r of results) {
+      const allItems = [
+        r.loadout.head, r.loadout.cape, r.loadout.neck, r.loadout.ammo,
+        r.loadout.weapon, r.loadout.body, r.loadout.shield,
+        r.loadout.legs, r.loadout.hands, r.loadout.feet, r.loadout.ring,
+      ].filter(Boolean);
+      // Pegasian (asgarnia), anguish (kandarin), ferocious (kourend) should NOT appear
+      const ids = allItems.map(i => i!.id);
+      expect(ids).not.toContain("pegasian");
+      expect(ids).not.toContain("anguish");
+      expect(ids).not.toContain("ferocious");
+    }
   });
 });
 

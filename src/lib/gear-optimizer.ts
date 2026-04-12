@@ -31,12 +31,16 @@ export function optimizeGear(config: OptimizerConfig): OptimizerResult[] {
   // Step 1: Get available items by slot (filtered by region + style)
   const slotItems = getSlotCandidates(style, regions, lockedSlots);
 
-  // Step 2: Prune dominated items per slot
+  // Step 2: Prune dominated items per slot, then keep only top-K by score
+  // The wiki DB has 900+ items; most are low-tier and can never be BIS.
+  // After dominated-item pruning, score-filter to top K per slot.
+  const MAX_PER_SLOT = 3; // BIS is always in top 3 by offensive score; passives always kept
+  const MAX_WEAPONS_PER_CAT = 2; // Top 2 per weapon category; passives always kept
+
   for (const slot of Object.keys(slotItems) as EquipmentSlot[]) {
     if (lockedSlots[slot]) continue; // don't prune locked slots
     if (slot === "weapon") {
       // Group weapons by category, prune within each group only
-      // Prevents bows from dominating crossbows (which get rstr from bolts)
       const weaponsByCategory = new Map<string, Item[]>();
       for (const w of slotItems.weapon) {
         const cat = w.weaponCategory ?? "other";
@@ -45,12 +49,12 @@ export function optimizeGear(config: OptimizerConfig): OptimizerResult[] {
       }
       const prunedWeapons: Item[] = [];
       for (const [, group] of weaponsByCategory) {
-        prunedWeapons.push(...pruneDominated(group, style));
+        const pruned = pruneDominated(group, style);
+        prunedWeapons.push(...topKByScore(pruned, style, MAX_WEAPONS_PER_CAT));
       }
       slotItems.weapon = prunedWeapons;
     } else if (slot === "ammo") {
       // Group ammo by category, prune within each group only
-      // Prevents bolts (rstr 122) from dominating arrows (rstr 60) which are needed for bows
       const ammoByCategory = new Map<string, Item[]>();
       for (const a of slotItems.ammo) {
         const cat = getAmmoCategory(a);
@@ -59,11 +63,12 @@ export function optimizeGear(config: OptimizerConfig): OptimizerResult[] {
       }
       const prunedAmmo: Item[] = [];
       for (const [, group] of ammoByCategory) {
-        prunedAmmo.push(...pruneDominated(group, style));
+        const pruned = pruneDominated(group, style);
+        prunedAmmo.push(...topKByScore(pruned, style, MAX_PER_SLOT));
       }
       slotItems.ammo = prunedAmmo;
     } else {
-      slotItems[slot] = pruneDominated(slotItems[slot], style);
+      slotItems[slot] = topKByScore(pruneDominated(slotItems[slot], style), style, MAX_PER_SLOT);
     }
   }
 
@@ -534,8 +539,8 @@ function optimizePactsBeam(
   lockedSlots: Partial<BuildLoadout>,
   fixedLoadout?: BuildLoadout,
 ): string[][] {
-  const BEAM_WIDTH = 12;
-  const NUM_RESULTS = 5;
+  const BEAM_WIDTH = 6;
+  const NUM_RESULTS = 3;
   const allNodes = getAllNodes();
   const ROOT = "node1";
   const style = player.combatStyle;
@@ -557,16 +562,16 @@ function optimizePactsBeam(
         }
         const pruned: Item[] = [];
         for (const [, group] of weaponsByCategory) {
-          pruned.push(...pruneDominated(group, style));
+          pruned.push(...topKByScore(pruneDominated(group, style), style, 2));
         }
         slotItems.weapon = pruned;
       } else {
-        slotItems[slot] = pruneDominated(slotItems[slot], style);
+        slotItems[slot] = topKByScore(pruneDominated(slotItems[slot], style), style, 3);
       }
     }
     const scores = slotItems.weapon.map(w => ({ w, s: offensiveScore(w, style) }));
     scores.sort((a, b) => b.s - a.s);
-    quickWeapons = scores.slice(0, 3).map(({ w }) => ({
+    quickWeapons = scores.slice(0, 1).map(({ w }) => ({
       weapon: w,
       shield: w.isTwoHanded ? null : (slotItems!.shield[0] ?? null),
     }));
@@ -728,6 +733,33 @@ function isUsefulForStyle(item: Item, style: CombatStyle): boolean {
 // ═══════════════════════════════════════════════════════════════════════
 // DOMINATED ITEM PRUNING
 // ═══════════════════════════════════════════════════════════════════════
+
+/**
+ * Keep the top K items by offensive score, always preserving items with passives
+ * (since passives interact with pact effects in non-obvious ways).
+ */
+function topKByScore(items: Item[], style: CombatStyle, k: number): Item[] {
+  if (items.length <= k) return items;
+
+  // Always keep items with passives — they may be BIS due to special effects
+  const withPassive = items.filter(i => i.passive);
+  const withoutPassive = items.filter(i => !i.passive);
+
+  // Sort non-passive items by offensive score, keep top K
+  withoutPassive.sort((a, b) => offensiveScore(b, style) - offensiveScore(a, style));
+  const kept = withoutPassive.slice(0, k);
+
+  // Merge passive items back in (dedup by id)
+  const ids = new Set(kept.map(i => i.id));
+  for (const item of withPassive) {
+    if (!ids.has(item.id)) {
+      kept.push(item);
+      ids.add(item.id);
+    }
+  }
+
+  return kept;
+}
 
 function pruneDominated(items: Item[], style: CombatStyle): Item[] {
   if (items.length <= 1) return items;
