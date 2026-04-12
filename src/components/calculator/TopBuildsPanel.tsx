@@ -35,7 +35,7 @@ const LABEL_MAP: Record<string, string> = {
   "elite-void": "Elite Void",
 };
 
-const STARTING_REGIONS = new Set(["varlamore", "karamja", "misthalin"]);
+const STARTING_REGIONS = new Set(["varlamore", "karamja"]);
 const REGION_LABELS: Record<string, string> = {
   asgarnia: "Asgarnia", fremennik: "Fremennik", kandarin: "Kandarin",
   morytania: "Morytania", desert: "Desert", tirannwn: "Tirannwn",

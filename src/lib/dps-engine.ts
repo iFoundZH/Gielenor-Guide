@@ -152,7 +152,7 @@ export function calculateDps(ctx: DpsContext): DpsResult {
 
   // Unique blindbag chance/damage scaling
   if ((pe.uniqueBlindBagChance || pe.uniqueBlindBagDamage > 0) && ctx.player.combatStyle === "melee") {
-    if (weaponCat === "1h-heavy" || weaponCat === "2h-melee") {
+    if (isHeavyMeleeWeapon(weaponCat)) {
       // Assume full inventory of heavy weapons (20); capped at 5 per pact
       const uniqueCount = Math.min(5, ctx.player.uniqueHeavyWeapons ?? 20);
       if (uniqueCount > 0) {
@@ -1520,10 +1520,20 @@ function calculateBonusHitDps(_ctx: DpsContext, pe: AggregatedPactEffects, maxHi
   return (bonusMax / 2 * accuracy) / interval;
 }
 
+/** Blindbag pact triggers on "heavy weapons (>=1kg)". We don't track weight, so use
+ *  weapon category as a proxy: all melee categories except 1h-light (daggers, rapiers)
+ *  are typically >=1kg. Halberds (2-3kg), godswords (10kg), scythe, maces all qualify. */
+function isHeavyMeleeWeapon(weaponCat: string | undefined): boolean {
+  if (!weaponCat) return false;
+  // 1h-light includes rapiers (~1.8kg, borderline) and whips (0.45kg, excluded).
+  // Conservative: exclude the entire category. Could add weight data for precision later.
+  const heavyCats = new Set(["1h-heavy", "2h-melee", "halberd", "scythe", "standard"]);
+  return heavyCats.has(weaponCat);
+}
+
 function calculateBlindbagDps(_ctx: DpsContext, pe: AggregatedPactEffects, maxHit: number, accuracy: number, interval: number): number {
   if (pe.blindbagChance <= 0) return 0;
-  const weaponCat = _ctx.loadout.weapon?.weaponCategory;
-  if (weaponCat !== "1h-heavy" && weaponCat !== "2h-melee") return 0;
+  if (!isHeavyMeleeWeapon(_ctx.loadout.weapon?.weaponCategory)) return 0;
   return (pe.blindbagChance / 100) * (maxHit * accuracy) / interval;
 }
 
@@ -1542,7 +1552,7 @@ function calculateBoltSpecDps(ctx: DpsContext, pe: AggregatedPactEffects, maxHit
   // ZCB: +10% bolt spec damage
   const zcbDmgMult = ctx.loadout.weapon?.id === "zcb" ? 1.10 : 1;
 
-  if (ammo.id === "ruby-bolts-e") {
+  if (ammo.id === "ruby-dragon-bolts-e") {
     const procDmg = Math.min(100, Math.floor(ctx.target.hp * 0.20));
     const normalAvg = maxHit / 2;
     const procRate = 0.06 * procMultiplier * diaryMultiplier;
@@ -1551,7 +1561,7 @@ function calculateBoltSpecDps(ctx: DpsContext, pe: AggregatedPactEffects, maxHit
     return Math.max(0, boltBonus) / interval;
   }
 
-  if (ammo.id === "diamond-bolts-e") {
+  if (ammo.id === "diamond-dragon-bolts-e") {
     const procRate = 0.10 * procMultiplier * diaryMultiplier;
     const boostedAcc = procRate + (1 - procRate) * accuracy;
     const normalDps = (maxHit / 2 * accuracy) / interval;
@@ -1559,7 +1569,7 @@ function calculateBoltSpecDps(ctx: DpsContext, pe: AggregatedPactEffects, maxHit
     return boostedDps - normalDps;
   }
 
-  if (ammo.id === "onyx-bolts-e") {
+  if (ammo.id === "onyx-dragon-bolts-e") {
     // 11% proc rate, +20% extra damage on proc, does NOT bypass accuracy
     const procRate = 0.11 * procMultiplier * diaryMultiplier;
     const normalAvg = maxHit / 2;
@@ -1568,7 +1578,7 @@ function calculateBoltSpecDps(ctx: DpsContext, pe: AggregatedPactEffects, maxHit
     return Math.max(0, boltBonus) / interval;
   }
 
-  if (ammo.id === "dragonstone-bolts-e") {
+  if (ammo.id === "dragonstone-dragon-bolts-e") {
     // 6% proc rate, extra damage = floor(rangedLevel * 0.20), does NOT bypass accuracy
     const procRate = 0.06 * procMultiplier * diaryMultiplier;
     const extraDmg = Math.floor(ctx.player.ranged * 0.20) * zcbDmgMult;
@@ -1589,25 +1599,25 @@ function getZcbBoltProcDmg(ctx: DpsContext, specMax: number, specAcc: number): n
 
   const zcbDmgMult = 1.10; // ZCB always boosts bolt spec damage by 10%
 
-  if (ammo.id === "ruby-bolts-e") {
+  if (ammo.id === "ruby-dragon-bolts-e") {
     // 100% proc: deal floor(20% of boss HP), capped at 100, instead of normal hit
     const procDmg = Math.min(100, Math.floor(ctx.target.hp * 0.20)) * zcbDmgMult;
     const normalAvg = specMax / 2;
     return Math.max(0, procDmg - normalAvg) * specAcc;
   }
 
-  if (ammo.id === "diamond-bolts-e") {
+  if (ammo.id === "diamond-dragon-bolts-e") {
     // 100% proc: guaranteed accuracy (spec already has doubled acc, but diamond ignores defence entirely)
     // Extra value: (1 - specAcc) * specMax/2 — the damage gained from the extra accuracy
     return (1 - specAcc) * specMax / 2;
   }
 
-  if (ammo.id === "onyx-bolts-e") {
+  if (ammo.id === "onyx-dragon-bolts-e") {
     // 100% proc: +20% extra damage on the hit
     return specMax * 0.20 * zcbDmgMult / 2 * specAcc;
   }
 
-  if (ammo.id === "dragonstone-bolts-e") {
+  if (ammo.id === "dragonstone-dragon-bolts-e") {
     // 100% proc: extra damage = floor(rangedLevel * 0.20)
     const extraDmg = Math.floor(ctx.player.ranged * 0.20) * zcbDmgMult;
     return extraDmg * specAcc;

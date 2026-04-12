@@ -3,7 +3,6 @@
 const ALL_REGIONS = [
   { id: "varlamore", name: "Varlamore", type: "starting" as const },
   { id: "karamja", name: "Karamja", type: "starting" as const },
-  { id: "misthalin", name: "Misthalin", type: "auto" as const },
   { id: "asgarnia", name: "Asgarnia", type: "choosable" as const },
   { id: "fremennik", name: "Fremennik", type: "choosable" as const },
   { id: "kandarin", name: "Kandarin", type: "choosable" as const },
@@ -22,14 +21,14 @@ interface Props {
 }
 
 export function RegionSelector({ selected, onChange, maxChoosable = 3, requiredRegion }: Props) {
-  const startingRegions = ALL_REGIONS.filter(r => r.type === "starting" || r.type === "auto");
+  const startingRegions = ALL_REGIONS.filter(r => r.type === "starting");
   const choosableRegions = ALL_REGIONS.filter(r => r.type === "choosable");
   const isRequired = (id: string) => requiredRegion === id && choosableRegions.some(r => r.id === id);
   const choosableSelected = selected.filter(r => choosableRegions.some(cr => cr.id === r));
 
   const toggle = (regionId: string) => {
     const region = ALL_REGIONS.find(r => r.id === regionId);
-    if (!region || region.type === "starting" || region.type === "auto") return;
+    if (!region || region.type === "starting") return;
     if (isRequired(regionId)) return; // Can't deselect boss region
 
     if (selected.includes(regionId)) {
@@ -50,7 +49,7 @@ export function RegionSelector({ selected, onChange, maxChoosable = 3, requiredR
           <div key={r.id} className="px-3 py-1.5 rounded-lg text-xs bg-osrs-gold/10 text-osrs-gold/70 flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-osrs-gold/50" />
             {r.name}
-            <span className="text-[10px] opacity-60 ml-auto">{r.type === "starting" ? "start" : "auto"}</span>
+            <span className="text-[10px] opacity-60 ml-auto">start</span>
           </div>
         ))}
         {choosableRegions.map(r => {

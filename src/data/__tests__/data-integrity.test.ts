@@ -182,7 +182,7 @@ describe("wiki-verified item stats", () => {
   });
 
   it("Ruby dragon bolts (e): ammo slot", () => {
-    const bolts = getItem("ruby-bolts-e")!;
+    const bolts = getItem("ruby-dragon-bolts-e")!;
     expect(bolts.slot).toBe("ammo");
   });
 });
@@ -521,8 +521,12 @@ describe("item region assignments", () => {
     expect(getItem("whip")!.region).toBe("morytania");
   });
 
-  it("Barrows gloves are in Misthalin (from RFD)", () => {
-    expect(getItem("barrows-gloves")!.region).toBe("misthalin");
+  it("Barrows gloves are excluded (RFD not completable, Misthalin inaccessible)", () => {
+    expect(getItem("barrows-gloves")).toBeUndefined();
+  });
+
+  it("Master wand is in Kandarin (MTA)", () => {
+    expect(getItem("master-wand")!.region).toBe("kandarin");
   });
 
   it("Oathplate is in Kourend (from Yama, Chasm of Fire)", () => {

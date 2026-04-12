@@ -881,7 +881,7 @@ describe("bolt special DPS", () => {
     const graardor = getBoss("graardor")!; // hp=255
     const ctx = makeCtx(
       { combatStyle: "ranged", attackStyle: "rapid" },
-      { weapon: getItem("zcb")!, ammo: getItem("ruby-bolts-e")! },
+      { weapon: getItem("zcb")!, ammo: getItem("ruby-dragon-bolts-e")! },
       graardor,
     );
     const result = calculateDps(ctx);
@@ -896,7 +896,7 @@ describe("bolt special DPS", () => {
   it("diamond bolts (e): 10% proc ignores ranged defence", () => {
     const ctx = makeCtx(
       { combatStyle: "ranged", attackStyle: "rapid" },
-      { weapon: getItem("zcb")!, ammo: getItem("diamond-bolts-e")! },
+      { weapon: getItem("zcb")!, ammo: getItem("diamond-dragon-bolts-e")! },
       custom,
     );
     const result = calculateDps(ctx);
@@ -1061,7 +1061,7 @@ describe("pact effects on DPS", () => {
   it("crossbow mastery: +70% dmg, +2t speed", () => {
     const ctx = makeCtx(
       { combatStyle: "ranged", attackStyle: "rapid", activePacts: ["node1", "node7", "node2", "node4", "node21"] },
-      { weapon: getItem("zcb")!, ammo: getItem("diamond-bolts-e")! },
+      { weapon: getItem("zcb")!, ammo: getItem("diamond-dragon-bolts-e")! },
       custom,
     );
     const result = calculateDps(ctx);
@@ -1646,12 +1646,12 @@ describe("king's barrage double bolt spec", () => {
     const graardor = getBoss("graardor")!;
     const kbCtx = makeCtx(
       { combatStyle: "ranged", attackStyle: "rapid" },
-      { weapon: getItem("echo-kings-barrage")!, ammo: getItem("ruby-bolts-e")! },
+      { weapon: getItem("echo-kings-barrage")!, ammo: getItem("ruby-dragon-bolts-e")! },
       graardor,
     );
     const zcbCtx = makeCtx(
       { combatStyle: "ranged", attackStyle: "rapid" },
-      { weapon: getItem("zcb")!, ammo: getItem("ruby-bolts-e")! },
+      { weapon: getItem("zcb")!, ammo: getItem("ruby-dragon-bolts-e")! },
       graardor,
     );
     const kbResult = calculateDps(kbCtx);
@@ -1664,12 +1664,12 @@ describe("king's barrage double bolt spec", () => {
     const graardor = getBoss("graardor")!;
     const kbCtx = makeCtx(
       { combatStyle: "ranged", attackStyle: "rapid" },
-      { weapon: getItem("echo-kings-barrage")!, ammo: getItem("diamond-bolts-e")! },
+      { weapon: getItem("echo-kings-barrage")!, ammo: getItem("diamond-dragon-bolts-e")! },
       graardor,
     );
     const zcbCtx = makeCtx(
       { combatStyle: "ranged", attackStyle: "rapid" },
-      { weapon: getItem("zcb")!, ammo: getItem("diamond-bolts-e")! },
+      { weapon: getItem("zcb")!, ammo: getItem("diamond-dragon-bolts-e")! },
       graardor,
     );
     const kbResult = calculateDps(kbCtx);
@@ -1742,7 +1742,7 @@ describe("bow stacking model", () => {
     const pacts = ["node1", "node2", "node3", "node6", "node9", "node13", "node20", "node23", "node27", "node26", "node28"];
     const result = calculateDps(makeCtx(
       { combatStyle: "ranged", attackStyle: "rapid", activePacts: pacts },
-      { weapon: getItem("zcb")!, ammo: getItem("diamond-bolts-e")! },
+      { weapon: getItem("zcb")!, ammo: getItem("diamond-dragon-bolts-e")! },
       custom,
     ));
     // Min hit should be 0 for crossbow (stacking is bow-only)
@@ -1919,12 +1919,12 @@ describe("ZCB bolt spec damage bonus", () => {
     const graardor = getBoss("graardor")!;
     const zcbCtx = makeCtx(
       { combatStyle: "ranged", attackStyle: "rapid" },
-      { weapon: getItem("zcb")!, ammo: getItem("ruby-bolts-e")! },
+      { weapon: getItem("zcb")!, ammo: getItem("ruby-dragon-bolts-e")! },
       graardor,
     );
     const acbCtx = makeCtx(
       { combatStyle: "ranged", attackStyle: "rapid" },
-      { weapon: getItem("acb")!, ammo: getItem("ruby-bolts-e")! },
+      { weapon: getItem("acb")!, ammo: getItem("ruby-dragon-bolts-e")! },
       graardor,
     );
     const zcbResult = calculateDps(zcbCtx);
@@ -2193,12 +2193,12 @@ describe("Kandarin diary bolt spec boost", () => {
     const graardor = getBoss("graardor")!;
     const noDiary = makeCtx(
       { combatStyle: "ranged", attackStyle: "rapid", kandarinDiary: false },
-      { weapon: getItem("zcb")!, ammo: getItem("ruby-bolts-e")! },
+      { weapon: getItem("zcb")!, ammo: getItem("ruby-dragon-bolts-e")! },
       graardor,
     );
     const withDiary = makeCtx(
       { combatStyle: "ranged", attackStyle: "rapid", kandarinDiary: true },
-      { weapon: getItem("zcb")!, ammo: getItem("ruby-bolts-e")! },
+      { weapon: getItem("zcb")!, ammo: getItem("ruby-dragon-bolts-e")! },
       graardor,
     );
     const r1 = calculateDps(noDiary);
@@ -2361,7 +2361,7 @@ describe("special attack DPS", () => {
   it("ZCB spec: bolt procs still apply", () => {
     const ctx = makeCtx(
       { combatStyle: "ranged", attackStyle: "rapid", potion: "ranging", prayerType: "rigour", usingSpecialAttack: true },
-      { weapon: getItem("zcb")!, ammo: getItem("ruby-bolts-e")! },
+      { weapon: getItem("zcb")!, ammo: getItem("ruby-dragon-bolts-e")! },
       graardor,
     );
     const result = calculateDps(ctx);
@@ -2802,7 +2802,7 @@ describe("effective distance in DPS breakdown", () => {
   it("ranged crossbow: effectiveDistance = 7", () => {
     const ctx = makeCtx(
       { combatStyle: "ranged", attackStyle: "rapid" },
-      { weapon: getItem("dhcb")!, ammo: getItem("ruby-bolts-e")! },
+      { weapon: getItem("dhcb")!, ammo: getItem("ruby-dragon-bolts-e")! },
       custom,
     );
     expect(calculateDps(ctx).breakdown.effectiveDistance).toBe(7);

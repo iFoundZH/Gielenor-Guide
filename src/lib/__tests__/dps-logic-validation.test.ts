@@ -432,7 +432,7 @@ describe("Ranged logic validation", () => {
   // === BUILD 19: DHCB + Ruby bolts vs Vorkath (dragon) ===
   it("19. DHCB vs Vorkath: +30% acc, +25% dmg, ruby bolt procs", () => {
     const dhcb = getItem("dhcb")!;
-    const rubyBolts = getItem("ruby-bolts-e")!;
+    const rubyBolts = getItem("ruby-dragon-bolts-e")!;
     expect(vorkath.isDragon).toBe(true);
     const r = result(
       rangedSetup,
@@ -449,7 +449,7 @@ describe("Ranged logic validation", () => {
   // === BUILD 20: ZCB + Diamond bolts vs Graardor ===
   it("20. ZCB diamond bolts: +10% proc rate on bolt specs", () => {
     const zcb = getItem("zcb")!;
-    const diamondBolts = getItem("diamond-bolts-e")!;
+    const diamondBolts = getItem("diamond-dragon-bolts-e")!;
     const acb = getItem("acb")!;
     // ZCB should do more than ACB with diamond bolts due to higher base stats + 10% bolt spec
     const zcbR = result(rangedSetup, { weapon: zcb, ammo: diamondBolts }, graardor);
@@ -518,7 +518,7 @@ describe("Ranged logic validation", () => {
   // === BUILD 25: DHCB + Ruby bolts vs Olm Head (dragon, ranged def 50) ===
   it("25. DHCB vs Olm Head: dragon bonus applies", () => {
     const dhcb = getItem("dhcb")!;
-    const rubyBolts = getItem("ruby-bolts-e")!;
+    const rubyBolts = getItem("ruby-dragon-bolts-e")!;
     expect(olm.isDragon).toBe(true);
     const r = result(rangedSetup, { weapon: dhcb, ammo: rubyBolts }, olm);
     // Olm head ranged def = 50 (dranged_heavy)
@@ -544,7 +544,7 @@ describe("Ranged logic validation", () => {
   // === BUILD 27: ACB + Diamond bolts + Slayer helm vs Hydra ===
   it("27. Slayer helm(i) ranged: +15% acc and dmg on task", () => {
     const acb = getItem("acb")!;
-    const diamondBolts = getItem("diamond-bolts-e")!;
+    const diamondBolts = getItem("diamond-dragon-bolts-e")!;
     const slayerHelm = getItem("slayer-helm-i")!;
     expect(hydra.isSlayerMonster).toBe(true);
     const onTask = result(

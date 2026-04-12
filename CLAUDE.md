@@ -131,4 +131,4 @@ This app targets OSRS (Old School RuneScape) players. Key domain concepts:
 - Leagues VI. Separate servers, boosted XP/drops, pact skill tree.
 - Pact skill tree: 132 interconnected nodes (40 point budget), sourced from wiki DB. ~25 nodes are DPS-relevant.
 - Echo items: 10 powerful items tied to specific regions.
-- Regions: Varlamore + Karamja start, Misthalin auto, 3 choosable from 8.
+- Regions: Varlamore + Karamja start, 3 choosable from 8. Misthalin is completely inaccessible.

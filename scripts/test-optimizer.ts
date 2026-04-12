@@ -2,7 +2,7 @@ import { optimizeGear, optimizeBuild } from "../src/lib/gear-optimizer";
 import { BOSS_PRESETS } from "../src/data/boss-presets";
 import type { PlayerConfig, CombatStyle } from "../src/types/dps";
 
-const ALL_REGIONS = ["varlamore", "karamja", "misthalin", "asgarnia", "morytania", "kourend", "desert", "tirannwn", "fremennik", "kandarin", "wilderness"];
+const ALL_REGIONS = ["varlamore", "karamja", "asgarnia", "morytania", "kourend", "desert", "tirannwn", "fremennik", "kandarin", "wilderness"];
 
 const BASE_PLAYER: PlayerConfig = {
   attack: 99, strength: 99, defence: 99, ranged: 99, magic: 99, prayer: 99, hitpoints: 99,
@@ -54,9 +54,9 @@ testGear("MELEE + THORNS PACTS", {
 });
 
 // Limited regions
-testGear("MELEE (3 regions)", {
+testGear("MELEE (2 starting regions)", {
   combatStyle: "melee",
-  regions: ["varlamore", "karamja", "misthalin"],
+  regions: ["varlamore", "karamja"],
 });
 
 // Full optimizer test — includes pact optimization

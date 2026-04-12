@@ -437,9 +437,53 @@ export function optimizeBuild(config: OptimizerConfig): OptimizerResult[] {
             if (pactConfigs.length > 0) bestPacts = pactConfigs[0];
           }
         } else {
-          // Melee: standard pact optimization
-          const pactConfigs = optimizePactsBeam(cleanPlayer, target, lockedSlots);
-          if (pactConfigs.length > 0) bestPacts = pactConfigs[0];
+          // Melee: per-archetype pact optimization (like ranged).
+          // Halberds benefit from distance pacts that are invisible when the beam search
+          // takes MAX(dps) across all weapons — non-halberd weapons always dominate the MAX,
+          // so distance pacts never appear valuable. Run separate beam searches per archetype.
+          const si = getSlotCandidates(style, regionPlayer.regions, lockedSlots);
+          const archetypes = new Map<string, Item>();
+          for (const w of si.weapon) {
+            const cat = w.weaponCategory ?? "other";
+            const existing = archetypes.get(cat);
+            if (!existing || offensiveScore(w, style) > offensiveScore(existing, style)) {
+              archetypes.set(cat, w);
+            }
+          }
+
+          let bestArchDps = -Infinity;
+          const archPactResults: { cat: string; pacts: string[]; dps: number }[] = [];
+          for (const [cat, topW] of archetypes) {
+            const shield = topW.isTwoHanded ? null : (si.shield[0] ?? null);
+            const loadout = buildBestLoadout(si, topW, shield, lockedSlots);
+            // Enable capstone injection for halberds: node155 (range boost to 7) requires
+            // traversing non-DPS gateway nodes the greedy beam never picks.
+            const needsCapstone = cat === "halberd";
+            const pactConfigs = optimizePactsBeam(cleanPlayer, target, lockedSlots, loadout, undefined, needsCapstone);
+            if (pactConfigs.length > 0) {
+              const evalPlayer = { ...cleanPlayer, activePacts: pactConfigs[0] };
+              const dps = evalDpsTracked({ player: evalPlayer, loadout, target }).dps;
+              archPactResults.push({ cat, pacts: pactConfigs[0], dps });
+              if (dps > bestArchDps) {
+                bestArchDps = dps;
+                bestPacts = pactConfigs[0];
+              }
+            }
+          }
+
+          // Push non-winning archetype pacts into extraPactConfigs so Phase 4
+          // evaluates ALL weapons with each archetype's optimal pacts.
+          for (const r of archPactResults) {
+            if (r.pacts.join(",") !== bestPacts.join(",")) {
+              extraPactConfigs.push({ pacts: r.pacts });
+            }
+          }
+
+          // Fallback if no archetypes found
+          if (bestPacts.length === 0) {
+            const pactConfigs = optimizePactsBeam(cleanPlayer, target, lockedSlots);
+            if (pactConfigs.length > 0) bestPacts = pactConfigs[0];
+          }
         }
       }
     }
@@ -757,6 +801,7 @@ function buildOptimizedConfig(player: PlayerConfig, combo: ConfigCombo): Optimiz
   if (player.potion === "auto") opt.potion = combo.potion;
   if (player.prayerType === "auto") opt.prayerType = combo.prayerType;
   if (player.attackStyle === "auto") opt.attackStyle = combo.attackStyle;
+  if (player.voidSet === "auto") opt.voidSet = combo.voidSet;
   if (player.onSlayerTask === "auto") opt.onSlayerTask = combo.onSlayerTask;
   return opt;
 }
@@ -765,10 +810,10 @@ function buildOptimizedConfig(player: PlayerConfig, combo: ConfigCombo): Optimiz
 // REGION AUTO-SELECTION
 // ═══════════════════════════════════════════════════════════════════════
 
-const STARTING_REGIONS = ["varlamore", "karamja", "misthalin"];
+const STARTING_REGIONS = ["varlamore", "karamja"];
 const CHOOSABLE_REGIONS = ["asgarnia", "fremennik", "kandarin", "morytania", "desert", "tirannwn", "kourend", "wilderness"];
 
-/** True if the user hasn't selected any choosable regions beyond the 3 starting ones. */
+/** True if the user hasn't selected any choosable regions beyond the 2 starting ones. */
 function needsRegionAutoSelect(regions: string[]): boolean {
   return !regions.some(r => CHOOSABLE_REGIONS.includes(r));
 }

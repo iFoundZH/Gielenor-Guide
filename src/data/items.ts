@@ -171,8 +171,8 @@ const ID_OVERRIDES: Record<string, string> = {
   "salve-ei": "Salve amulet(ei)",
   "fury": "Amulet of fury",
   // Ammo
-  "ruby-bolts-e": "Ruby dragon bolts (e)",
-  "diamond-bolts-e": "Diamond dragon bolts (e)",
+  "ruby-dragon-bolts-e": "Ruby dragon bolts (e)",
+  "diamond-dragon-bolts-e": "Diamond dragon bolts (e)",
   "dragon-arrows": "Dragon arrow",
   "amethyst-arrows": "Amethyst arrow",
   "rune-arrows": "Rune arrow",
@@ -182,8 +182,8 @@ const ID_OVERRIDES: Record<string, string> = {
   // Additional weapons
   "smoke-battlestaff": "Smoke battlestaff",
   // Additional ammo
-  "onyx-bolts-e": "Onyx bolts (e)",
-  "dragonstone-bolts-e": "Dragonstone bolts (e)",
+  "onyx-dragon-bolts-e": "Onyx dragon bolts (e)",
+  "dragonstone-dragon-bolts-e": "Dragonstone dragon bolts (e)",
   // Additional neck
   "berserker-necklace": "Berserker necklace",
   // Additional shield
@@ -193,7 +193,6 @@ const ID_OVERRIDES: Record<string, string> = {
   // Hands
   "ferocious": "Ferocious gloves",
   "zaryte-vambs": "Zaryte vambraces",
-  "barrows-gloves": "Barrows gloves",
   "tormented": "Tormented bracelet",
   // Feet
   "primordial": "Primordial boots",
@@ -272,8 +271,8 @@ const PASSIVES: Record<string, string> = {
   "blood-fury": "20% chance to heal 30% of melee damage dealt",
   "salve-ei": "+20% accuracy and damage vs undead (all styles)",
   "zcb": "Enhanced bolt specs: +10% proc chance on all enchanted bolts",
-  "ruby-bolts-e": "Blood Forfeit: 6% chance to hit 20% of target's remaining HP",
-  "diamond-bolts-e": "Armour Piercing: 10% chance to ignore ranged defence",
+  "ruby-dragon-bolts-e": "Blood Forfeit: 6% chance to hit 20% of target's remaining HP",
+  "diamond-dragon-bolts-e": "Armour Piercing: 10% chance to ignore ranged defence",
   "craws-bow": "+50% accuracy and damage in wilderness",
   "webweaver-bow": "+50% accuracy and damage in wilderness",
   "viggoras-chainmace": "+50% accuracy and damage in wilderness",
@@ -291,8 +290,8 @@ const PASSIVES: Record<string, string> = {
   "dclaws": "Special: 4-hit cascade with escalating accuracy (50% energy)",
   "arkan-blade": "Special: +50% accuracy and damage, applies burn DoT (30% energy)",
   "berserker-necklace": "+20% damage with TzHaar (obsidian) weapons",
-  "onyx-bolts-e": "11% proc: +20% damage, heals 25% of hit",
-  "dragonstone-bolts-e": "6% proc: bonus fire damage (floor(rangedLvl × 0.20))",
+  "onyx-dragon-bolts-e": "11% proc: +20% damage, heals 25% of hit",
+  "dragonstone-dragon-bolts-e": "6% proc: bonus fire damage (floor(rangedLvl × 0.20))",
   "tome-of-fire": "+50% damage for fire spells (consumes burnt pages)",
   "tome-of-water": "+20% damage for water spells",
   "tome-of-earth": "+10% damage for earth spells",
@@ -417,9 +416,8 @@ const REGIONS: Record<string, string> = {
   "berserker-ring": "fremennik", "berserker-ring-i": "fremennik", // DKS
   "tyrannical-ring": "wilderness", "tyrannical-ring-i": "wilderness", // Callisto
   "treasonous-ring": "wilderness", "treasonous-ring-i": "wilderness", // Venenatis
-  // Misthalin — MTA, RFD
-  "master-wand": "misthalin",
-  "barrows-gloves": "misthalin",
+  // Kandarin — MTA
+  "master-wand": "kandarin",
 };
 
 // ── Stat overrides (wiki (i) variants differ from base DB data) ──
@@ -612,6 +610,8 @@ const EXCLUDED_PATTERNS = [
   "barbed arrow", "blunt arrow", "bullet arrow", "field arrow",
   // Castle Wars exclusive
   "castle wars",
+  // Misthalin-only (inaccessible in DP league)
+  "barrows gloves", // RFD reward, not completable in DP
   // Unobtainable in leagues
   "training bow", "training sword", "training shield", "training arrows",
   "damaged book (",

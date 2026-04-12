@@ -42,7 +42,7 @@ interface CalcState {
 const DEFAULT_PLAYER: PlayerConfig = {
   attack: 99, strength: 99, defence: 99, ranged: 99, magic: 99, prayer: 99, hitpoints: 99,
   potion: "auto", prayerType: "auto", attackStyle: "auto", combatStyle: "melee",
-  regions: ["varlamore", "karamja", "misthalin"],
+  regions: ["varlamore", "karamja"],
   activePacts: [],
   voidSet: "none", onSlayerTask: "auto",
 };

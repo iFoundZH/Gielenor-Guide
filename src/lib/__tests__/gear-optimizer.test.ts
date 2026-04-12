@@ -187,7 +187,7 @@ describe("region filtering", { timeout: 600_000 }, () => {
       player: defaultPlayer({
         combatStyle: "ranged", attackStyle: "rapid",
         potion: "ranging", prayerType: "rigour",
-        regions: ["wilderness", "varlamore", "karamja", "misthalin"],
+        regions: ["wilderness", "varlamore", "karamja"],
       }),
       target: custom,
       lockedSlots: {},
@@ -353,7 +353,7 @@ describe("ammo classification", () => {
   });
 
   it("classifies bolts correctly", () => {
-    const bolt = getItem("ruby-bolts-e")!;
+    const bolt = getItem("ruby-dragon-bolts-e")!;
     expect(bolt).toBeDefined();
     expect(getAmmoCategory(bolt)).toBe("bolt");
   });
