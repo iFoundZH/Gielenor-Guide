@@ -15,7 +15,7 @@ import type {
   PrayerType,
   AttackStyleBonus,
 } from "@/types/dps";
-import { BOSS_PRESETS } from "@/data/boss-presets";
+import { BOSS_PRESETS, getBoss } from "@/data/boss-presets";
 import { calculateDps } from "@/lib/dps-engine";
 import { optimizeBuild } from "@/lib/gear-optimizer";
 import { PlayerConfigPanel } from "@/components/calculator/PlayerConfigPanel";
@@ -139,7 +139,7 @@ function resolveAutoForDisplay(player: PlayerConfig): PlayerConfig {
 export default function CalculatorPage() {
   const [state, dispatch] = useReducer(reducer, {
     player: DEFAULT_PLAYER,
-    target: BOSS_PRESETS[0],
+    target: getBoss("sol-heredit") ?? BOSS_PRESETS[0],
     loadout: EMPTY_LOADOUT,
     lockedSlots: new Set<EquipmentSlot>(),
   });
