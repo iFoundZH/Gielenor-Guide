@@ -93,6 +93,8 @@ export function PlayerConfigPanel({ config, onChange }: Props) {
               prayerType: "auto",
               potion: "auto",
               attackStyle: "auto",
+              spellElement: "none",
+              spellMaxHit: undefined,
             })}
             className={`flex-1 px-3 py-2 text-xs font-medium rounded-lg capitalize transition-all ${
               config.combatStyle === style
@@ -151,13 +153,18 @@ export function PlayerConfigPanel({ config, onChange }: Props) {
         <div>
           <label className="text-xs text-osrs-text-dim block mb-1">Spell</label>
           <select
-            value={`${config.spellMaxHit ?? 24}:${config.spellElement ?? "fire"}`}
+            value={!config.spellElement || config.spellElement === "none" ? "auto" : `${config.spellMaxHit ?? 24}:${config.spellElement}`}
             onChange={e => {
-              const [maxStr, elem] = e.target.value.split(":");
-              update({ spellMaxHit: parseInt(maxStr), spellElement: elem as SpellElement });
+              if (e.target.value === "auto") {
+                update({ spellMaxHit: undefined, spellElement: "none" });
+              } else {
+                const [maxStr, elem] = e.target.value.split(":");
+                update({ spellMaxHit: parseInt(maxStr), spellElement: elem as SpellElement });
+              }
             }}
             className="w-full px-3 py-1.5 bg-osrs-darker border border-osrs-border rounded-lg text-sm text-osrs-text focus:border-osrs-gold focus:outline-none"
           >
+            <option value="auto">Auto (best)</option>
             {SPELLS.map((opt, i) => (
               <option key={`${opt.value}-${opt.element}-${i}`} value={`${opt.value}:${opt.element}`}>{opt.label}</option>
             ))}
@@ -167,16 +174,20 @@ export function PlayerConfigPanel({ config, onChange }: Props) {
 
       {/* Toggles */}
       <div className="space-y-2">
-        <Toggle
-          label="On Slayer Task"
-          checked={config.onSlayerTask}
-          onChange={v => update({ onSlayerTask: v })}
+        <SelectField
+          label="Slayer Task"
+          value={config.onSlayerTask === "auto" ? "auto" : config.onSlayerTask ? "yes" : "no"}
+          options={[
+            { value: "auto", label: "Auto (best)" },
+            { value: "no", label: "Off" },
+            { value: "yes", label: "On" },
+          ]}
+          onChange={v => update({ onSlayerTask: v === "auto" ? "auto" : v === "yes" })}
         />
         <SelectField
           label="Void"
-          value={config.voidSet}
+          value={config.voidSet === "auto" ? "none" : config.voidSet}
           options={[
-            { value: "auto", label: "Auto (best)" },
             { value: "none", label: "None" },
             { value: "void", label: "Void Knight" },
             { value: "elite-void", label: "Elite Void" },

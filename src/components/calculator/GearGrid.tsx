@@ -19,10 +19,11 @@ const SLOT_LAYOUT: { slot: EquipmentSlot; label: string; row: number; col: numbe
 interface Props {
   loadout: BuildLoadout;
   onSlotClick: (slot: EquipmentSlot) => void;
+  onLockToggle?: (slot: EquipmentSlot) => void;
   lockedSlots?: Set<EquipmentSlot>;
 }
 
-export function GearGrid({ loadout, onSlotClick, lockedSlots }: Props) {
+export function GearGrid({ loadout, onSlotClick, onLockToggle, lockedSlots }: Props) {
   return (
     <div className="space-y-2">
       <h3 className="text-sm font-semibold text-osrs-gold uppercase tracking-wider">Equipment</h3>
@@ -32,29 +33,44 @@ export function GearGrid({ loadout, onSlotClick, lockedSlots }: Props) {
           const isLocked = lockedSlots?.has(slot);
 
           return (
-            <button
-              key={slot}
-              onClick={() => onSlotClick(slot)}
-              className={`relative p-2 rounded-lg border text-center transition-all min-h-[56px] ${
-                item
-                  ? "bg-osrs-panel border-osrs-gold/30 hover:border-osrs-gold"
-                  : "bg-osrs-darker border-osrs-border hover:border-osrs-text-dim"
-              } ${isLocked ? "ring-1 ring-demon-glow/50" : ""}`}
-            >
-              <div className="text-[9px] text-osrs-text-dim uppercase tracking-wider mb-0.5">
-                {label}
-              </div>
-              {item ? (
-                <div className="text-[10px] text-osrs-text leading-tight truncate">
-                  {item.name}
+            <div key={slot} className="relative">
+              <button
+                onClick={() => onSlotClick(slot)}
+                onContextMenu={e => {
+                  e.preventDefault();
+                  if (item && onLockToggle) onLockToggle(slot);
+                }}
+                className={`w-full p-2 rounded-lg border text-center transition-all min-h-[56px] ${
+                  item
+                    ? "bg-osrs-panel border-osrs-gold/30 hover:border-osrs-gold"
+                    : "bg-osrs-darker border-osrs-border hover:border-osrs-text-dim"
+                } ${isLocked ? "ring-1 ring-demon-glow/50" : ""}`}
+              >
+                <div className="text-[9px] text-osrs-text-dim uppercase tracking-wider mb-0.5">
+                  {label}
                 </div>
-              ) : (
-                <div className="text-[10px] text-osrs-text-dim/50">Empty</div>
+                {item ? (
+                  <div className="text-[10px] text-osrs-text leading-tight truncate">
+                    {item.name}
+                  </div>
+                ) : (
+                  <div className="text-[10px] text-osrs-text-dim/50">Empty</div>
+                )}
+              </button>
+              {item && onLockToggle && (
+                <button
+                  onClick={e => { e.stopPropagation(); onLockToggle(slot); }}
+                  className={`absolute top-1 right-1 w-4 h-4 flex items-center justify-center rounded text-[8px] transition-all ${
+                    isLocked
+                      ? "bg-demon-glow/20 text-demon-glow"
+                      : "bg-osrs-darker/50 text-osrs-text-dim/40 hover:text-osrs-text-dim"
+                  }`}
+                  title={isLocked ? "Unlock slot" : "Lock slot"}
+                >
+                  {isLocked ? "L" : "U"}
+                </button>
               )}
-              {isLocked && (
-                <div className="absolute top-1 right-1 text-[8px] text-demon-glow">L</div>
-              )}
-            </button>
+            </div>
           );
         })}
       </div>

@@ -241,7 +241,7 @@ export interface PlayerConfig {
   regions: string[];
   activePacts: string[];
   voidSet: "auto" | "none" | "void" | "elite-void";
-  onSlayerTask: boolean;
+  onSlayerTask: boolean | "auto";
   targetDistance?: number;
   spellMaxHit?: number;
   currentHitpoints?: number;
@@ -322,7 +322,9 @@ export interface OptimizedConfig {
   voidSet?: "none" | "void" | "elite-void";
   activePacts?: string[];
   spellMaxHit?: number;
+  spellElement?: SpellElement;
   regions?: string[];
+  onSlayerTask?: boolean;
 }
 
 export interface OptimizerConfig {

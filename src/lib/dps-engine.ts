@@ -615,7 +615,7 @@ export function getMultiplierChain(ctx: DpsContext, pe: AggregatedPactEffects, _
   // 1. Slayer helm / Salve amulet (mutually exclusive)
   const head = ctx.loadout.head;
   const hasSalve = ctx.loadout.neck?.id === "salve-ei" && ctx.target.isUndead;
-  const hasSlayerHelm = ctx.player.onSlayerTask && (head?.id === "slayer-helm-i" || head?.id === "echo-vs-helm");
+  const hasSlayerHelm = ctx.player.onSlayerTask === true && (head?.id === "slayer-helm-i" || head?.id === "echo-vs-helm");
 
   if (hasSalve && hasSlayerHelm) {
     chain.push({ name: "Salve (ei) vs Undead", factor: 1.20 });
@@ -829,7 +829,7 @@ export function calculateAttackRoll(ctx: DpsContext, pe: AggregatedPactEffects, 
   {
     const head = ctx.loadout.head;
     const hasSalve = ctx.loadout.neck?.id === "salve-ei" && ctx.target.isUndead;
-    const hasSlayerHelm = ctx.player.onSlayerTask && (head?.id === "slayer-helm-i" || head?.id === "echo-vs-helm");
+    const hasSlayerHelm = ctx.player.onSlayerTask === true && (head?.id === "slayer-helm-i" || head?.id === "echo-vs-helm");
 
     if (hasSalve && hasSlayerHelm) {
       roll = Math.floor(roll * 1.20);

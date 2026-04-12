@@ -44,7 +44,7 @@ const DEFAULT_PLAYER: PlayerConfig = {
   potion: "auto", prayerType: "auto", attackStyle: "auto", combatStyle: "melee",
   regions: ["varlamore", "karamja", "misthalin"],
   activePacts: [],
-  voidSet: "auto", onSlayerTask: false, targetDistance: 1,
+  voidSet: "none", onSlayerTask: "auto", targetDistance: 1,
 };
 
 const EMPTY_LOADOUT: BuildLoadout = {
@@ -97,15 +97,14 @@ function resolveAutoDefaults(style: CombatStyle): {
   potion: Exclude<PotionType, "auto">;
   prayerType: Exclude<PrayerType, "auto">;
   attackStyle: Exclude<AttackStyleBonus, "auto">;
-  voidSet: "none" | "void" | "elite-void";
 } {
   switch (style) {
     case "melee":
-      return { potion: "super-combat", prayerType: "piety", attackStyle: "aggressive", voidSet: "none" };
+      return { potion: "super-combat", prayerType: "piety", attackStyle: "aggressive" };
     case "ranged":
-      return { potion: "ranging", prayerType: "rigour", attackStyle: "rapid", voidSet: "none" };
+      return { potion: "ranging", prayerType: "rigour", attackStyle: "rapid" };
     case "magic":
-      return { potion: "magic", prayerType: "augury", attackStyle: "autocast", voidSet: "none" };
+      return { potion: "magic", prayerType: "augury", attackStyle: "autocast" };
   }
 }
 
@@ -116,7 +115,7 @@ function resolveAutoForDisplay(player: PlayerConfig): PlayerConfig {
     potion: player.potion === "auto" ? defaults.potion : player.potion,
     prayerType: player.prayerType === "auto" ? defaults.prayerType : player.prayerType,
     attackStyle: player.attackStyle === "auto" ? defaults.attackStyle : player.attackStyle,
-    voidSet: player.voidSet === "auto" ? defaults.voidSet : player.voidSet,
+    onSlayerTask: player.onSlayerTask === "auto" ? false : player.onSlayerTask === true,
   };
 }
 
@@ -155,7 +154,9 @@ export default function CalculatorPage() {
     if (opt.voidSet) updates.voidSet = opt.voidSet;
     if (opt.activePacts) updates.activePacts = opt.activePacts;
     if (opt.spellMaxHit !== undefined) updates.spellMaxHit = opt.spellMaxHit;
+    if (opt.spellElement) updates.spellElement = opt.spellElement;
     if (opt.regions) updates.regions = opt.regions;
+    if (opt.onSlayerTask !== undefined) updates.onSlayerTask = opt.onSlayerTask;
     if (Object.keys(updates).length > 0) {
       dispatch({ type: "SET_PLAYER", player: { ...state.player, ...updates } });
     }
@@ -255,6 +256,7 @@ export default function CalculatorPage() {
             <GearGrid
               loadout={state.loadout}
               onSlotClick={slot => setPickerSlot(slot)}
+              onLockToggle={slot => dispatch({ type: "TOGGLE_LOCK", slot })}
               lockedSlots={state.lockedSlots}
             />
           </div>

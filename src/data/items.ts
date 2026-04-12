@@ -438,8 +438,22 @@ for (const item of MANUAL_ITEMS) {
   }
 }
 
-// Items unavailable in DP league
-const EXCLUDED_PATTERNS = ["(deadman mode)", "(nz)", "(beta)", "(historical)"];
+// Items unavailable in Demonic Pacts league
+const EXCLUDED_PATTERNS = [
+  // Game modes
+  "(deadman mode)", "(nz)", "(beta)", "(historical)", "(wilderness wars",
+  // PvP / LMS exclusives
+  "vesta's blighted",
+  // Other league cosmetics (not obtainable in DP)
+  "twisted ancestral", "twisted slayer", "(perfected)",
+  // Unobtainable in leagues
+  "training bow", "training sword", "training shield", "training arrows",
+  "damaged book (",
+  "achievement diary cape", "quest point cape",
+  // Cosmetic account-type items (0 offensive stats)
+  "ironman ", "group ironman ", "ultimate ironman ", "hardcore ironman ",
+  "hardcore group ironman ",
+];
 function isExcluded(name: string): boolean {
   const lower = name.toLowerCase();
   return EXCLUDED_PATTERNS.some(pat => lower.includes(pat));

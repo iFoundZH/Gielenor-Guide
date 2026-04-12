@@ -41,13 +41,20 @@ const REGION_LABELS: Record<string, string> = {
   kourend: "Kourend", wilderness: "Wilderness",
 };
 
+const SPELL_LABELS: Record<string, string> = {
+  ice: "Ice Barrage", blood: "Blood Barrage", shadow: "Shadow Barrage", smoke: "Smoke Barrage",
+  fire: "Fire Surge", earth: "Earth Surge", water: "Water Surge", air: "Wind Surge",
+};
+
 function formatOptimizedConfig(opt?: OptimizedConfig): string | null {
   if (!opt) return null;
   const parts: string[] = [];
+  if (opt.spellElement && opt.spellElement !== "none") parts.push(SPELL_LABELS[opt.spellElement] ?? opt.spellElement);
   if (opt.prayerType && opt.prayerType !== "none") parts.push(LABEL_MAP[opt.prayerType] ?? opt.prayerType);
   if (opt.potion && opt.potion !== "none") parts.push(LABEL_MAP[opt.potion] ?? opt.potion);
   if (opt.attackStyle) parts.push(LABEL_MAP[opt.attackStyle] ?? opt.attackStyle);
   if (opt.voidSet && opt.voidSet !== "none") parts.push(LABEL_MAP[opt.voidSet] ?? opt.voidSet);
+  if (opt.onSlayerTask !== undefined) parts.push(opt.onSlayerTask ? "Slayer Task" : "No Task");
   if (opt.activePacts && opt.activePacts.length > 0) parts.push(`${opt.activePacts.length} pacts`);
   return parts.length > 0 ? parts.join(" · ") : null;
 }
@@ -69,7 +76,7 @@ export function TopBuildsPanel({ results, isRunning, onSelect, onOptimize }: Pro
           disabled={isRunning}
           className="px-4 py-1.5 rounded-lg text-xs font-medium bg-gradient-to-r from-demon-glow to-demon-ember text-white hover:opacity-90 disabled:opacity-50 transition-all"
         >
-          {isRunning ? "Optimizing..." : "Optimize"}
+          {isRunning ? "Optimizing..." : "Optimize for DP League"}
         </button>
       </div>
 
@@ -81,7 +88,7 @@ export function TopBuildsPanel({ results, isRunning, onSelect, onOptimize }: Pro
 
       {results.length === 0 && !isRunning && (
         <div className="text-xs text-osrs-text-dim text-center py-8">
-          Click Optimize to find the best gear
+          Click Optimize for DP League to find the best gear
         </div>
       )}
 
@@ -136,7 +143,8 @@ function getKeyItems(loadout: BuildLoadout): string[] {
   const items: string[] = [];
   if (loadout.head) items.push(loadout.head.name);
   if (loadout.body) items.push(loadout.body.name);
+  if (loadout.shield?.passive) items.push(loadout.shield.name);
   if (loadout.neck) items.push(loadout.neck.name);
   if (loadout.ring) items.push(loadout.ring.name);
-  return items.slice(0, 3);
+  return items.slice(0, 4);
 }

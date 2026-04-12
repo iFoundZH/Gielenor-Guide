@@ -41,7 +41,7 @@ interface CompactBuild {
     a: number; s: number; d: number; r: number; m: number; pr: number;
     pot: string; pry: string; sty: string; cs: string;
     reg: string[]; pacts: string[];
-    void: string; slay: boolean;
+    void: string; slay: boolean | "auto";
     dist?: number; spell?: number;
   };
   gear: { [slot: string]: string | null };
