@@ -2369,3 +2369,208 @@ describe("special attack DPS", () => {
     expect(result.breakdown.specInfo!.cycleTimeSec).toBe(300);
   });
 });
+
+// ═══════════════════════════════════════════════════════════════════════
+// FIRE RUNE REGEN DAMAGE BOOST — element gating
+// Should only apply when fire runes are regenerated:
+// fire/smoke standard spells, or powered staves with Staff Regen Fire pact
+// ═══════════════════════════════════════════════════════════════════════
+
+describe("fireRuneRegenDamageBoost element gating", () => {
+  // Path to node47 (Fire Rune Damage): node1→node44→node47
+  const fireRunePacts = ["node1", "node44", "node47"];
+
+  it("applies for fire-element standard spells", () => {
+    const ctx = makeCtx(
+      { combatStyle: "magic", attackStyle: "autocast", spellMaxHit: 24, spellElement: "fire", activePacts: fireRunePacts },
+      { weapon: getItem("kodai")! },
+      custom,
+    );
+    const noPact = makeCtx(
+      { combatStyle: "magic", attackStyle: "autocast", spellMaxHit: 24, spellElement: "fire", activePacts: ["node1"] },
+      { weapon: getItem("kodai")! },
+      custom,
+    );
+    const r1 = calculateDps(ctx);
+    const r2 = calculateDps(noPact);
+    // With fire rune regen damage, DPS should be higher than without
+    expect(r1.dps).toBeGreaterThan(r2.dps);
+  });
+
+  it("applies for smoke-element standard spells (smoke uses fire runes)", () => {
+    const ctx = makeCtx(
+      { combatStyle: "magic", attackStyle: "autocast", spellMaxHit: 24, spellElement: "smoke", activePacts: fireRunePacts },
+      { weapon: getItem("kodai")! },
+      custom,
+    );
+    const noPact = makeCtx(
+      { combatStyle: "magic", attackStyle: "autocast", spellMaxHit: 24, spellElement: "smoke", activePacts: ["node1"] },
+      { weapon: getItem("kodai")! },
+      custom,
+    );
+    const r1 = calculateDps(ctx);
+    const r2 = calculateDps(noPact);
+    expect(r1.dps).toBeGreaterThan(r2.dps);
+  });
+
+  it("does NOT apply for ice-element standard spells (ice uses water runes, not fire)", () => {
+    const ctx = makeCtx(
+      { combatStyle: "magic", attackStyle: "autocast", spellMaxHit: 24, spellElement: "ice", activePacts: fireRunePacts },
+      { weapon: getItem("kodai")! },
+      custom,
+    );
+    const noPact = makeCtx(
+      { combatStyle: "magic", attackStyle: "autocast", spellMaxHit: 24, spellElement: "ice", activePacts: ["node1"] },
+      { weapon: getItem("kodai")! },
+      custom,
+    );
+    const r1 = calculateDps(ctx);
+    const r2 = calculateDps(noPact);
+    // DPS diff should only come from regen ammo chance (node44 magic level boost), not fire rune damage
+    // Both have node1 (50% regen), ctx also has node44 (magic level boost) — but fire rune damage should NOT apply
+    expect(r1.breakdown.bonusDps).toBe(r2.breakdown.bonusDps);
+  });
+
+  it("does NOT apply for air-element standard spells", () => {
+    const ctx = makeCtx(
+      { combatStyle: "magic", attackStyle: "autocast", spellMaxHit: 24, spellElement: "air", activePacts: fireRunePacts },
+      { weapon: getItem("kodai")! },
+      custom,
+    );
+    const noPact = makeCtx(
+      { combatStyle: "magic", attackStyle: "autocast", spellMaxHit: 24, spellElement: "air", activePacts: ["node1"] },
+      { weapon: getItem("kodai")! },
+      custom,
+    );
+    const r1 = calculateDps(ctx);
+    const r2 = calculateDps(noPact);
+    expect(r1.breakdown.bonusDps).toBe(r2.breakdown.bonusDps);
+  });
+
+  it("applies for powered staves WITH Staff Regen Fire pact", () => {
+    // node54 = Staff Regen Fire. Path: node1→node44→node47→node56→node60→node69→node54
+    // Simpler path: node1→node44→node56→node60→node69→node54 + node47
+    const poweredFirePacts = ["node1", "node44", "node47", "node56", "node60", "node69", "node54"];
+    const ctx = makeCtx(
+      { combatStyle: "magic", attackStyle: "autocast", activePacts: poweredFirePacts },
+      { weapon: getItem("sang")! },
+      custom,
+    );
+    const noPact = makeCtx(
+      { combatStyle: "magic", attackStyle: "autocast", activePacts: ["node1"] },
+      { weapon: getItem("sang")! },
+      custom,
+    );
+    const r1 = calculateDps(ctx);
+    const r2 = calculateDps(noPact);
+    // Powered staff with staff regen fire should get fire rune regen damage boost
+    expect(r1.breakdown.bonusDps).toBeGreaterThan(r2.breakdown.bonusDps);
+  });
+
+  it("does NOT apply for powered staves WITHOUT Staff Regen Fire pact", () => {
+    const ctx = makeCtx(
+      { combatStyle: "magic", attackStyle: "autocast", activePacts: fireRunePacts },
+      { weapon: getItem("sang")! },
+      custom,
+    );
+    const noPact = makeCtx(
+      { combatStyle: "magic", attackStyle: "autocast", activePacts: ["node1"] },
+      { weapon: getItem("sang")! },
+      custom,
+    );
+    const r1 = calculateDps(ctx);
+    const r2 = calculateDps(noPact);
+    // Without Staff Regen Fire, powered staff doesn't regen fire runes → no fire rune damage boost
+    expect(r1.breakdown.bonusDps).toBe(r2.breakdown.bonusDps);
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+// EARTH SCALE DEFENCE STAT — element gating
+// Should only apply for earth-element standard spells
+// ═══════════════════════════════════════════════════════════════════════
+
+describe("earthScaleDefenceStat element gating", () => {
+  // Path to node129 (Earth Def Scale): node1→node44→node48→node57→node60→node69→node70→node127→node128→node129
+  const earthScalePacts = ["node1", "node44", "node48", "node57", "node60", "node69", "node70", "node127", "node128", "node129"];
+
+  it("applies for earth-element standard spells", () => {
+    const ctx = makeCtx(
+      { combatStyle: "magic", attackStyle: "autocast", spellMaxHit: 23, spellElement: "earth", activePacts: earthScalePacts },
+      { weapon: getItem("kodai")! },
+      custom,
+    );
+    const noPact = makeCtx(
+      { combatStyle: "magic", attackStyle: "autocast", spellMaxHit: 23, spellElement: "earth", activePacts: ["node1"] },
+      { weapon: getItem("kodai")! },
+      custom,
+    );
+    const r1 = calculateDps(ctx);
+    const r2 = calculateDps(noPact);
+    // Earth scale bonus: floor(99/12) = 8 flat damage → significant bonusDps increase
+    expect(r1.breakdown.bonusDps).toBeGreaterThan(r2.breakdown.bonusDps);
+  });
+
+  it("applies for shadow-element with shadowCountsAsEarth pact", () => {
+    // Add node131 (Shadow = Earth) to the path
+    const withConversion = [...earthScalePacts, "node131"];
+    const ctx = makeCtx(
+      { combatStyle: "magic", attackStyle: "autocast", spellMaxHit: 28, spellElement: "shadow", activePacts: withConversion },
+      { weapon: getItem("kodai")! },
+      custom,
+    );
+    const noPact = makeCtx(
+      { combatStyle: "magic", attackStyle: "autocast", spellMaxHit: 28, spellElement: "shadow", activePacts: ["node1"] },
+      { weapon: getItem("kodai")! },
+      custom,
+    );
+    const r1 = calculateDps(ctx);
+    const r2 = calculateDps(noPact);
+    expect(r1.breakdown.bonusDps).toBeGreaterThan(r2.breakdown.bonusDps);
+  });
+
+  it("does NOT apply for fire-element standard spells", () => {
+    const ctx = makeCtx(
+      { combatStyle: "magic", attackStyle: "autocast", spellMaxHit: 24, spellElement: "fire", activePacts: earthScalePacts },
+      { weapon: getItem("kodai")! },
+      custom,
+    );
+    const noPact = makeCtx(
+      { combatStyle: "magic", attackStyle: "autocast", spellMaxHit: 24, spellElement: "fire", activePacts: ["node1"] },
+      { weapon: getItem("kodai")! },
+      custom,
+    );
+    const r1 = calculateDps(ctx);
+    const r2 = calculateDps(noPact);
+    // Earth scale should NOT apply for fire spells
+    // bonusDps difference should be 0 (from earth scale pact; may differ from other pacts in path)
+    // More precise: compare bonusDps between earthScalePacts with fire vs earthScalePacts-minus-node129 with fire
+    const withoutCapstone = earthScalePacts.filter(n => n !== "node129");
+    const noCapstone = makeCtx(
+      { combatStyle: "magic", attackStyle: "autocast", spellMaxHit: 24, spellElement: "fire", activePacts: withoutCapstone },
+      { weapon: getItem("kodai")! },
+      custom,
+    );
+    const r3 = calculateDps(noCapstone);
+    // Adding node129 (earth scale) should NOT change bonusDps for fire spells
+    expect(r1.breakdown.bonusDps).toBe(r3.breakdown.bonusDps);
+  });
+
+  it("does NOT apply for powered staves", () => {
+    const ctx = makeCtx(
+      { combatStyle: "magic", attackStyle: "autocast", activePacts: earthScalePacts },
+      { weapon: getItem("sang")! },
+      custom,
+    );
+    const withoutCapstone = earthScalePacts.filter(n => n !== "node129");
+    const noCapstone = makeCtx(
+      { combatStyle: "magic", attackStyle: "autocast", activePacts: withoutCapstone },
+      { weapon: getItem("sang")! },
+      custom,
+    );
+    const r1 = calculateDps(ctx);
+    const r2 = calculateDps(noCapstone);
+    // Earth scale should not apply for powered staves
+    expect(r1.breakdown.bonusDps).toBe(r2.breakdown.bonusDps);
+  });
+});

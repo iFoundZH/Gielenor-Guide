@@ -63,6 +63,13 @@ const ID_OVERRIDES: Record<string, string> = {
   "toktz-xil-ek": "Toktz-xil-ek",
   "toktz-mej-tal": "Toktz-mej-tal",
   "tzhaar-ket-em": "Tzhaar-ket-em",
+  // Rings (pass through with correct region)
+  "berserker-ring": "Berserker ring",
+  "berserker-ring-i": "Berserker ring (i)",
+  "tyrannical-ring": "Tyrannical ring",
+  "tyrannical-ring-i": "Tyrannical ring (i)",
+  "treasonous-ring": "Treasonous ring",
+  "treasonous-ring-i": "Treasonous ring (i)",
   // Ranged weapons
   "zcb": "Zaryte crossbow",
   "acb": "Armadyl crossbow",
@@ -394,6 +401,10 @@ const REGIONS: Record<string, string> = {
   "toktz-xil-ak": "karamja", "tzhaar-ket-om": "karamja",
   "toktz-xil-ek": "karamja", "toktz-mej-tal": "karamja",
   "tzhaar-ket-em": "karamja",
+  // Rings from bosses
+  "berserker-ring": "fremennik", "berserker-ring-i": "fremennik", // DKS
+  "tyrannical-ring": "wilderness", "tyrannical-ring-i": "wilderness", // Callisto
+  "treasonous-ring": "wilderness", "treasonous-ring-i": "wilderness", // Venenatis
   // Misthalin — MTA, RFD
   "master-wand": "misthalin",
   "barrows-gloves": "misthalin",
@@ -587,8 +598,43 @@ const EXCLUDED_PATTERNS = [
   // Cosmetic account-type items (0 offensive stats)
   "ironman ", "group ironman ", "ultimate ironman ", "hardcore ironman ",
   "hardcore group ironman ",
+  // Cosmetic ornament/recolor variants — same stats as curated item but would leak without region
+  "(or)", "(cr)", // Ornament kits, cosmetic recolors
+  "holy scythe", "sanguine scythe", // Scythe recolors
+  "holy sanguinesti", // Sang staff recolor
+  "sanguine torva", // Torva recolors
+  "ghommal's avernic", // Warriors Guild cosmetic
+  "echo venator", // Not a real echo item — wiki variant name
+  // Clan-recolored crystal armour (identical stats to base crystal)
+  "(amlodd)", "(cadarn)", "(crwys)", "(hefin)", "(iorwerth)", "(ithell)", "(trahaearn)", "(meilyr)",
+  // Crystal imbued variant (same stats as charged)
+  "crystal bow (i)",
+  // Bowfa (c) is the charged version — we curate the base "Bow of faerdhinen"
+  "bow of faerdhinen (c)",
+  // Avernic treads variants (enchantment combinations) — we curate base
+  "avernic treads (et)", "avernic treads (max)", "avernic treads (pe)",
+  "avernic treads (pr)",
+  // God d'hide / vestment variants (clue scroll cosmetics, not GWD gear)
+  "bandos d'hide", "bandos robe", "bandos mitre", "bandos crozier", "bandos coif",
+  "bandos stole", "bandos bracers", "bandos cloak",
+  "armadyl d'hide", "armadyl robe", "armadyl mitre", "armadyl crozier", "armadyl coif",
+  "armadyl stole", "armadyl bracers", "armadyl cloak",
+  // Berserker helm (Fremennik, not to be confused with berserker necklace/ring)
+  "berserker helm",
+  // Eternal glory (untradeable, not obtainable in leagues)
+  "amulet of eternal glory",
+  // Scythe (Halloween) cosmetic
+  "scythe (halloween",
 ];
+
+// Exact names to exclude — base versions where we already curate the (f) variant
+const EXCLUDED_EXACT = new Set([
+  "Masori mask", "Masori body", "Masori chaps",     // Use (f) versions
+  "Masori assembler", "Masori assembler max cape",   // Capes not in curated set
+  "Elidinis' ward",                                  // Use (f) version
+]);
 function isExcluded(name: string): boolean {
+  if (EXCLUDED_EXACT.has(name)) return true;
   const lower = name.toLowerCase();
   return EXCLUDED_PATTERNS.some(pat => lower.includes(pat));
 }

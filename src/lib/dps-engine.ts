@@ -236,10 +236,17 @@ export function calculateDps(ctx: DpsContext): DpsResult {
   }
 
   // Fire rune regen damage boost: +regenRate * 1 flat per attack
+  // Only procs when fire runes are regenerated: fire/smoke standard spells (smoke uses fire runes),
+  // or powered staves with the Staff Regen Fire pact
   if (pe.fireRuneRegenDamageBoost > 0 && ctx.player.combatStyle === "magic") {
-    const regenRate = Math.min(1, pe.regenAmmoChance / 100);
-    const flatDmg = pe.fireRuneRegenDamageBoost * regenRate;
-    bonusDps += (flatDmg * finalAcc) / interval;
+    const baseElement = ctx.player.spellElement ?? "none";
+    const usesFireRunes = weaponCat !== "powered-staff" && (baseElement === "fire" || baseElement === "smoke");
+    const poweredStaffFireRegen = weaponCat === "powered-staff" && pe.regenStaveChargesFire;
+    if (usesFireRunes || poweredStaffFireRegen) {
+      const regenRate = Math.min(1, pe.regenAmmoChance / 100);
+      const flatDmg = pe.fireRuneRegenDamageBoost * regenRate;
+      bonusDps += (flatDmg * finalAcc) / interval;
+    }
   }
 
   // 2H melee echo: 5% chance to trigger a ranged echo (use single-hit for tecpatl)
@@ -251,12 +258,15 @@ export function calculateDps(ctx: DpsContext): DpsResult {
   // Echo cascade DPS (ranged echo system)
   const echoDps = calculateEchoDps(ctx, pe, baseDps + bonusDps, finalAcc);
 
-  // Earth spell defence scaling: flat damage per 12 defence levels — standard spells only
+  // Earth spell defence scaling: flat damage per 12 defence levels — earth-element standard spells only
   if (pe.earthScaleDefenceStat > 0 && ctx.player.combatStyle === "magic" && weaponCat !== "powered-staff") {
-    const defLevel = ctx.player.defence + pe.defenceBoost;
-    const flatDmg = Math.floor(defLevel / pe.earthScaleDefenceStat);
-    if (flatDmg > 0) {
-      bonusDps += (flatDmg * finalAcc) / interval;
+    const element = resolveSpellElement(ctx, pe);
+    if (element === "earth") {
+      const defLevel = ctx.player.defence + pe.defenceBoost;
+      const flatDmg = Math.floor(defLevel / pe.earthScaleDefenceStat);
+      if (flatDmg > 0) {
+        bonusDps += (flatDmg * finalAcc) / interval;
+      }
     }
   }
 

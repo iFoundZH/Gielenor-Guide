@@ -554,17 +554,36 @@ export function optimizeBuild(config: OptimizerConfig): OptimizerResult[] {
 
       if (style === "magic" && r.loadout.weapon) {
         const viableSpells = getViableSpells(r.loadout.weapon);
+
+        // Also test smoke-as-air virtual spell for ancient staves (same as Phase 3)
+        const spellsToTest = [...viableSpells];
+        if (ANCIENT_AUTOCAST_STAVES.has(r.loadout.weapon.id)) {
+          const smokeSpell = viableSpells.find(s => s.spellElement === "smoke");
+          if (smokeSpell) {
+            spellsToTest.push({ spellMaxHit: smokeSpell.spellMaxHit, spellElement: "air" });
+          }
+        }
+
         let bestDps = -Infinity;
         let bestPactsForBuild: string[] = opt.activePacts ?? [];
         let bestSpellForBuild: SpellConfig | undefined;
+        let bestPrayerCount: number | undefined;
 
-        for (const spell of viableSpells) {
-          const sp = { ...resolved, spellMaxHit: spell.spellMaxHit, spellElement: spell.spellElement };
+        for (const spell of spellsToTest) {
+          // Air/smoke spells scale with prayer count — assume max (6)
+          const isAir = spell.spellElement === "air" || spell.spellElement === "smoke";
+          const sp = { ...resolved, spellMaxHit: spell.spellMaxHit, spellElement: spell.spellElement,
+            ...(isAir ? { activePrayerCount: 6 } : {}) };
           const pactConfigs = optimizePactsBeam(sp, target, lockedSlots, r.loadout);
           if (pactConfigs.length > 0) {
             const ep = { ...sp, activePacts: pactConfigs[0] };
             const dps = calculateDps({ player: ep, loadout: r.loadout, target }).dps;
-            if (dps > bestDps) { bestDps = dps; bestPactsForBuild = pactConfigs[0]; bestSpellForBuild = spell; }
+            if (dps > bestDps) {
+              bestDps = dps;
+              bestPactsForBuild = pactConfigs[0];
+              bestSpellForBuild = spell;
+              bestPrayerCount = isAir ? 6 : undefined;
+            }
           }
         }
         // Also try without spell element (powered staves)
@@ -572,14 +591,16 @@ export function optimizeBuild(config: OptimizerConfig): OptimizerResult[] {
         if (noSpellPacts.length > 0) {
           const ep = { ...resolved, activePacts: noSpellPacts[0] };
           const dps = calculateDps({ player: ep, loadout: r.loadout, target }).dps;
-          if (dps > bestDps) { bestDps = dps; bestPactsForBuild = noSpellPacts[0]; bestSpellForBuild = undefined; }
+          if (dps > bestDps) { bestDps = dps; bestPactsForBuild = noSpellPacts[0]; bestSpellForBuild = undefined; bestPrayerCount = undefined; }
         }
 
         r.optimizedConfig = { ...opt, activePacts: bestPactsForBuild,
           ...(bestSpellForBuild ? { spellElement: bestSpellForBuild.spellElement, spellMaxHit: bestSpellForBuild.spellMaxHit } : {}),
+          ...(bestPrayerCount ? { activePrayerCount: bestPrayerCount } : {}),
         };
         const finalPlayer = { ...resolved, activePacts: bestPactsForBuild,
           ...(bestSpellForBuild ? { spellElement: bestSpellForBuild.spellElement, spellMaxHit: bestSpellForBuild.spellMaxHit } : {}),
+          ...(bestPrayerCount ? { activePrayerCount: bestPrayerCount } : {}),
         };
         r.result = calculateDps({ player: finalPlayer, loadout: r.loadout, target });
       } else {
