@@ -48,6 +48,17 @@ function result(player: Partial<PlayerConfig>, loadout: Partial<BuildLoadout>, t
 
 const custom = getBoss("custom")!;
 const graardor = getBoss("graardor")!;
+
+// Arclight excluded from item pool (Shadow of the Storm not completable) — mock for formula testing
+const MOCK_ARCLIGHT: Item = {
+  id: "arclight", name: "Arclight", slot: "weapon",
+  bonuses: { astab: 10, aslash: 38, acrush: 0, aranged: 0, amagic: 0,
+    dstab: 0, dslash: 3, dcrush: 2, dranged: 0, dmagic: 2,
+    mstr: 8, rstr: 0, mdmg: 0, prayer: 0 },
+  attackSpeed: 4, weaponCategory: "1h-light",
+  combatStyle: "melee", attackType: "slash",
+  passive: "+70% accuracy and damage vs demons",
+};
 const vorkath = getBoss("vorkath")!;
 const kril = getBoss("kril")!;
 const zulrah = getBoss("zulrah")!;
@@ -191,7 +202,7 @@ describe("Melee logic validation", () => {
   // === BUILD 7: Arclight vs demon (K'ril) ===
   // Arclight: +70% acc and dmg vs demons
   it("7. Arclight vs demon K'ril: 70% multiplier active", () => {
-    const arclight = getItem("arclight")!;
+    const arclight = MOCK_ARCLIGHT;
     expect(kril.isDemon).toBe(true);
     const demonR = result(
       { combatStyle: "melee", potion: "super-combat", prayerType: "piety", attackStyle: "accurate" },

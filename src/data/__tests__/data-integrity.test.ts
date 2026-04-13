@@ -78,7 +78,7 @@ describe("items data integrity", () => {
   });
 
   it("1H weapons are not marked as isTwoHanded", () => {
-    const oneHandedIds = ["whip", "rapier", "fang", "arclight"];
+    const oneHandedIds = ["whip", "rapier", "fang"];
     for (const id of oneHandedIds) {
       const item = getItem(id);
       expect(item).toBeDefined();
@@ -446,9 +446,14 @@ describe("wiki-verified boss stats", () => {
     expect(hydra.region).toBe("kourend");
   });
 
-  it("Corp is in Asgarnia (not Wilderness)", () => {
+  it("Corp is in Wilderness (cave entrance at lvl 21 Wilderness)", () => {
     const corp = getBoss("corp")!;
-    expect(corp.region).toBe("asgarnia");
+    expect(corp.region).toBe("wilderness");
+  });
+
+  it("Abyssal Sire is in Varlamore (Unsired listed under Varlamore notable drops)", () => {
+    const sire = getBoss("abyssal-sire")!;
+    expect(sire.region).toBe("varlamore");
   });
 
   it("Jad is in Karamja", () => {
@@ -525,8 +530,24 @@ describe("item region assignments", () => {
     expect(getItem("barrows-gloves")).toBeUndefined();
   });
 
-  it("Master wand is in Kandarin (MTA)", () => {
-    expect(getItem("master-wand")!.region).toBe("kandarin");
+  it("Master wand is in Desert (MTA, north-east of Al Kharid)", () => {
+    expect(getItem("master-wand")!.region).toBe("desert");
+  });
+
+  it("Arclight is excluded (Shadow of the Storm not completable)", () => {
+    expect(getItem("arclight")).toBeUndefined();
+  });
+
+  it("Soulreaper axe has no region (all DT2 bosses drop pieces)", () => {
+    expect(getItem("soulreaper-axe")!.region).toBeUndefined();
+  });
+
+  it("Colossal blade is in Desert (Giants' Foundry)", () => {
+    expect(getItem("colossal-blade")!.region).toBe("desert");
+  });
+
+  it("Tome of water is in Desert (Tempoross)", () => {
+    expect(getItem("tome-of-water")!.region).toBe("desert");
   });
 
   it("Oathplate is in Kourend (from Yama, Chasm of Fire)", () => {

@@ -1549,39 +1549,46 @@ function calculateBoltSpecDps(ctx: DpsContext, pe: AggregatedPactEffects, maxHit
   // Kandarin Hard Diary: +10% relative proc rate increase
   const diaryMultiplier = ctx.player.kandarinDiary ? 1.1 : 1;
 
-  // ZCB: +10% bolt spec damage
-  const zcbDmgMult = ctx.loadout.weapon?.id === "zcb" ? 1.10 : 1;
+  const isZcb = ctx.loadout.weapon?.id === "zcb";
+
+  // Per weirdgloop: ruby/diamond procs BYPASS accuracy (fire regardless of hit).
+  // Onyx/dragonstone procs REQUIRE accuracy (only fire on accurate hits).
 
   if (ammo.id === "ruby-dragon-bolts-e") {
-    const procDmg = Math.min(100, Math.floor(ctx.target.hp * 0.20));
-    const normalAvg = maxHit / 2;
+    // Ruby: proc bypasses accuracy, deals fixed damage = min(cap, trunc(hp * pct/100))
     const procRate = 0.06 * procMultiplier * diaryMultiplier;
-    // ZCB boosts the proc damage, not the normal hit
-    const boltBonus = procRate * accuracy * (procDmg * zcbDmgMult - normalAvg);
+    const cap = isZcb ? 110 : 100;
+    const pct = isZcb ? 22 : 20;
+    const procDmg = Math.min(cap, Math.trunc(ctx.target.hp * pct / 100));
+    // Bonus = procRate * procDmg - procRate * accuracy * maxHit/2 (proc replaces normal hit)
+    const boltBonus = procRate * (procDmg - accuracy * maxHit / 2);
     return Math.max(0, boltBonus) / interval;
   }
 
   if (ammo.id === "diamond-dragon-bolts-e") {
+    // Diamond: proc bypasses accuracy, re-rolls damage 0..effectMax
     const procRate = 0.10 * procMultiplier * diaryMultiplier;
-    const boostedAcc = procRate + (1 - procRate) * accuracy;
-    const normalDps = (maxHit / 2 * accuracy) / interval;
-    const boostedDps = (maxHit / 2 * boostedAcc) / interval;
-    return boostedDps - normalDps;
+    const effectMax = Math.trunc(maxHit * (isZcb ? 126 : 115) / 100);
+    // Bonus = procRate * (effectMax/2 - accuracy * maxHit/2)
+    const boltBonus = procRate * (effectMax / 2 - accuracy * maxHit / 2);
+    return Math.max(0, boltBonus) / interval;
   }
 
   if (ammo.id === "onyx-dragon-bolts-e") {
-    // 11% proc rate, +20% extra damage on proc, does NOT bypass accuracy
+    // Onyx: proc requires accuracy, re-rolls damage 0..effectMax
     const procRate = 0.11 * procMultiplier * diaryMultiplier;
-    const normalAvg = maxHit / 2;
-    const procDmg = maxHit * 1.20 * zcbDmgMult;
-    const boltBonus = procRate * accuracy * (procDmg / 2 - normalAvg);
+    const effectMax = Math.trunc(maxHit * (isZcb ? 132 : 120) / 100);
+    // Bonus = accuracy * procRate * (effectMax/2 - maxHit/2)
+    const boltBonus = procRate * accuracy * (effectMax - maxHit) / 2;
     return Math.max(0, boltBonus) / interval;
   }
 
   if (ammo.id === "dragonstone-dragon-bolts-e") {
-    // 6% proc rate, extra damage = floor(rangedLevel * 0.20), does NOT bypass accuracy
+    // Dragonstone: proc requires accuracy, adds bonus fire damage
+    // Uses visible (boosted) ranged level per weirdgloop
     const procRate = 0.06 * procMultiplier * diaryMultiplier;
-    const extraDmg = Math.floor(ctx.player.ranged * 0.20) * zcbDmgMult;
+    const visibleRanged = ctx.player.ranged + getPotionStrengthBoost(ctx.player.ranged, ctx.player.potion, "ranged");
+    const extraDmg = Math.trunc(visibleRanged * 2 / (isZcb ? 9 : 10));
     return procRate * accuracy * extraDmg / interval;
   }
 
@@ -1591,35 +1598,36 @@ function calculateBoltSpecDps(ctx: DpsContext, pe: AggregatedPactEffects, maxHit
 /**
  * ZCB spec: guaranteed bolt proc — returns extra average damage per spec attack.
  * The bolt proc fires at 100% rate (instead of the normal 6-11%).
- * ZCB +10% bolt spec damage also applies.
+ * Per weirdgloop: ZCB spec bolt procs require accuracy (h.accurate check).
  */
 function getZcbBoltProcDmg(ctx: DpsContext, specMax: number, specAcc: number): number {
   const ammo = ctx.loadout.ammo;
   if (!ammo) return 0;
 
-  const zcbDmgMult = 1.10; // ZCB always boosts bolt spec damage by 10%
-
   if (ammo.id === "ruby-dragon-bolts-e") {
-    // 100% proc: deal floor(20% of boss HP), capped at 100, instead of normal hit
-    const procDmg = Math.min(100, Math.floor(ctx.target.hp * 0.20)) * zcbDmgMult;
+    // 100% proc on accurate hit: deal min(110, trunc(hp * 22/100)), replaces normal hit
+    const procDmg = Math.min(110, Math.trunc(ctx.target.hp * 22 / 100));
     const normalAvg = specMax / 2;
     return Math.max(0, procDmg - normalAvg) * specAcc;
   }
 
   if (ammo.id === "diamond-dragon-bolts-e") {
-    // 100% proc: guaranteed accuracy (spec already has doubled acc, but diamond ignores defence entirely)
-    // Extra value: (1 - specAcc) * specMax/2 — the damage gained from the extra accuracy
-    return (1 - specAcc) * specMax / 2;
+    // 100% proc on accurate hit: re-roll damage 0..effectMax (+26% max hit)
+    const effectMax = Math.trunc(specMax * 126 / 100);
+    // Extra value: specAcc * (effectMax/2 - specMax/2)
+    return specAcc * (effectMax - specMax) / 2;
   }
 
   if (ammo.id === "onyx-dragon-bolts-e") {
-    // 100% proc: +20% extra damage on the hit
-    return specMax * 0.20 * zcbDmgMult / 2 * specAcc;
+    // 100% proc on accurate hit: re-roll damage 0..effectMax (+32% max hit)
+    const effectMax = Math.trunc(specMax * 132 / 100);
+    return specAcc * (effectMax - specMax) / 2;
   }
 
   if (ammo.id === "dragonstone-dragon-bolts-e") {
-    // 100% proc: extra damage = floor(rangedLevel * 0.20)
-    const extraDmg = Math.floor(ctx.player.ranged * 0.20) * zcbDmgMult;
+    // 100% proc on accurate hit: bonus fire damage
+    const visibleRanged = ctx.player.ranged + getPotionStrengthBoost(ctx.player.ranged, ctx.player.potion, "ranged");
+    const extraDmg = Math.trunc(visibleRanged * 2 / 9);
     return extraDmg * specAcc;
   }
 

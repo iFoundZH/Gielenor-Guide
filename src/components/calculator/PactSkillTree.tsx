@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useMemo, useRef, useEffect } from "react";
-import { PACT_NODES, canSelectNode, canDeselectNode } from "@/data/pacts";
+import { PACT_NODES, canSelectNode, canDeselectNode, findShortestPath } from "@/data/pacts";
 import { PACT_POINT_LIMIT } from "@/types/dps";
 import type { PactNode } from "@/types/dps";
 
@@ -44,9 +44,14 @@ export function PactSkillTree({ selected, onChange }: Props) {
       if (canDeselectNode(node.id, selectedSet)) {
         onChange(selected.filter(id => id !== node.id));
       }
+    } else if (canSelectNode(node.id, selectedSet)) {
+      // Direct neighbor — just add it
+      onChange([...selected, node.id]);
     } else {
-      if (canSelectNode(node.id, selectedSet)) {
-        onChange([...selected, node.id]);
+      // Not adjacent — find shortest path and select all intermediate nodes
+      const path = findShortestPath(node.id, selectedSet);
+      if (path) {
+        onChange([...selected, ...path]);
       }
     }
   }, [selected, onChange, selectedSet]);
@@ -183,7 +188,7 @@ export function PactSkillTree({ selected, onChange }: Props) {
                 const r = NODE_RADIUS[node.size];
                 let fill = "#1f2937"; // unreachable: dark
                 let stroke = "#374151";
-                let opacity = 0.4;
+                let opacity = 0.5;
                 let glowFilter = "";
 
                 if (isSelected) {
@@ -194,7 +199,7 @@ export function PactSkillTree({ selected, onChange }: Props) {
                 } else if (isReachable) {
                   fill = "#374151";
                   stroke = colors.stroke;
-                  opacity = 0.7;
+                  opacity = 0.8;
                 }
 
                 return (

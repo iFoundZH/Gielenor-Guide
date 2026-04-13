@@ -776,6 +776,63 @@ export function canDeselectNode(nodeId: string, selected: Set<string>): boolean 
   return visited.size === remaining.size;
 }
 
+/** Find shortest path from current selection to a target node.
+ *  Returns array of node IDs to add (intermediate + target), or null if unreachable within budget. */
+export function findShortestPath(targetId: string, selected: Set<string>): string[] | null {
+  if (selected.has(targetId)) return null;
+  const target = nodeMap.get(targetId);
+  if (!target) return null;
+
+  // If nothing selected, path must start from root
+  const startNodes = selected.size === 0 ? [ROOT_NODE] : [...selected];
+
+  // BFS from all selected nodes simultaneously
+  const parent = new Map<string, string | null>();
+  const queue: string[] = [];
+
+  for (const id of startNodes) {
+    parent.set(id, null);
+    queue.push(id);
+  }
+
+  while (queue.length > 0) {
+    const current = queue.shift()!;
+    if (current === targetId) break;
+
+    const node = nodeMap.get(current);
+    if (!node) continue;
+
+    for (const neighbor of node.linkedNodes) {
+      if (!parent.has(neighbor)) {
+        parent.set(neighbor, current);
+        queue.push(neighbor);
+      }
+    }
+  }
+
+  if (!parent.has(targetId)) return null; // unreachable
+
+  // Reconstruct path — only include nodes not already selected
+  const path: string[] = [];
+  let cur: string | null = targetId;
+  while (cur !== null && !selected.has(cur)) {
+    path.push(cur);
+    cur = parent.get(cur) ?? null;
+  }
+
+  // If selection was empty, include root
+  if (selected.size === 0 && !path.includes(ROOT_NODE)) {
+    path.push(ROOT_NODE);
+  }
+
+  path.reverse();
+
+  // Check point budget
+  if (selected.size + path.length > PACT_POINT_LIMIT) return null;
+
+  return path;
+}
+
 /** Validate a full selection: connected, within budget, and root is included */
 export function validateSelection(selected: Set<string>): { valid: boolean; error?: string } {
   if (selected.size === 0) return { valid: true };

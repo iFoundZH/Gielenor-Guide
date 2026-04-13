@@ -16,6 +16,7 @@ import {
   canSelectNode,
   canDeselectNode,
   validateSelection,
+  findShortestPath,
 } from "@/data/pacts";
 import { PACT_POINT_LIMIT } from "@/types/dps";
 
@@ -408,5 +409,95 @@ describe("pact node data integrity", () => {
 
   it("point limit is 40", () => {
     expect(PACT_POINT_LIMIT).toBe(40);
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+// SHORTEST PATH (auto-pathing)
+// ═══════════════════════════════════════════════════════════════════════
+
+describe("findShortestPath", () => {
+  it("returns path from root when selection is empty", () => {
+    // node2 is a direct neighbor of node1 (root)
+    const root = getNode("node1")!;
+    const neighbor = root.linkedNodes[0]; // first neighbor of root
+    const path = findShortestPath(neighbor, new Set());
+    expect(path).not.toBeNull();
+    expect(path![0]).toBe("node1"); // must include root
+    expect(path![path!.length - 1]).toBe(neighbor); // ends at target
+  });
+
+  it("returns single node for direct neighbor of selection", () => {
+    const selected = new Set(["node1"]);
+    const root = getNode("node1")!;
+    const neighbor = root.linkedNodes[0];
+    const path = findShortestPath(neighbor, selected);
+    expect(path).toEqual([neighbor]);
+  });
+
+  it("returns multi-hop path for distant node", () => {
+    // Pick a node 2+ hops from root
+    const root = getNode("node1")!;
+    const hop1 = root.linkedNodes[0];
+    const hop1Node = getNode(hop1)!;
+    const hop2 = hop1Node.linkedNodes.find(id => id !== "node1");
+    if (!hop2) return; // skip if no 2-hop neighbor
+
+    const selected = new Set(["node1"]);
+    const path = findShortestPath(hop2, selected);
+    expect(path).not.toBeNull();
+    expect(path!.length).toBe(2); // hop1 + hop2
+    expect(path![0]).toBe(hop1);
+    expect(path![1]).toBe(hop2);
+  });
+
+  it("returns null for already-selected node", () => {
+    const path = findShortestPath("node1", new Set(["node1"]));
+    expect(path).toBeNull();
+  });
+
+  it("returns null for invalid node id", () => {
+    const path = findShortestPath("nonexistent", new Set(["node1"]));
+    expect(path).toBeNull();
+  });
+
+  it("respects point budget", () => {
+    // Fill selection to near-limit, then try to path to distant node
+    // With 39 nodes selected, can only add 1 more
+    const root = getNode("node1")!;
+    const neighbor = root.linkedNodes[0];
+    const neighborNode = getNode(neighbor)!;
+    const hop2 = neighborNode.linkedNodes.find(id => id !== "node1");
+    if (!hop2) return;
+
+    // Build a set with 39 items (simulated — only root is real)
+    const bigSet = new Set(["node1"]);
+    for (let i = 0; i < 38; i++) bigSet.add(`fake${i}`);
+
+    // Path would need 2 nodes (hop1+hop2) but only 1 slot available
+    const path = findShortestPath(hop2, bigSet);
+    expect(path).toBeNull();
+  });
+
+  it("path result maintains valid connected tree", () => {
+    // Select root, path to a distant node, verify full selection is valid
+    const selected = new Set(["node1"]);
+    // Find a node 3+ hops away
+    const root = getNode("node1")!;
+    const h1 = root.linkedNodes[0];
+    const h1n = getNode(h1)!;
+    const h2 = h1n.linkedNodes.find(id => id !== "node1");
+    if (!h2) return;
+    const h2n = getNode(h2)!;
+    const h3 = h2n.linkedNodes.find(id => id !== h1 && id !== "node1");
+    if (!h3) return;
+
+    const path = findShortestPath(h3, selected);
+    expect(path).not.toBeNull();
+
+    // Combine and validate
+    const fullSelection = new Set([...selected, ...path!]);
+    const result = validateSelection(fullSelection);
+    expect(result.valid).toBe(true);
   });
 });

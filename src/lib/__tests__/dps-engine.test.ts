@@ -63,6 +63,18 @@ function makeCtx(
 
 const custom = getBoss("custom")!;
 
+// Arclight is excluded from the item pool (Shadow of the Storm not completable in DP league),
+// but we still test its DPS engine formula for correctness.
+const MOCK_ARCLIGHT = {
+  id: "arclight", name: "Arclight", slot: "weapon" as const,
+  bonuses: { astab: 10, aslash: 38, acrush: 0, aranged: 0, amagic: 0,
+    dstab: 0, dslash: 3, dcrush: 2, dranged: 0, dmagic: 2,
+    mstr: 8, rstr: 0, mdmg: 0, prayer: 0 },
+  attackSpeed: 4, weaponCategory: "1h-light" as const,
+  combatStyle: "melee" as const, attackType: "slash" as const,
+  passive: "+70% accuracy and damage vs demons",
+};
+
 // Empty pact effects are created inline via aggregatePactEffects([])
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -534,7 +546,7 @@ describe("multiplier chain", () => {
     const kril = getBoss("kril")!; // isDemon=true
     const ctx = makeCtx(
       { combatStyle: "melee", attackStyle: "accurate" },
-      { weapon: getItem("arclight")! },
+      { weapon: MOCK_ARCLIGHT },
       kril,
     );
     const pe = aggregatePactEffects([]);
@@ -547,7 +559,7 @@ describe("multiplier chain", () => {
   it("arclight vs non-demon: no multiplier", () => {
     const ctx = makeCtx(
       { combatStyle: "melee", attackStyle: "accurate" },
-      { weapon: getItem("arclight")! },
+      { weapon: MOCK_ARCLIGHT },
       custom, // not a demon
     );
     const pe = aggregatePactEffects([]);

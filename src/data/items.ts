@@ -39,7 +39,6 @@ const ID_OVERRIDES: Record<string, string> = {
   "sgs": "Saradomin godsword",
   "zgs": "Zamorak godsword",
   "dwh": "Dragon warhammer",
-  "arclight": "Arclight",
   "dhl": "Dragon hunter lance",
   "keris-breaching": "Keris partisan of breaching",
   "crystal-halberd": "Crystal halberd",
@@ -251,7 +250,6 @@ const PASSIVES: Record<string, string> = {
   "tbow": "Accuracy/damage scale with target magic level (cap 250)",
   "fang": "Double accuracy roll, min hit = floor(max×3/20)",
   "bowfa": "Crystal armour synergy: +15% acc, +15% dmg with full set",
-  "arclight": "+70% accuracy and damage vs demons",
   "dhl": "+20% accuracy and damage vs dragons",
   "dhcb": "+30% accuracy, +25% damage vs dragons",
   "keris-breaching": "+33% damage vs kalphites, 1/51 triple-damage proc",
@@ -310,7 +308,7 @@ const PASSIVES: Record<string, string> = {
 
 // ── Region mapping (DP league region locks) ──
 const REGIONS: Record<string, string> = {
-  // Asgarnia — GWD, Nex, Corp, Cerberus, Warriors' Guild
+  // Asgarnia — GWD, Nex, Cerberus, Warriors' Guild
   "torva-helm": "asgarnia", "torva-body": "asgarnia", "torva-legs": "asgarnia",
   "bcp": "asgarnia", "tassets": "asgarnia",
   "armadyl-helm": "asgarnia", "armadyl-body": "asgarnia", "armadyl-skirt": "asgarnia",
@@ -321,7 +319,7 @@ const REGIONS: Record<string, string> = {
   "zcb": "asgarnia", "acb": "asgarnia",
   "zaryte-vambs": "asgarnia",
   "primordial": "asgarnia", "pegasian": "asgarnia", "eternal": "asgarnia",
-  "spectral": "asgarnia", "arcane": "asgarnia",
+  "spectral": "wilderness", "arcane": "wilderness", // Corp sigils — Wilderness in DP league
   "dragon-def": "asgarnia", "dragon-boots": "asgarnia",
   "echo-fang-hound": "asgarnia",
   // Morytania — ToB, Barrows, Nightmare, Slayer Tower, Darkmeyer, Araxxor
@@ -402,7 +400,7 @@ const REGIONS: Record<string, string> = {
   "echo-shadowflame": "kandarin",
   "echo-devils-element": "kandarin",
   "smoke-battlestaff": "kandarin", // Thermonuclear smoke devil drop (Kandarin in DP league)
-  "tome-of-water": "kandarin", // Tempoross (Fishing Guild, Kandarin)
+  "tome-of-water": "desert", // Tempoross (Ruins of Unkah, Desert)
   // Karamja — TzHaar, Fight Caves, Inferno
   "infernal-cape": "karamja", "fire-cape": "karamja",
   "berserker-necklace": "karamja", // Enchanted onyx necklace (TzHaar/Karamja)
@@ -410,19 +408,21 @@ const REGIONS: Record<string, string> = {
   "toktz-xil-ek": "karamja", "toktz-mej-tal": "karamja",
   "tzhaar-ket-em": "karamja",
   "obsidian-helm": "karamja", "obsidian-body": "karamja", "obsidian-legs": "karamja",
-  "colossal-blade": "asgarnia", // Giants' Foundry
-  "soulreaper-axe": "asgarnia", // Nex (GWD)
+  "colossal-blade": "desert", // Giants' Foundry (east of Al Kharid)
+  // Soulreaper axe: all DT2 bosses drop all pieces; Vardorvis is in starting region (varlamore)
   // Rings from bosses
   "berserker-ring": "fremennik", "berserker-ring-i": "fremennik", // DKS
   "tyrannical-ring": "wilderness", "tyrannical-ring-i": "wilderness", // Callisto
   "treasonous-ring": "wilderness", "treasonous-ring-i": "wilderness", // Venenatis
-  // Kandarin — MTA
-  "master-wand": "kandarin",
+  // Desert — MTA (north-east of Al Kharid)
+  "master-wand": "desert",
 };
 
 // ── Stat overrides (wiki (i) variants differ from base DB data) ──
 const STAT_OVERRIDES: Record<string, Partial<EquipmentBonuses>> = {
-  "slayer-helm-i": { mstr: 3, rstr: 3, mdmg: 3 },
+  // Slayer helm (i) has 0/0/0 for mstr/rstr/mdmg per wiki — its damage boost
+  // is the on-task percentage multiplier (7/6 melee, 1.15 ranged/magic),
+  // applied in getMultiplierChain(), not flat equipment stats.
 };
 
 // ── Attack speed overrides (wiki DB may not reflect effective speed) ──
@@ -437,6 +437,7 @@ const ATTACK_SPEED_OVERRIDES: Record<string, number> = {
   "ancient-staff": 5,
   "sotd": 5,
   "toxic-sotd": 5,
+  "ahrim-staff": 5, // DB has 6t (2H melee swing), spell casting is 5t
 };
 
 // ── Weapon category overrides (for items whose wiki category doesn't map well) ──
@@ -487,19 +488,19 @@ const MANUAL_ITEMS: Item[] = [
     region: "varlamore",
     passive: PASSIVES["echo-tecpatl"] },
   { id: "echo-fang-hound", name: "Fang of the hound", slot: "weapon",
-    bonuses: { ...Z, astab: 60, aslash: 60, acrush: 10, amagic: 3, mstr: 20 },
+    bonuses: { ...Z, astab: 60, aslash: 60, acrush: 10, amagic: 3, dmagic: 3, mstr: 20 },
     weaponCategory: "1h-light", attackSpeed: 3,
     combatStyle: "melee", attackType: "stab",
     region: "asgarnia",
     passive: PASSIVES["echo-fang-hound"] },
   { id: "echo-shadowflame", name: "Shadowflame quadrant", slot: "weapon",
-    bonuses: { ...Z, acrush: 60, amagic: 25, mstr: 50, mdmg: 15, dcrush: 5, dmagic: 17 },
+    bonuses: { ...Z, acrush: 60, amagic: 25, mstr: 50, mdmg: 15, dslash: 5, dcrush: 5, dmagic: 17 },
     weaponCategory: "staff", attackSpeed: 5,
     combatStyle: "magic", attackType: "magic",
     region: "kandarin",
     passive: PASSIVES["echo-shadowflame"] },
   { id: "echo-natures-recurve", name: "Nature's recurve", slot: "weapon",
-    bonuses: { ...Z, aranged: 95, rstr: 4 },
+    bonuses: { ...Z, aranged: 95, amagic: 8, rstr: 4 },
     isTwoHanded: true, weaponCategory: "bow", attackSpeed: 4,
     combatStyle: "ranged", attackType: "ranged",
     region: "kourend",
@@ -610,8 +611,9 @@ const EXCLUDED_PATTERNS = [
   "barbed arrow", "blunt arrow", "bullet arrow", "field arrow",
   // Castle Wars exclusive
   "castle wars",
-  // Misthalin-only (inaccessible in DP league)
-  "barrows gloves", // RFD reward, not completable in DP
+  // Inaccessible in DP league (quests not completable, Misthalin locked)
+  "barrows gloves", // RFD not completable
+  "arclight", // Shadow of the Storm not completable (requires Demon Slayer → Misthalin)
   // Unobtainable in leagues
   "training bow", "training sword", "training shield", "training arrows",
   "damaged book (",

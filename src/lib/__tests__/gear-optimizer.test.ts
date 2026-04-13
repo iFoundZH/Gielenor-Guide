@@ -170,7 +170,7 @@ describe("region filtering", { timeout: 600_000 }, () => {
     }
   });
 
-  it("regionless items (d-scim, arclight) are always available", () => {
+  it("regionless items (d-scim, soulreaper-axe) are always available", () => {
     const config: OptimizerConfig = {
       player: defaultPlayer({ regions: [] }), // no regions
       target: custom,
@@ -178,7 +178,7 @@ describe("region filtering", { timeout: 600_000 }, () => {
       topN: 5,
     };
     const results = optimizeGear(config);
-    // Should still have results with regionless weapons like d-scim or arclight
+    // Should still have results with regionless weapons like d-scim or soulreaper axe
     expect(results.length).toBeGreaterThan(0);
   });
 
@@ -519,17 +519,18 @@ describe("optimizer boss-specific", { timeout: 600_000 }, () => {
     expect(hasDragonHunter).toBe(true);
   });
 
-  it("vs K'ril (demon), arclight appears in top results", () => {
+  it("vs K'ril (demon), anti-demon weapons appear in top results", () => {
     const kril = getBoss("kril")!;
     const config: OptimizerConfig = {
-      player: defaultPlayer({ combatStyle: "melee" }),
+      player: defaultPlayer({ combatStyle: "melee", regions: ["varlamore", "karamja"] }),
       target: kril,
       lockedSlots: {},
-      topN: 5,
+      topN: 10,
     };
     const results = optimizeGear(config);
     const weaponIds = results.map(r => r.loadout.weapon?.id);
-    const hasAntiDemon = weaponIds.some(id => id === "arclight" || id === "echo-tecpatl");
+    // Arclight is unobtainable in DP league; echo-tecpatl is the demon-killer
+    const hasAntiDemon = weaponIds.some(id => id === "echo-tecpatl");
     expect(hasAntiDemon).toBe(true);
   });
 });

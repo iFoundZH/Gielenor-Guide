@@ -37,7 +37,7 @@ BOSS_LOOKUP = {
     "vardorvis":    ("Vardorvis", "Post-quest"),
 
     # Raids
-    "tekton":       ("Tekton", None),
+    "tekton":       ("Tekton", "Normal"),
     "olm-melee":    ("Great Olm", "Left claw (Normal)"),
     "olm-head":     ("Great Olm", "Head (Normal)"),
     "verzik-p3":    ("Verzik Vitur", "Normal mode, Phase 3"),
@@ -57,7 +57,7 @@ BOSS_LOOKUP = {
     "corp":         ("Corporeal Beast", None),
     "hunllef":      ("Corrupted Hunllef", None),
     "kbd":          ("King Black Dragon", None),
-    "kq":           ("Kalphite Queen", "Crawling"),  # Phase 2 = Crawling form
+    "kq":           ("Kalphite Queen", "Crawling"),  # Phase 1 = Crawling (melee) form
     "nightmare":    ("The Nightmare", None),
     "jad":          ("TzTok-Jad", None),
     "zuk":          ("TzKal-Zuk", "Normal"),
@@ -103,7 +103,7 @@ DISPLAY_NAMES = {
     "olm-head": "Great Olm (Head)",
     "verzik-p3": "Verzik Vitur (P3)",
     "wardens-p3": "Wardens (P3 Tumeken)",
-    "kq": "Kalphite Queen (P2)",
+    "kq": "Kalphite Queen (Crawling)",
     "grotesque-guardians": "Grotesque Guardians",
     "kraken": "Kraken",
     "demonic-gorillas": "Demonic Gorillas",
@@ -209,11 +209,11 @@ REGION_OVERRIDES = {
     "hydra": "kourend",           # Mount Karuulm Slayer Dungeon, Kourend
     "thermy": "kandarin",         # Smoke Devil Dungeon, Kandarin
     "kraken": "kandarin",         # Kraken Cove, Kandarin
-    "abyssal-sire": "morytania",  # Abyssal Area, Morytania
+    "abyssal-sire": "varlamore",  # Unsired listed under Varlamore notable drops on wiki DP Areas page
     "grotesque-guardians": "morytania",  # Slayer Tower, Morytania
     # Other bosses
     "vorkath": "fremennik",       # Ungael, listed under Fremennik
-    "corp": "asgarnia",           # Corp is Asgarnia for league purposes
+    "corp": "wilderness",         # Sigils listed under Wilderness notable drops
     "hunllef": "tirannwn",        # The Gauntlet, listed under Tirannwn
     "kbd": "wilderness",          # KBD Lair, Wilderness
     "kq": "desert",               # Kalphite Lair, Desert
